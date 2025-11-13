@@ -1,13 +1,13 @@
 "use client";
 
 import Image from 'next/image';
-import type { Hotel } from '@/lib/data';
+import type { Room } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2 } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,13 +28,13 @@ const amenityIcons = {
 
 type BookingStep = 'confirm' | 'booking' | 'success';
 
-export function HotelCard({ hotel }: { hotel: Hotel }) {
+export function RoomCard({ room }: { room: Room }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingStep, setBookingStep] = useState<BookingStep>('confirm');
   const [confirmationId, setConfirmationId] = useState('');
 
-  const image = PlaceHolderImages.find(img => img.id === hotel.imageId);
-  const discount = hotel.originalPrice ? Math.round(((hotel.originalPrice - hotel.price) / hotel.originalPrice) * 100) : 0;
+  const image = PlaceHolderImages.find(img => img.id === room.imageId);
+  const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;
 
   const handleBookNow = () => {
     setIsBookingOpen(true);
@@ -57,11 +57,11 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
     }, 300); // allow dialog to close before resetting
   }
 
-  const amenities = useMemo(() => hotel.amenities.map(amenity => ({
+  const amenities = useMemo(() => room.amenities.map(amenity => ({
     key: amenity,
     icon: amenityIcons[amenity],
     label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
-  })), [hotel.amenities]);
+  })), [room.amenities]);
 
   return (
     <>
@@ -85,16 +85,17 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
-          <h3 className="font-bold text-lg leading-tight truncate font-headline">{hotel.name}</h3>
+          <h3 className="font-bold text-lg leading-tight truncate font-headline">{room.roomName}</h3>
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
           
-          <div className="flex items-center text-sm text-muted-foreground mt-1.5 gap-3">
+          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-3">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-              <span className="font-semibold">{hotel.rating.toFixed(1)}</span>
+              <span className="font-semibold">{room.rating.toFixed(1)}</span>
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              <span>{hotel.distance}km away</span>
+              <span>{room.distance}km away</span>
             </div>
           </div>
 
@@ -110,9 +111,9 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
 
           <div className="flex justify-between items-end mt-4">
             <div>
-              <p className="text-2xl font-bold text-foreground">${hotel.price}</p>
-              {hotel.originalPrice && (
-                <p className="text-sm text-muted-foreground line-through">${hotel.originalPrice}</p>
+              <p className="text-2xl font-bold text-foreground">${room.price}</p>
+              {room.originalPrice && (
+                <p className="text-sm text-muted-foreground line-through">${room.originalPrice}</p>
               )}
             </div>
             <Button onClick={handleBookNow} variant="default" className="bg-primary hover:bg-primary/90">
@@ -129,7 +130,7 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Book for Tonight</AlertDialogTitle>
                 <AlertDialogDescription>
-                  You are about to book a room at <span className="font-semibold text-foreground">{hotel.name}</span> for tonight for <span className="font-semibold text-foreground">${hotel.price}</span>. This action is final.
+                  You are about to book the <span className="font-semibold text-foreground">{room.roomName}</span> at <span className="font-semibold text-foreground">{room.hotelName}</span> for tonight for <span className="font-semibold text-foreground">${room.price}</span>. This action is final.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -149,7 +150,7 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
              <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
                 <CheckCircle className="w-16 h-16 text-green-500" />
                 <h2 className="text-2xl font-bold">Booking Confirmed!</h2>
-                <p className="text-muted-foreground">Your room at <span className="font-semibold text-foreground">{hotel.name}</span> is confirmed. <br/> Your booking ID is:</p>
+                <p className="text-muted-foreground">Your room at <span className="font-semibold text-foreground">{room.hotelName}</span> is confirmed. <br/> Your booking ID is:</p>
                 <p className="text-lg font-bold text-primary tracking-widest bg-muted px-4 py-2 rounded-md">{confirmationId}</p>
                 <Button onClick={closeAndResetDialog} className="mt-4 w-full">Done</Button>
             </div>

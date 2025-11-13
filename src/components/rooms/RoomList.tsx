@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Hotel, SortOption } from '@/lib/data';
-import { hotels as allHotels } from '@/lib/data';
-import { HotelCard } from './HotelCard';
-import { HotelCardSkeleton } from './HotelCardSkeleton';
-import { HotelMap } from './HotelMap';
+import type { Room, SortOption } from '@/lib/data';
+import { rooms as allRooms } from '@/lib/data';
+import { RoomCard } from './RoomCard';
+import { RoomCardSkeleton } from './RoomCardSkeleton';
+import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,8 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
 
 const MAX_PRICE = 400;
 
-export default function HotelList() {
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+export default function RoomList() {
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('distance');
@@ -46,18 +46,18 @@ export default function HotelList() {
         if (typeof window !== 'undefined' && 'geolocation' in navigator) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              setHotels(allHotels);
+              setRooms(allRooms);
               setStatus('success');
             },
             (err) => {
               setError(`Error getting your location: ${err.message}. Showing default results.`);
-              setHotels(allHotels);
+              setRooms(allRooms);
               setStatus('success'); 
             }
           );
         } else {
             setError("Geolocation is not supported by your browser. Showing default results.");
-            setHotels(allHotels);
+            setRooms(allRooms);
             setStatus('success');
         }
     }, 500);
@@ -65,12 +65,12 @@ export default function HotelList() {
     return () => clearTimeout(timer);
   }, []);
 
-  const filteredAndSortedHotels = useMemo(() => {
-    const filtered = hotels.filter(hotel => 
-        hotel.price >= priceRange[0] &&
-        hotel.price <= priceRange[1] &&
-        hotel.distance <= distanceLimit[0] &&
-        hotel.rating >= minRating[0]
+  const filteredAndSortedRooms = useMemo(() => {
+    const filtered = rooms.filter(room => 
+        room.price >= priceRange[0] &&
+        room.price <= priceRange[1] &&
+        room.distance <= distanceLimit[0] &&
+        room.rating >= minRating[0]
     );
 
     const sorted = [...filtered];
@@ -86,7 +86,7 @@ export default function HotelList() {
         break;
     }
     return sorted;
-  }, [hotels, sortOption, priceRange, distanceLimit, minRating]);
+  }, [rooms, sortOption, priceRange, distanceLimit, minRating]);
 
   const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
 
@@ -192,17 +192,17 @@ export default function HotelList() {
       {status === 'loading' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <HotelCardSkeleton key={i} />
+            <RoomCardSkeleton key={i} />
           ))}
         </div>
       ) : viewMode === 'list' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-          {filteredAndSortedHotels.map(hotel => (
-            <HotelCard key={hotel.id} hotel={hotel} />
+          {filteredAndSortedRooms.map(room => (
+            <RoomCard key={room.id} room={room} />
           ))}
         </div>
       ) : (
-         <HotelMap hotels={filteredAndSortedHotels} />
+         <RoomMap rooms={filteredAndSortedRooms} />
       )}
     </div>
   );
