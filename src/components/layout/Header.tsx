@@ -1,9 +1,10 @@
-import { BedDouble, Filter, ArrowUpDown, Map as MapIcon } from 'lucide-react';
+import { BedDouble, Filter, ArrowUpDown, MapPin, Star, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -19,13 +20,22 @@ import {
 
 import { Separator } from '@/components/ui/separator';
 import type { SortOption } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
 type HeaderProps = {
   sortOption: SortOption;
   onSortChange: (option: SortOption) => void;
 };
 
+const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
+    { value: 'distance', label: 'Distance', icon: MapPin },
+    { value: 'price', label: 'Price', icon: DollarSign },
+    { value: 'rating', label: 'Rating', icon: Star },
+];
+
 export default function Header({ sortOption, onSortChange }: HeaderProps) {
+  const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
+  
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center">
@@ -39,19 +49,19 @@ export default function Header({ sortOption, onSortChange }: HeaderProps) {
               <SheetTrigger asChild>
                 <Button variant="outline">
                     <Filter className="mr-2" />
-                    Шүүлтүүр
+                    Filters
                 </Button>
               </SheetTrigger>
               <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>Шүүлтүүр</SheetTitle>
+                  <SheetTitle>Filters</SheetTitle>
                   <SheetDescription>
-                    Үр дүнгээ нарийвчлан харуулна уу.
+                    Refine your results.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
                  {/* TODO: Add filter options here */}
-                 <p className="text-sm text-muted-foreground">Шүүлтүүрийн сонголтууд удахгүй нэмэгдэнэ.</p>
+                 <p className="text-sm text-muted-foreground">Filter options will be added soon.</p>
                 </div>
               </SheetContent>
             </Sheet>
@@ -59,15 +69,18 @@ export default function Header({ sortOption, onSortChange }: HeaderProps) {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline">
-                        <ArrowUpDown className="mr-2" />
-                        Эрэмбэлэх
+                        <ActiveSortIcon className="mr-2" />
+                        Sort by
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end">
                     <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => onSortChange(value as SortOption)}>
-                        <DropdownMenuRadioItem value="distance">Зай</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="price">Үнэ</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="rating">Үнэлгээ</DropdownMenuRadioItem>
+                        {sortOptionsConfig.map(option => (
+                             <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
+                                <option.icon className="text-muted-foreground" />
+                                {option.label}
+                            </DropdownMenuRadioItem>
+                        ))}
                     </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -75,8 +88,8 @@ export default function Header({ sortOption, onSortChange }: HeaderProps) {
             <Separator orientation="vertical" className="h-6" />
             
             <Button variant="ghost">
-                <MapIcon className="mr-2" />
-                Газрын зураг
+                <MapPin className="mr-2" />
+                Map View
             </Button>
         </div>
       </div>
