@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hotel-1",
+      "description": "A modern hotel room with a large bed and city view at night.",
+      "imageUrl": "https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hotel room"
+    },
+    {
+      "id": "hotel-2",
+      "description": "A stylish hotel lobby with comfortable seating.",
+      "imageUrl": "https://images.unsplash.com/photo-1660557989725-f511e9fa6267?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxob3RlbCUyMGxvYmJ5fGVufDB8fHx8MTc2MjkzMzU3OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hotel lobby"
+    },
+    {
+      "id": "hotel-3",
+      "description": "A hotel room with a view of a river or lake.",
+      "imageUrl": "https://images.unsplash.com/photo-1762421028657-347de51e7707?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxob3RlbCUyMHZpZXd8ZW58MHx8fHwxNzYzMDE2ODIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hotel view"
+    },
+    {
+      "id": "hotel-4",
+      "description": "A minimalist and clean hotel bedroom.",
+      "imageUrl": "https://images.unsplash.com/photo-1547561993-9fe9f2af3fd4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWluaW1hbGlzdCUyMGJlZHJvb218ZW58MHx8fHwxNzYzMDE2ODIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minimalist bedroom"
+    },
+    {
+      "id": "hotel-5",
+      "description": "A luxury hotel suite with a panoramic city skyline view.",
+      "imageUrl": "https://images.unsplash.com/photo-1746730921368-389e35ed1e4b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsdXh1cnklMjBzdWl0ZXxlbnwwfHx8fDE3NjI5OTY0MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "luxury suite"
+    },
+    {
+      "id": "hotel-6",
+      "description": "An urban hotel exterior with modern architecture.",
+      "imageUrl": "https://images.unsplash.com/photo-1674382397731-0c376fbc3cc8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtb2Rlcm4lMjBob3RlbHxlbnwwfHx8fDE3NjI5NTY5MjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern hotel"
+    }
+  ]
 }
