@@ -146,120 +146,112 @@ setStatus('success');
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-3 rounded-full">
-            <Zap className="w-8 h-8 text-primary" />
-          </div>
-          <div>
-            <p className="text-primary font-semibold">Сүүлчийн минутын хямдрал</p>
-            <h2 className="text-3xl font-bold font-headline tracking-tight">
-              {filteredAndSortedRooms.length} өрөө олдлоо
-            </h2>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                    <Button variant="outline" className="flex-1 md:flex-none justify-center text-base py-6 relative">
-                        <SlidersHorizontal className="mr-2 h-5 w-5" />
-                        Шүүлтүүр
-                        {isFilterActive && (
-                            <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                {activeFilterCount}
-                            </span>
-                        )}
-                    </Button>
-                </SheetTrigger>
-                <SheetContent>
-                    <SheetHeader>
-                        <SheetTitle className="text-2xl">Шүүлтүүр</SheetTitle>
-                    </SheetHeader>
-                    <div className="py-8 space-y-8">
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="price-range" className="font-semibold text-card-foreground/80 text-base">Үнийн хязгаар</Label>
-                                <span className="text-sm font-medium text-primary">${tempPriceRange[0]} - ${tempPriceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : tempPriceRange[1]}</span>
-                            </div>
-                            <Slider
-                              id="price-range"
-                              min={0}
-                              max={MAX_PRICE}
-                              step={10}
-                              value={tempPriceRange}
-                              onValueChange={setTempPriceRange}
-                            />
+       <div className="mb-8">
+        <p className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2"><Zap className="w-4 h-4" />Сүүлчийн минутын хямдрал</p>
+        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Энэ шөнийн онцгой буудлууд</h1>
+       </div>
+      
+       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 border-b">
+         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+                <Button variant="outline" className="w-full md:w-auto relative">
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    Шүүлтүүр
+                    {isFilterActive && (
+                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </Button>
+            </SheetTrigger>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle className="text-2xl font-bold">Шүүлтүүр</SheetTitle>
+                </SheetHeader>
+                <div className="py-8 space-y-8">
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="price-range" className="font-semibold text-base">Үнийн хязгаар</Label>
+                            <span className="text-sm font-medium text-primary">${tempPriceRange[0]} - ${tempPriceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : tempPriceRange[1]}</span>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80 text-base">Зай</Label>
-                                <span className="text-sm font-medium text-primary">{tempDistanceLimit[0]} км хүртэл</span>
-                            </div>
-                            <Slider
-                              id="distance-limit"
-                              min={1}
-                              max={20}
-                              step={1}
-                              value={tempDistanceLimit}
-                              onValueChange={setTempDistanceLimit}
-                            />
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80 text-base">Үнэлгээ</Label>
-                                <span className="text-sm font-medium text-primary">{tempMinRating[0].toFixed(1)}+ од</span>
-                            </div>
-                             <Slider
-                              id="min-rating"
-                              min={1}
-                              max={5}
-                              step={0.1}
-                              value={tempMinRating}
-                              onValueChange={setTempMinRating}
-                            />
-                        </div>
+                        <Slider
+                          id="price-range"
+                          min={0}
+                          max={MAX_PRICE}
+                          step={10}
+                          value={tempPriceRange}
+                          onValueChange={setTempPriceRange}
+                        />
                     </div>
-                     <SheetFooter className="gap-2 sm:justify-between">
-                          <Button variant="ghost" onClick={resetFilters} className="sm:mr-auto">
-                            <X className="mr-2" />
-                            Цэвэрлэх
-                          </Button>
-                          <SheetClose asChild>
-                            <Button variant="outline">Болих</Button>
-                          </SheetClose>
-                          <Button onClick={handleApplyFilters}>Хэрэглэх</Button>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="distance-limit" className="font-semibold text-base">Зай</Label>
+                            <span className="text-sm font-medium text-primary">{tempDistanceLimit[0]} км хүртэл</span>
+                        </div>
+                        <Slider
+                          id="distance-limit"
+                          min={1}
+                          max={20}
+                          step={1}
+                          value={tempDistanceLimit}
+                          onValueChange={setTempDistanceLimit}
+                        />
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="min-rating" className="font-semibold text-base">Үнэлгээ</Label>
+                            <span className="text-sm font-medium text-primary">{tempMinRating[0].toFixed(1)}+ од</span>
+                        </div>
+                         <Slider
+                          id="min-rating"
+                          min={1}
+                          max={5}
+                          step={0.1}
+                          value={tempMinRating}
+                          onValueChange={setTempMinRating}
+                        />
+                    </div>
+                </div>
+                 <SheetFooter className="grid grid-cols-2 gap-4">
+                      <Button variant="ghost" onClick={resetFilters} className="w-full">
+                        <X className="mr-2 h-4 w-4" />
+                        Цэвэрлэх
+                      </Button>
+                      <Button onClick={handleApplyFilters} className="w-full">Хэрэглэх</Button>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
 
-            <div className="flex-1 md:flex-none">
-              <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 h-auto py-1">
-                  <TabsTrigger value="list" className="py-2.5 text-base gap-2"><List /> Жагсаалт</TabsTrigger>
-                  <TabsTrigger value="map" className="py-2.5 text-base gap-2"><MapPin /> Газрын зураг</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+        <div className="hidden md:block text-sm font-medium text-muted-foreground">
+          {filteredAndSortedRooms.length} өрөө олдлоо
+        </div>
+
+        <div className="flex items-center gap-2 w-full md:w-auto">
+            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="w-full flex-1">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="list" className="gap-2"><List /> Жагсаалт</TabsTrigger>
+                <TabsTrigger value="map" className="gap-2"><MapPin /> Газрын зураг</TabsTrigger>
+              </TabsList>
+            </Tabs>
             
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex-1 md:flex-none justify-center text-base py-6">
-                        <ActiveSortIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+                    <Button variant="outline" className="w-auto">
+                        <ActiveSortIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                         {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-[200px]">
                     <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
                         {sortOptionsConfig.map(option => (
                              <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
-                                <option.icon className="text-muted-foreground" />
+                                <option.icon className="h-4 w-4 text-muted-foreground" />
                                 {option.label}
                             </DropdownMenuRadioItem>
                         ))}
                     </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
-
         </div>
       </div>
       
