@@ -12,10 +12,10 @@ export type Room = {
   rating: number; // in km
   distance: number;
   amenities: Amenity[];
-  imageId: string;
+  imageIds: string[];
 };
 
-const roomsData: Omit<Room, 'distance'>[] = [
+const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] = [
     {
       id: 'room-101',
       roomName: 'Стандарт Кинг Өрөө',
@@ -24,7 +24,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       originalPrice: 180,
       rating: 4.5,
       amenities: ['wifi', 'parking', 'restaurant'],
-      imageId: 'hotel-1',
+      imageIds: ['hotel-1', 'hotel-7', 'hotel-8'],
     },
     {
       id: 'room-102',
@@ -33,7 +33,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       price: 95,
       rating: 4.2,
       amenities: ['wifi', 'restaurant'],
-      imageId: 'hotel-2',
+      imageIds: ['hotel-2', 'hotel-9', 'hotel-1'],
     },
     {
       id: 'room-103',
@@ -43,7 +43,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       originalPrice: 200,
       rating: 4.8,
       amenities: ['wifi', 'parking'],
-      imageId: 'hotel-3',
+      imageIds: ['hotel-3', 'hotel-10', 'hotel-2'],
     },
     {
       id: 'room-104',
@@ -52,7 +52,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       price: 75,
       rating: 3.9,
       amenities: ['wifi'],
-      imageId: 'hotel-4',
+      imageIds: ['hotel-4', 'hotel-11', 'hotel-3'],
     },
     {
       id: 'room-105',
@@ -62,7 +62,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       originalPrice: 300,
       rating: 4.9,
       amenities: ['wifi', 'parking', 'restaurant'],
-      imageId: 'hotel-5',
+      imageIds: ['hotel-5', 'hotel-12', 'hotel-4'],
     },
     {
       id: 'room-106',
@@ -71,7 +71,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       price: 88,
       rating: 4.1,
       amenities: ['wifi', 'parking'],
-      imageId: 'hotel-6',
+      imageIds: ['hotel-6', 'hotel-1', 'hotel-5'],
     },
      {
       id: 'room-107',
@@ -81,7 +81,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       originalPrice: 90,
       rating: 4.3,
       amenities: ['wifi'],
-      imageId: 'hotel-1',
+      imageIds: ['hotel-7', 'hotel-2', 'hotel-6'],
     },
     {
       id: 'room-108',
@@ -90,7 +90,7 @@ const roomsData: Omit<Room, 'distance'>[] = [
       price: 350,
       rating: 5.0,
       amenities: ['wifi', 'parking', 'restaurant'],
-      imageId: 'hotel-2',
+      imageIds: ['hotel-8', 'hotel-3', 'hotel-7'],
     }
 ];
 

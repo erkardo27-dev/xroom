@@ -30,7 +30,7 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
     setSelectedRoom(null);
   };
   
-  const image = selectedRoom ? PlaceHolderImages.find(img => img.id === selectedRoom.imageId) : null;
+  const image = selectedRoom ? PlaceHolderImages.find(img => img.id === selectedRoom.imageIds[0]) : null;
 
   return (
     <div className="relative w-full h-[600px] bg-muted rounded-lg overflow-hidden border">

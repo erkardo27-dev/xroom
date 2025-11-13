@@ -35,6 +35,42 @@
       "description": "Орчин үеийн архитектуртай хотын зочид буудлын гаднах байдал.",
       "imageUrl": "https://images.unsplash.com/photo-1674382397731-0c376fbc3cc8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtb2Rlcm4lMjBob3RlbHxlbnwwfHx8fDE3NjI5NTY5MjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "орчин үеийн буудал"
+    },
+    {
+      "id": "hotel-7",
+      "description": "Зочид буудлын өрөөний тохилог угаалгын өрөө.",
+      "imageUrl": "https://images.unsplash.com/photo-1638498172081-7f6b1fb5a3bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHwlRDAlQjElRDElODMlRDElODMlRDAlQjQlRDAlQkIlRDElOEIlRDAlQkQlMjAlRDElODMlRDAlQjMlRDAlQjAlRDAlQjAlRDAlQkIlRDAlQjMlRDElOEIlRDAlQkQlMjAlRDMlQTklRDElODAlRDMlQTklRDMlQTl8ZW58MHx8fHwxNzYzMDQ0MzE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "буудлын угаалгын өрөө"
+    },
+    {
+      "id": "hotel-8",
+      "description": "Зочид буудлын өрөөний тагтан дээрх өглөөний цай.",
+      "imageUrl": "https://picsum.photos/seed/h8/800/600",
+      "imageHint": "өрөөний тагт"
+    },
+    {
+      "id": "hotel-9",
+      "description": "Зочид буудлын доторх усан сан.",
+      "imageUrl": "https://picsum.photos/seed/h9/800/600",
+      "imageHint": "усан сан"
+    },
+    {
+      "id": "hotel-10",
+      "description": "Зочид буудлын спа төв.",
+      "imageUrl": "https://picsum.photos/seed/h10/800/600",
+      "imageHint": "спа төв"
+    },
+    {
+      "id": "hotel-11",
+      "description": "Зочид буудлын фитнесс төв.",
+      "imageUrl": "https://picsum.photos/seed/h11/800/600",
+      "imageHint": "фитнесс төв"
+    },
+    {
+      "id": "hotel-12",
+      "description": "Зочид буудлын баар эсвэл лаунж.",
+      "imageUrl": "https://picsum.photos/seed/h12/800/600",
+      "imageHint": "буудлын баар"
     }
   ]
 }

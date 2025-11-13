@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, HelpCircle } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +27,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 
@@ -55,8 +62,11 @@ export function RoomCard({ room }: { room: Room }) {
     }
   }, [isBookingOpen, bookingStep]);
 
-
-  const image = PlaceHolderImages.find(img => img.id === room.imageId);
+  const images = useMemo(() => 
+    room.imageIds.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean) as typeof PlaceHolderImages, 
+    [room.imageIds]
+  );
+  
   const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;
 
   const handleBookNow = () => {
@@ -93,23 +103,31 @@ export function RoomCard({ room }: { room: Room }) {
   return (
     <>
       <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col bg-card">
-        <div className="relative">
-          {image && (
-            <Image
-              src={image.imageUrl}
-              alt={image.description}
-              data-ai-hint={image.imageHint}
-              width={800}
-              height={600}
-              className="object-cover w-full h-48 transition-transform duration-500 group-hover:scale-105"
-            />
-          )}
+        <Carousel className="relative w-full group/carousel">
+          <CarouselContent>
+            {images.map((image, index) => (
+              <CarouselItem key={index}>
+                <div className="relative h-48 w-full">
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.description}
+                    data-ai-hint={image.imageHint}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
+          <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
+          
           {discount > 0 && (
-            <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-none text-sm font-bold shadow-md">
+            <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-none text-sm font-bold shadow-md z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
-        </div>
+        </Carousel>
 
         <CardContent className="p-4 flex flex-col flex-1">
           <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
