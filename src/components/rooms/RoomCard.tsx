@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, HelpCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 import { useState, useMemo } from 'react';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -26,12 +36,15 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
 };
 
-type BookingStep = 'confirm' | 'booking' | 'success';
+type BookingStep = 'confirm' | 'payment' | 'booking' | 'success';
 
 export function RoomCard({ room }: { room: Room }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingStep, setBookingStep] = useState<BookingStep>('confirm');
   const [confirmationId, setConfirmationId] = useState('');
+  const [paymentCode, setPaymentCode] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
 
   const image = PlaceHolderImages.find(img => img.id === room.imageId);
   const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;
@@ -40,7 +53,11 @@ export function RoomCard({ room }: { room: Room }) {
     setIsBookingOpen(true);
   };
   
-  const handleConfirmBooking = () => {
+  const handleProceedToPayment = () => {
+    setBookingStep('payment');
+  };
+
+  const handleConfirmPayment = () => {
     setBookingStep('booking');
     // Simulate API call for booking
     setTimeout(() => {
@@ -54,6 +71,8 @@ export function RoomCard({ room }: { room: Room }) {
     setTimeout(() => {
         setBookingStep('confirm');
         setConfirmationId('');
+        setPaymentCode('');
+        setTermsAccepted(false);
     }, 300); // allow dialog to close before resetting
   }
 
@@ -62,6 +81,8 @@ export function RoomCard({ room }: { room: Room }) {
     icon: amenityIcons[amenity],
     label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
   })), [room.amenities]);
+  
+  const isPaymentButtonDisabled = paymentCode.length !== 4 || !termsAccepted;
 
   return (
     <>
@@ -135,7 +156,58 @@ export function RoomCard({ room }: { room: Room }) {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmBooking} className="bg-accent hover:bg-accent/90">Захиалга баталгаажуулах</AlertDialogAction>
+                <AlertDialogAction onClick={handleProceedToPayment} className="bg-accent hover:bg-accent/90">Төлбөр төлөх</AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+        )}
+        {bookingStep === 'payment' && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Төлбөр гүйцэтгэх</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Төлбөрөө (QPAY, SocialPay) хийж, гүйлгээний утга хэсгээс 4 оронтой баталгаажуулах кодыг оруулна уу.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-code" className="flex items-center">
+                        Баталгаажуулах код (4 оронтой)
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <HelpCircle className="w-4 h-4 ml-1.5 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Гүйлгээний утга дээр ирэх 4 оронтой код.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </Label>
+                    <Input
+                        id="payment-code"
+                        type="password"
+                        placeholder="••••"
+                        maxLength={4}
+                        value={paymentCode}
+                        onChange={(e) => setPaymentCode(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="text-center tracking-[0.5em]"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
+                    </label>
+                  </div>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setBookingStep('confirm')}>Буцах</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmPayment} disabled={isPaymentButtonDisabled} className="bg-green-600 hover:bg-green-700 text-white">
+                  Төлбөрийг баталгаажуулах
+                </AlertDialogAction>
               </AlertDialogFooter>
             </>
         )}
@@ -160,3 +232,5 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
+
+    
