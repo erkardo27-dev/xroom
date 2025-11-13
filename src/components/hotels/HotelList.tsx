@@ -6,7 +6,7 @@ import { hotels as allHotels } from '@/lib/data';
 import { HotelCard } from './HotelCard';
 import { HotelCardSkeleton } from './HotelCardSkeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, Filter, ArrowUpDown, MapPin, Star, DollarSign } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,27 +15,27 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { Separator } from '@/components/ui/separator';
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
-    { value: 'distance', label: 'Distance', icon: MapPin },
-    { value: 'price', label: 'Price', icon: DollarSign },
-    { value: 'rating', label: 'Rating', icon: Star },
+    { value: 'distance', label: 'Ойрхон нь дээрээ', icon: MapPin },
+    { value: 'price', label: 'Хямд нь дээрээ', icon: DollarSign },
+    { value: 'rating', label: 'Эрэлттэй нь дээрээ', icon: Star },
 ];
+
+const MAX_PRICE = 400;
 
 export default function HotelList() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('distance');
+
+  const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
+  const [distanceLimit, setDistanceLimit] = useState<number[]>([15]);
+  const [minRating, setMinRating] = useState<number[]>([3]);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,8 +61,15 @@ export default function HotelList() {
     return () => clearTimeout(timer);
   }, []);
 
-  const sortedHotels = useMemo(() => {
-    const sorted = [...hotels];
+  const filteredAndSortedHotels = useMemo(() => {
+    const filtered = hotels.filter(hotel => 
+        hotel.price >= priceRange[0] &&
+        hotel.price <= priceRange[1] &&
+        hotel.distance <= distanceLimit[0] &&
+        hotel.rating >= minRating[0]
+    );
+
+    const sorted = [...filtered];
     switch (sortOption) {
       case 'distance':
         sorted.sort((a, b) => a.distance - b.distance);
@@ -75,13 +82,13 @@ export default function HotelList() {
         break;
     }
     return sorted;
-  }, [hotels, sortOption]);
+  }, [hotels, sortOption, priceRange, distanceLimit, minRating]);
 
   const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <Zap className="w-8 h-8 text-accent" />
           <h2 className="text-3xl font-bold font-headline tracking-tight">
@@ -89,31 +96,11 @@ export default function HotelList() {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">
-                    <Filter className="mr-2" />
-                    Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                  <SheetDescription>
-                    Refine your results.
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="grid gap-4 py-4">
-                 <p className="text-sm text-muted-foreground">Filter options will be added soon.</p>
-                </div>
-              </SheetContent>
-            </Sheet>
-
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
+                    <Button variant="outline" className="min-w-[200px] justify-start">
                         <ActiveSortIcon className="mr-2" />
-                        Sort by
+                        {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Sort by'}
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -128,14 +115,58 @@ export default function HotelList() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Separator orientation="vertical" className="h-6" />
-            
             <Button variant="ghost">
                 <MapPin className="mr-2" />
                 Map View
             </Button>
         </div>
       </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
+                <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
+            </div>
+            <Slider
+              id="price-range"
+              min={0}
+              max={MAX_PRICE}
+              step={10}
+              value={priceRange}
+              onValueChange={setPriceRange}
+            />
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
+                <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
+            </div>
+            <Slider
+              id="distance-limit"
+              min={1}
+              max={20}
+              step={1}
+              value={distanceLimit}
+              onValueChange={setDistanceLimit}
+            />
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
+                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
+            </div>
+             <Slider
+              id="min-rating"
+              min={1}
+              max={5}
+              step={0.1}
+              value={minRating}
+              onValueChange={setMinRating}
+            />
+          </div>
+      </div>
+
 
       {status === 'error' && error && (
          <Alert variant="destructive" className="mb-8">
@@ -153,7 +184,7 @@ export default function HotelList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-          {sortedHotels.map(hotel => (
+          {filteredAndSortedHotels.map(hotel => (
             <HotelCard key={hotel.id} hotel={hotel} />
           ))}
         </div>
@@ -161,3 +192,5 @@ export default function HotelList() {
     </div>
   );
 }
+
+    
