@@ -1,5 +1,8 @@
 import { PlaceHolderImages } from './placeholder-images';
 
+export type Amenity = 'wifi' | 'parking' | 'restaurant';
+export type SortOption = 'distance' | 'price' | 'rating';
+
 export type Hotel = {
   id: string;
   name: string;
@@ -7,7 +10,7 @@ export type Hotel = {
   originalPrice?: number;
   rating: number;
   distance: number; // in km
-  amenities: ('wifi' | 'parking' | 'restaurant')[];
+  amenities: Amenity[];
   imageId: string;
 };
 

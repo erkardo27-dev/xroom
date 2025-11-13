@@ -6,12 +6,26 @@ import {
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Separator } from '@/components/ui/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
-export default function Header() {
+import { Separator } from '@/components/ui/separator';
+import type { SortOption } from '@/lib/data';
+
+type HeaderProps = {
+  sortOption: SortOption;
+  onSortChange: (option: SortOption) => void;
+};
+
+export default function Header({ sortOption, onSortChange }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center">
@@ -21,10 +35,27 @@ export default function Header() {
         </Link>
         <div className="flex-1" />
         <div className="flex items-center gap-2">
-            <Button variant="outline">
-                <Filter className="mr-2" />
-                Шүүлтүүр
-            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline">
+                    <Filter className="mr-2" />
+                    Шүүлтүүр
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Шүүлтүүр</SheetTitle>
+                  <SheetDescription>
+                    Үр дүнгээ нарийвчлан харуулна уу.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                 {/* TODO: Add filter options here */}
+                 <p className="text-sm text-muted-foreground">Шүүлтүүрийн сонголтууд удахгүй нэмэгдэнэ.</p>
+                </div>
+              </SheetContent>
+            </Sheet>
+
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline">
@@ -33,14 +64,16 @@ export default function Header() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuRadioGroup value="distance">
+                    <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => onSortChange(value as SortOption)}>
                         <DropdownMenuRadioItem value="distance">Зай</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="price">Үнэ</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="rating">Үнэлгээ</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
+
             <Separator orientation="vertical" className="h-6" />
+            
             <Button variant="ghost">
                 <MapIcon className="mr-2" />
                 Газрын зураг
