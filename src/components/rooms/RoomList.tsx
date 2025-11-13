@@ -53,7 +53,7 @@ export default function RoomList() {
             (err) => {
               setError(`Таны байршлыг олоход алдаа гарлаа: ${err.message}. Үндсэн үр дүнг харуулж байна.`);
               setRooms(allRooms);
-              setStatus('success'); 
+setStatus('success'); 
             }
           );
         } else {
