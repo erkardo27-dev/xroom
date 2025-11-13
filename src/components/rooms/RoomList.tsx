@@ -119,7 +119,7 @@ export default function RoomList() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
+            <Button variant="outline" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
                 {viewMode === 'list' ? (
                     <>
                         <MapPin className="mr-2" />
@@ -135,10 +135,10 @@ export default function RoomList() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 border rounded-xl bg-card/50 shadow-sm">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
+                <Label htmlFor="price-range" className="font-semibold text-card-foreground/80">Үнийн хязгаар</Label>
                 <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
             </div>
             <Slider
@@ -152,7 +152,7 @@ export default function RoomList() {
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80">Зай</Label>
                 <span className="text-sm font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
             </div>
             <Slider
@@ -166,7 +166,7 @@ export default function RoomList() {
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
+                <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80">Үнэлгээ</Label>
                 <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
             </div>
              <Slider

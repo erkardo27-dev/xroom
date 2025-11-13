@@ -28,7 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
@@ -44,6 +44,16 @@ export function RoomCard({ room }: { room: Room }) {
   const [confirmationId, setConfirmationId] = useState('');
   const [paymentCode, setPaymentCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  const initialFocusRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isBookingOpen && bookingStep === 'payment') {
+      setTimeout(() => {
+        initialFocusRef.current?.focus();
+      }, 100);
+    }
+  }, [isBookingOpen, bookingStep]);
 
 
   const image = PlaceHolderImages.find(img => img.id === room.imageId);
@@ -82,7 +92,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-shadow duration-300 hover:shadow-2xl flex flex-col">
+      <Card className="overflow-hidden group transition-shadow duration-300 hover:shadow-xl flex flex-col bg-card">
         <div className="relative">
           {image && (
             <Image
@@ -95,7 +105,7 @@ export function RoomCard({ room }: { room: Room }) {
             />
           )}
           {discount > 0 && (
-            <Badge variant="destructive" className="absolute top-3 right-3 bg-accent text-accent-foreground border-accent text-sm">
+            <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground border-none text-sm font-bold">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
@@ -108,7 +118,7 @@ export function RoomCard({ room }: { room: Room }) {
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-3">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-              <span className="font-semibold">{room.rating.toFixed(1)}</span>
+              <span className="font-semibold text-foreground/90">{room.rating.toFixed(1)}</span>
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
@@ -118,9 +128,18 @@ export function RoomCard({ room }: { room: Room }) {
 
           <div className="flex items-center gap-2 mt-3 text-muted-foreground">
              {amenities.map(a => (
-                <div key={a.key} className="flex items-center gap-1" title={a.label}>
-                    {a.icon}
-                </div>
+                <TooltipProvider key={a.key}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <div className="flex items-center gap-1 p-1.5 bg-secondary/50 rounded-md">
+                                {a.icon}
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>{a.label}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
              ))}
           </div>
 
@@ -133,7 +152,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <p className="text-sm text-muted-foreground line-through">${room.originalPrice}</p>
               )}
             </div>
-            <Button onClick={handleBookNow} variant="default" className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleBookNow} variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
               Шөнөөр захиалах
             </Button>
           </div>
@@ -168,12 +187,13 @@ export function RoomCard({ room }: { room: Room }) {
                     </Label>
                     <Input
                         id="payment-code"
+                        ref={initialFocusRef}
                         type="password"
                         placeholder="••••"
                         maxLength={4}
                         value={paymentCode}
                         onChange={(e) => setPaymentCode(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="text-center tracking-[0.5em]"
+                        className="text-center text-2xl tracking-[0.5em] font-mono"
                     />
                   </div>
                   <div className="flex items-center space-x-2">
@@ -188,7 +208,7 @@ export function RoomCard({ room }: { room: Room }) {
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmPayment} disabled={isPaymentButtonDisabled} className="bg-green-600 hover:bg-green-700 text-white">
+                <AlertDialogAction onClick={handleConfirmPayment} disabled={isPaymentButtonDisabled}>
                   Төлбөрийг баталгаажуулах
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -206,7 +226,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <CheckCircle className="w-16 h-16 text-green-500" />
                 <h2 className="text-2xl font-bold">Захиалга баталгаажлаа!</h2>
                 <p className="text-muted-foreground"><span className="font-semibold text-foreground">{room.hotelName}</span>-д таны өрөө баталгаажлаа. <br/> Таны захиалгын дугаар:</p>
-                <p className="text-lg font-bold text-primary tracking-widest bg-muted px-4 py-2 rounded-md">{confirmationId}</p>
+                <p className="text-xl font-bold text-primary tracking-widest bg-secondary/80 px-4 py-2 rounded-md">{confirmationId}</p>
                 <Button onClick={closeAndResetDialog} className="mt-4 w-full">Дуусгах</Button>
             </div>
         )}
