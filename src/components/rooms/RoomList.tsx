@@ -151,17 +151,16 @@ setStatus('success');
             Сүүлчийн минутын хямдрал
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mt-2">Энэ шөнийн онцгой буудлууд</h1>
+        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            {filteredAndSortedRooms.length > 0
+              ? `${filteredAndSortedRooms.length} өрөө олдлоо. Та шүүлтүүр ашиглан хайлтаа нарийвчлах боломжтой.`
+              : "Таны хайлтад тохирох өрөө олдсонгүй. Шүүлтүүрээ өөрчилж дахин оролдоно уу."}
+          </p>
        </div>
       
        <div className="sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 border-b mb-8">
         <div className="flex items-center justify-between gap-4 max-w-screen-2xl mx-auto">
-            <div>
-                 <p className="text-sm font-medium text-muted-foreground">
-                    <span className="font-bold text-foreground">{filteredAndSortedRooms.length}</span> өрөө олдлоо
-                </p>
-            </div>
-            <div className="flex items-center gap-2">
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
                         <Button variant="outline" className="relative">
                             <SlidersHorizontal className="mr-2 h-4 w-4" />
@@ -230,7 +229,8 @@ setStatus('success');
                         </SheetFooter>
                     </SheetContent>
                 </Sheet>
-                
+            
+            <div className="flex items-center gap-2">
                 <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="hidden sm:block">
                   <TabsList>
                     <TabsTrigger value="list" className="gap-2"><List className="h-4 w-4" /> Жагсаалт</TabsTrigger>
