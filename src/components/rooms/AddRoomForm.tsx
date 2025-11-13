@@ -16,9 +16,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  hotelName: z.string().min(2, { message: "Hotel name is required." }),
-  roomName: z.string().min(2, { message: "Room name is required." }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number." }),
+  hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
+  roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
+  price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
 });
 
 export function AddRoomForm() {
@@ -37,8 +37,8 @@ export function AddRoomForm() {
         // Mock submission
         console.log("New Room Data:", values);
         toast({
-            title: "Room Listed!",
-            description: `${values.roomName} at ${values.hotelName} has been listed for $${values.price}.`,
+            title: "Өрөө бүртгэгдлээ!",
+            description: `${values.hotelName}-д ${values.roomName} өрөөг $${values.price} үнээр бүртгэв.`,
         });
         form.reset();
         // In a real app, you'd send this to the backend.
@@ -52,9 +52,9 @@ export function AddRoomForm() {
                     name="hotelName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Hotel Name</FormLabel>
+                            <FormLabel>Зочид буудлын нэр</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g. The Grand Oasis" {...field} />
+                                <Input placeholder="ж.нь: Их Оазис" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -65,9 +65,9 @@ export function AddRoomForm() {
                     name="roomName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Room Name</FormLabel>
+                            <FormLabel>Өрөөний нэр</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g. Deluxe King Suite" {...field} />
+                                <Input placeholder="ж.нь: Делюкс люкс" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -78,16 +78,16 @@ export function AddRoomForm() {
                     name="price"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Price for Tonight ($)</FormLabel>
+                            <FormLabel>Энэ шөнийн үнэ ($)</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="e.g. 150" {...field} />
+                                <Input type="number" placeholder="ж.нь: 150" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
                 <Button type="submit" className="w-full">
-                    List Room for Tonight
+                    Өрөөгөө шөнөөр бүртгүүлэх
                 </Button>
             </form>
         </Form>

@@ -36,7 +36,7 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
     <div className="relative w-full h-[600px] bg-muted rounded-lg overflow-hidden border">
       <Image
         src="https://images.unsplash.com/photo-1599567437813-75b2713636e2?q=80&w=2070&auto=format&fit=crop"
-        alt="City Map"
+        alt="Хотын газрын зураг"
         fill
         className="object-cover opacity-30"
       />
@@ -71,19 +71,19 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
                                 <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                                 <span className="font-semibold">{selectedRoom.rating.toFixed(1)}</span>
                             </div>
-                            <span>{selectedRoom.distance}km away</span>
+                            <span>{selectedRoom.distance}км зайтай</span>
                         </div>
                         <div className="flex-grow"/>
                         <div className="flex items-end gap-4 mt-2">
                              <p className="text-xl font-bold text-foreground">${selectedRoom.price}</p>
-                             <Button size="sm" className="bg-primary hover:bg-primary/90">Book</Button>
+                             <Button size="sm" className="bg-primary hover:bg-primary/90">Захиалах</Button>
                         </div>
                     </div>
                 </div>
             </CardContent>
              <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 z-30 bg-background/50" onClick={closePopup}>
                 <X className="w-4 h-4" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">Хаах</span>
             </Button>
         </Card>
       )}

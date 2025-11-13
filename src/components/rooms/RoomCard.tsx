@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState, useMemo } from 'react';
 
-const amenityIcons = {
+const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
     parking: <ParkingSquare className="w-4 h-4" />,
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
@@ -79,7 +79,7 @@ export function RoomCard({ room }: { room: Room }) {
           )}
           {discount > 0 && (
             <Badge variant="destructive" className="absolute top-3 right-3 bg-accent text-accent-foreground border-accent text-sm">
-              {discount}% OFF
+              {discount}% ХЯМДРАЛ
             </Badge>
           )}
         </div>
@@ -95,7 +95,7 @@ export function RoomCard({ room }: { room: Room }) {
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              <span>{room.distance}km away</span>
+              <span>{room.distance}км зайтай</span>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export function RoomCard({ room }: { room: Room }) {
               )}
             </div>
             <Button onClick={handleBookNow} variant="default" className="bg-primary hover:bg-primary/90">
-              Book Tonight
+              Шөнөөр захиалах
             </Button>
           </div>
         </CardContent>
@@ -128,31 +128,31 @@ export function RoomCard({ room }: { room: Room }) {
         {bookingStep === 'confirm' && (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>Book for Tonight</AlertDialogTitle>
+                <AlertDialogTitle>Энэ шөнө захиалах</AlertDialogTitle>
                 <AlertDialogDescription>
-                  You are about to book the <span className="font-semibold text-foreground">{room.roomName}</span> at <span className="font-semibold text-foreground">{room.hotelName}</span> for tonight for <span className="font-semibold text-foreground">${room.price}</span>. This action is final.
+                  Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна. Энэ үйлдэл эцсийнх болно.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={closeAndResetDialog}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmBooking} className="bg-accent hover:bg-accent/90">Confirm Booking</AlertDialogAction>
+                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmBooking} className="bg-accent hover:bg-accent/90">Захиалга баталгаажуулах</AlertDialogAction>
               </AlertDialogFooter>
             </>
         )}
         {bookingStep === 'booking' && (
             <div className="flex flex-col items-center justify-center p-8 gap-4">
                 <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                <p className="text-lg font-semibold">Confirming your room...</p>
-                <p className="text-sm text-muted-foreground">This will only take a moment.</p>
+                <p className="text-lg font-semibold">Таны өрөөг баталгаажуулж байна...</p>
+                <p className="text-sm text-muted-foreground">Энэ нь түр зуур үргэлжилнэ.</p>
             </div>
         )}
         {bookingStep === 'success' && (
              <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
                 <CheckCircle className="w-16 h-16 text-green-500" />
-                <h2 className="text-2xl font-bold">Booking Confirmed!</h2>
-                <p className="text-muted-foreground">Your room at <span className="font-semibold text-foreground">{room.hotelName}</span> is confirmed. <br/> Your booking ID is:</p>
+                <h2 className="text-2xl font-bold">Захиалга баталгаажлаа!</h2>
+                <p className="text-muted-foreground"><span className="font-semibold text-foreground">{room.hotelName}</span>-д таны өрөө баталгаажлаа. <br/> Таны захиалгын дугаар:</p>
                 <p className="text-lg font-bold text-primary tracking-widest bg-muted px-4 py-2 rounded-md">{confirmationId}</p>
-                <Button onClick={closeAndResetDialog} className="mt-4 w-full">Done</Button>
+                <Button onClick={closeAndResetDialog} className="mt-4 w-full">Дуусгах</Button>
             </div>
         )}
         </AlertDialogContent>

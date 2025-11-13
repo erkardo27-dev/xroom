@@ -28,14 +28,14 @@ export default function Header() {
                 <DialogTrigger asChild>
                     <Button variant="ghost">
                         <PlusCircle className="mr-2" />
-                        List your room
+                        Өрөө оруулах
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>List your Room</DialogTitle>
+                        <DialogTitle>Өрөө оруулах</DialogTitle>
                         <DialogDescription>
-                            Fill in the details below to list your available room for tonight.
+                            Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.
                         </DialogDescription>
                     </DialogHeader>
                     <AddRoomForm />
@@ -46,14 +46,14 @@ export default function Header() {
                 <DialogTrigger asChild>
                      <Button>
                         <LogIn className="mr-2" />
-                        Owner Login
+                        Эзэмшигч нэвтрэх
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                      <DialogHeader>
-                        <DialogTitle>Owner Login</DialogTitle>
+                        <DialogTitle>Эзэмшигч нэвтрэх</DialogTitle>
                         <DialogDescription>
-                            Access your hotel management dashboard.
+                            Зочид буудлын удирдлагын самбартаа нэвтрэх.
                         </DialogDescription>
                     </DialogHeader>
                     <OwnerLoginForm />

@@ -18,8 +18,8 @@ export type Room = {
 const roomsData: Omit<Room, 'distance'>[] = [
     {
       id: 'room-101',
-      roomName: 'Standard King Room',
-      hotelName: 'The Grand Oasis',
+      roomName: 'Стандарт Кинг Өрөө',
+      hotelName: 'Их Оазис',
       price: 120,
       originalPrice: 180,
       rating: 4.5,
@@ -28,8 +28,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-102',
-      roomName: 'Deluxe Suite',
-      hotelName: 'Cityscape Central',
+      roomName: 'Делюкс Люкс',
+      hotelName: 'Хотын Төв',
       price: 95,
       rating: 4.2,
       amenities: ['wifi', 'restaurant'],
@@ -37,8 +37,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-103',
-      roomName: 'River View Double',
-      hotelName: 'Riverside Retreat',
+      roomName: 'Голын Харагдацтай Давхар Ор',
+      hotelName: 'Голын Эрэг Амралт',
       price: 150,
       originalPrice: 200,
       rating: 4.8,
@@ -47,8 +47,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-104',
-      roomName: 'Compact Single',
-      hotelName: 'The Minimalist Inn',
+      roomName: 'Компакт Нэг Ортой',
+      hotelName: 'Минималист Дэн буудал',
       price: 75,
       rating: 3.9,
       amenities: ['wifi'],
@@ -56,8 +56,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-105',
-      roomName: 'Penthouse Suite',
-      hotelName: 'Skyline View Suites',
+      roomName: 'Пентхаус Люкс',
+      hotelName: 'Тэнгэр Харагдах Люкс',
       price: 220,
       originalPrice: 300,
       rating: 4.9,
@@ -66,8 +66,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-106',
-      roomName: 'Urban Twin Room',
-      hotelName: 'Urban Modern Lodge',
+      roomName: 'Хотын Ихэр Ортой Өрөө',
+      hotelName: 'Орчин үеийн хотын Lodge',
       price: 88,
       rating: 4.1,
       amenities: ['wifi', 'parking'],
@@ -75,8 +75,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
      {
       id: 'room-107',
-      roomName: 'Cozy Double Bed',
-      hotelName: 'Cozy Corner B&B',
+      roomName: 'Тохилог Давхар Ор',
+      hotelName: 'Тохилог булан B&B',
       price: 65,
       originalPrice: 90,
       rating: 4.3,
@@ -85,8 +85,8 @@ const roomsData: Omit<Room, 'distance'>[] = [
     },
     {
       id: 'room-108',
-      roomName: 'Presidential Suite',
-      hotelName: 'The Platinum Palace',
+      roomName: 'Ерөнхийлөгчийн люкс',
+      hotelName: 'Платинум ордон',
       price: 350,
       rating: 5.0,
       amenities: ['wifi', 'parking', 'restaurant'],

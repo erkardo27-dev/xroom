@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: 'XRoom Tonight',
-  description: 'Find and book last-minute hotel deals for tonight.',
+  description: 'Энэ шөнийн зочид буудлын сүүлчийн минутын хямдралыг олж, захиалаарай.',
 };
 
 export default function RootLayout({

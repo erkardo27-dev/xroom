@@ -22,9 +22,9 @@ import { Label } from "@/components/ui/label";
 type ViewMode = 'list' | 'map';
 
 const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
-    { value: 'distance', label: 'Ойрхон нь дээрээ', icon: MapPin },
-    { value: 'price', label: 'Хямд нь дээрээ', icon: DollarSign },
-    { value: 'rating', label: 'Эрэлттэй нь дээрээ', icon: Star },
+    { value: 'distance', label: 'Ойрхон нь эхэндээ', icon: MapPin },
+    { value: 'price', label: 'Хямд нь эхэндээ', icon: DollarSign },
+    { value: 'rating', label: 'Өндөр үнэлгээтэй нь', icon: Star },
 ];
 
 const MAX_PRICE = 400;
@@ -50,13 +50,13 @@ export default function RoomList() {
               setStatus('success');
             },
             (err) => {
-              setError(`Error getting your location: ${err.message}. Showing default results.`);
+              setError(`Таны байршлыг олоход алдаа гарлаа: ${err.message}. Үндсэн үр дүнг харуулж байна.`);
               setRooms(allRooms);
               setStatus('success'); 
             }
           );
         } else {
-            setError("Geolocation is not supported by your browser. Showing default results.");
+            setError("Таны хөтөч байршил тодорхойлохыг дэмжихгүй байна. Үндсэн үр дүнг харуулж байна.");
             setRooms(allRooms);
             setStatus('success');
         }
@@ -96,7 +96,7 @@ export default function RoomList() {
         <div className="flex items-center gap-3">
           <Zap className="w-8 h-8 text-accent" />
           <h2 className="text-3xl font-bold font-headline tracking-tight">
-            Tonight's deals near you
+            Таны ойролцоох энэ шөнийн хямдрал
           </h2>
         </div>
         <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function RoomList() {
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="min-w-[200px] justify-start">
                         <ActiveSortIcon className="mr-2" />
-                        {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Sort by'}
+                        {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -123,12 +123,12 @@ export default function RoomList() {
                 {viewMode === 'list' ? (
                     <>
                         <MapPin className="mr-2" />
-                        Map View
+                        Газрын зураг
                     </>
                 ) : (
                     <>
                         <List className="mr-2" />
-                        List View
+                        Жагсаалт
                     </>
                 )}
             </Button>
@@ -138,7 +138,7 @@ export default function RoomList() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
+                <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
                 <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
             </div>
             <Slider
@@ -152,8 +152,8 @@ export default function RoomList() {
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
-                <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
+                <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                <span className="text-sm font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
             </div>
             <Slider
               id="distance-limit"
@@ -166,8 +166,8 @@ export default function RoomList() {
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
-                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
+                <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
+                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
             </div>
              <Slider
               id="min-rating"
@@ -184,7 +184,7 @@ export default function RoomList() {
       {status === 'error' && error && (
          <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Location Error</AlertTitle>
+            <AlertTitle>Байршлын алдаа</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}

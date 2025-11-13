@@ -16,8 +16,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
+  password: z.string().min(6, { message: "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой." }),
 });
 
 export function OwnerLoginForm() {
@@ -35,8 +35,8 @@ export function OwnerLoginForm() {
         // Mock submission
         console.log("Login attempt:", values);
         toast({
-            title: "Login Successful",
-            description: "Redirecting to your dashboard...",
+            title: "Амжилттай нэвтэрлээ",
+            description: "Хяналтын самбар луу шилжиж байна...",
         });
         // In a real app, you would handle backend auth here.
         // We can close the dialog for now. This requires state lift up.
@@ -51,9 +51,9 @@ export function OwnerLoginForm() {
                     name="email"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>И-мэйл</FormLabel>
                             <FormControl>
-                                <Input placeholder="your@email.com" {...field} />
+                                <Input placeholder="tanii@email.com" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -64,7 +64,7 @@ export function OwnerLoginForm() {
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>Нууц үг</FormLabel>
                             <FormControl>
                                 <Input type="password" placeholder="••••••••" {...field} />
                             </FormControl>
@@ -73,7 +73,7 @@ export function OwnerLoginForm() {
                     )}
                 />
                 <Button type="submit" className="w-full">
-                    Log In
+                    Нэвтрэх
                 </Button>
             </form>
         </Form>
