@@ -7,7 +7,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, SlidersHorizontal } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type ViewMode = 'list' | 'map';
 
@@ -37,9 +46,50 @@ export default function RoomList() {
   const [sortOption, setSortOption] = useState<SortOption>('distance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
+  // Temporary filter state for the sheet
+  const [tempPriceRange, setTempPriceRange] = useState<number[]>([0, MAX_PRICE]);
+  const [tempDistanceLimit, setTempDistanceLimit] = useState<number[]>([15]);
+  const [tempMinRating, setTempMinRating] = useState<number[]>([3]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+
+  // Actual filter state
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([15]);
   const [minRating, setMinRating] = useState<number[]>([3]);
+
+  useEffect(() => {
+    // Sync temp filters when sheet opens
+    if (isSheetOpen) {
+      setTempPriceRange(priceRange);
+      setTempDistanceLimit(distanceLimit);
+      setTempMinRating(minRating);
+    }
+  }, [isSheetOpen]);
+
+
+  const handleApplyFilters = () => {
+    setPriceRange(tempPriceRange);
+    setDistanceLimit(tempDistanceLimit);
+    setMinRating(tempMinRating);
+    setIsSheetOpen(false);
+  };
+  
+  const resetFilters = () => {
+    const defaultPrice = [0, MAX_PRICE];
+    const defaultDistance = [15];
+    const defaultRating = [3];
+    
+    setTempPriceRange(defaultPrice);
+    setTempDistanceLimit(defaultDistance);
+    setTempMinRating(defaultRating);
+
+    setPriceRange(defaultPrice);
+    setDistanceLimit(defaultDistance);
+    setMinRating(defaultRating);
+
+    setIsSheetOpen(false);
+  };
 
 
   useEffect(() => {
@@ -90,6 +140,9 @@ setStatus('success');
   }, [rooms, sortOption, priceRange, distanceLimit, minRating]);
 
   const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
+  
+  const isFilterActive = priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE || distanceLimit[0] !== 15 || minRating[0] !== 3;
+  const activeFilterCount = (priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE ? 1 : 0) + (distanceLimit[0] !== 15 ? 1 : 0) + (minRating[0] !== 3 ? 1 : 0);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -101,14 +154,96 @@ setStatus('success');
           <div>
             <p className="text-primary font-semibold">Сүүлчийн минутын хямдрал</p>
             <h2 className="text-3xl font-bold font-headline tracking-tight">
-              Таны ойролцоох өрөөнүүд
+              {filteredAndSortedRooms.length} өрөө олдлоо
             </h2>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
+             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                    <Button variant="outline" className="flex-1 md:flex-none justify-center text-base py-6 relative">
+                        <SlidersHorizontal className="mr-2 h-5 w-5" />
+                        Шүүлтүүр
+                        {isFilterActive && (
+                            <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </Button>
+                </SheetTrigger>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle className="text-2xl">Шүүлтүүр</SheetTitle>
+                    </SheetHeader>
+                    <div className="py-8 space-y-8">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <Label htmlFor="price-range" className="font-semibold text-card-foreground/80 text-base">Үнийн хязгаар</Label>
+                                <span className="text-sm font-medium text-primary">${tempPriceRange[0]} - ${tempPriceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : tempPriceRange[1]}</span>
+                            </div>
+                            <Slider
+                              id="price-range"
+                              min={0}
+                              max={MAX_PRICE}
+                              step={10}
+                              value={tempPriceRange}
+                              onValueChange={setTempPriceRange}
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80 text-base">Зай</Label>
+                                <span className="text-sm font-medium text-primary">{tempDistanceLimit[0]} км хүртэл</span>
+                            </div>
+                            <Slider
+                              id="distance-limit"
+                              min={1}
+                              max={20}
+                              step={1}
+                              value={tempDistanceLimit}
+                              onValueChange={setTempDistanceLimit}
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80 text-base">Үнэлгээ</Label>
+                                <span className="text-sm font-medium text-primary">{tempMinRating[0].toFixed(1)}+ од</span>
+                            </div>
+                             <Slider
+                              id="min-rating"
+                              min={1}
+                              max={5}
+                              step={0.1}
+                              value={tempMinRating}
+                              onValueChange={setTempMinRating}
+                            />
+                        </div>
+                    </div>
+                     <SheetFooter className="gap-2 sm:justify-between">
+                          <Button variant="ghost" onClick={resetFilters} className="sm:mr-auto">
+                            <X className="mr-2" />
+                            Цэвэрлэх
+                          </Button>
+                          <SheetClose asChild>
+                            <Button variant="outline">Болих</Button>
+                          </SheetClose>
+                          <Button onClick={handleApplyFilters}>Хэрэглэх</Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
+
+            <div className="flex-1 md:flex-none">
+              <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 h-auto py-1">
+                  <TabsTrigger value="list" className="py-2.5 text-base gap-2"><List /> Жагсаалт</TabsTrigger>
+                  <TabsTrigger value="map" className="py-2.5 text-base gap-2"><MapPin /> Газрын зураг</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[220px] justify-start text-base py-6">
+                    <Button variant="outline" className="flex-1 md:flex-none justify-center text-base py-6">
                         <ActiveSortIcon className="mr-2 h-5 w-5 text-muted-foreground" />
                         {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
                     </Button>
@@ -125,76 +260,9 @@ setStatus('success');
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="outline" size="lg" className="py-6" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
-                {viewMode === 'list' ? (
-                    <>
-                        <MapPin className="mr-2 h-5 w-5" />
-                        Газрын зураг
-                    </>
-                ) : (
-                    <>
-                        <List className="mr-2 h-5 w-5" />
-                        Жагсаалт
-                    </>
-                )}
-            </Button>
         </div>
       </div>
       
-      <Card className="mb-8 shadow-sm">
-        <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <Label htmlFor="price-range" className="font-semibold text-card-foreground/80">Үнийн хязгаар</Label>
-                    <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
-                </div>
-                <Slider
-                  id="price-range"
-                  min={0}
-                  max={MAX_PRICE}
-                  step={10}
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                />
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80">Зай</Label>
-                    <span className="text-sm font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
-                </div>
-                <Slider
-                  id="distance-limit"
-                  min={1}
-                  max={20}
-                  step={1}
-                  value={distanceLimit}
-                  onValueChange={setDistanceLimit}
-                />
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80">Үнэлгээ</Label>
-                    <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
-                </div>
-                 <Slider
-                  id="min-rating"
-                  min={1}
-                  max={5}
-                  step={0.1}
-                  value={minRating}
-                  onValueChange={setMinRating}
-                />
-              </div>
-            </div>
-            <div className="md:border-l md:pl-6 text-center">
-                <p className="font-semibold text-lg">{filteredAndSortedRooms.length} өрөө олдлоо</p>
-                <p className="text-sm text-muted-foreground">Таны шүүлтүүрт тохирсон</p>
-            </div>
-        </CardContent>
-      </Card>
-
-
       {status === 'error' && error && (
          <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
