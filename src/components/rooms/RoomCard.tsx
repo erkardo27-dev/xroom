@@ -123,7 +123,7 @@ export function RoomCard({ room }: { room: Room }) {
           <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
           
           {discount > 0 && (
-            <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-none text-sm font-bold shadow-md z-10">
+            <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground border-none text-sm font-bold shadow-md z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
@@ -131,7 +131,7 @@ export function RoomCard({ room }: { room: Room }) {
 
         <CardContent className="p-4 flex flex-col flex-1">
           <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
-          <h3 className="font-bold text-lg leading-tight truncate font-headline mt-1">{room.roomName}</h3>
+          <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
           
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
             <div className="flex items-center gap-1">
@@ -171,7 +171,7 @@ export function RoomCard({ room }: { room: Room }) {
               <p className="text-2xl font-bold text-primary">${room.price}</p>
             </div>
             <Button onClick={handleBookNow} variant="default" className="font-bold shadow-md">
-              Шөнөөр захиалах
+              Захиалах
             </Button>
           </div>
         </CardContent>
@@ -253,3 +253,5 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
+
+    
