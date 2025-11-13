@@ -135,52 +135,50 @@ export default function HotelList() {
         </div>
       </div>
       
-      {viewMode === 'list' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                  <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
-                  <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
-              </div>
-              <Slider
-                id="price-range"
-                min={0}
-                max={MAX_PRICE}
-                step={10}
-                value={priceRange}
-                onValueChange={setPriceRange}
-              />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
+                <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
             </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                  <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
-                  <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
-              </div>
-              <Slider
-                id="distance-limit"
-                min={1}
-                max={20}
-                step={1}
-                value={distanceLimit}
-                onValueChange={setDistanceLimit}
-              />
+            <Slider
+              id="price-range"
+              min={0}
+              max={MAX_PRICE}
+              step={10}
+              value={priceRange}
+              onValueChange={setPriceRange}
+            />
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
+                <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
             </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                  <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
-                  <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
-              </div>
-               <Slider
-                id="min-rating"
-                min={1}
-                max={5}
-                step={0.1}
-                value={minRating}
-                onValueChange={setMinRating}
-              />
+            <Slider
+              id="distance-limit"
+              min={1}
+              max={20}
+              step={1}
+              value={distanceLimit}
+              onValueChange={setDistanceLimit}
+            />
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
+                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
             </div>
-        </div>
-      )}
+             <Slider
+              id="min-rating"
+              min={1}
+              max={5}
+              step={0.1}
+              value={minRating}
+              onValueChange={setMinRating}
+            />
+          </div>
+      </div>
 
 
       {status === 'error' && error && (
