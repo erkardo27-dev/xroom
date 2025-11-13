@@ -7,7 +7,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, SlidersHorizontal } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 type ViewMode = 'list' | 'map';
 
@@ -92,18 +93,23 @@ export default function RoomList() {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <Zap className="w-8 h-8 text-accent" />
-          <h2 className="text-3xl font-bold font-headline tracking-tight">
-            Таны ойролцоох энэ шөнийн хямдрал
-          </h2>
+          <div className="bg-primary/10 p-3 rounded-full">
+            <Zap className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <p className="text-primary font-semibold">Сүүлчийн минутын хямдрал</p>
+            <h2 className="text-3xl font-bold font-headline tracking-tight">
+              Таны ойролцоох өрөөнүүд
+            </h2>
+          </div>
         </div>
         <div className="flex items-center gap-2">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[200px] justify-start">
-                        <ActiveSortIcon className="mr-2" />
+                    <Button variant="outline" className="min-w-[220px] justify-start text-base py-6">
+                        <ActiveSortIcon className="mr-2 h-5 w-5 text-muted-foreground" />
                         {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
                     </Button>
                 </DropdownMenuTrigger>
@@ -119,15 +125,15 @@ export default function RoomList() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="outline" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
+            <Button variant="outline" size="lg" className="py-6" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
                 {viewMode === 'list' ? (
                     <>
-                        <MapPin className="mr-2" />
+                        <MapPin className="mr-2 h-5 w-5" />
                         Газрын зураг
                     </>
                 ) : (
                     <>
-                        <List className="mr-2" />
+                        <List className="mr-2 h-5 w-5" />
                         Жагсаалт
                     </>
                 )}
@@ -135,50 +141,58 @@ export default function RoomList() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 border rounded-xl bg-card/50 shadow-sm">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="price-range" className="font-semibold text-card-foreground/80">Үнийн хязгаар</Label>
-                <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
+      <Card className="mb-8 shadow-sm">
+        <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="price-range" className="font-semibold text-card-foreground/80">Үнийн хязгаар</Label>
+                    <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
+                </div>
+                <Slider
+                  id="price-range"
+                  min={0}
+                  max={MAX_PRICE}
+                  step={10}
+                  value={priceRange}
+                  onValueChange={setPriceRange}
+                />
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80">Зай</Label>
+                    <span className="text-sm font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
+                </div>
+                <Slider
+                  id="distance-limit"
+                  min={1}
+                  max={20}
+                  step={1}
+                  value={distanceLimit}
+                  onValueChange={setDistanceLimit}
+                />
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80">Үнэлгээ</Label>
+                    <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
+                </div>
+                 <Slider
+                  id="min-rating"
+                  min={1}
+                  max={5}
+                  step={0.1}
+                  value={minRating}
+                  onValueChange={setMinRating}
+                />
+              </div>
             </div>
-            <Slider
-              id="price-range"
-              min={0}
-              max={MAX_PRICE}
-              step={10}
-              value={priceRange}
-              onValueChange={setPriceRange}
-            />
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="distance-limit" className="font-semibold text-card-foreground/80">Зай</Label>
-                <span className="text-sm font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
+            <div className="md:border-l md:pl-6 text-center">
+                <p className="font-semibold text-lg">{filteredAndSortedRooms.length} өрөө олдлоо</p>
+                <p className="text-sm text-muted-foreground">Таны шүүлтүүрт тохирсон</p>
             </div>
-            <Slider
-              id="distance-limit"
-              min={1}
-              max={20}
-              step={1}
-              value={distanceLimit}
-              onValueChange={setDistanceLimit}
-            />
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="min-rating" className="font-semibold text-card-foreground/80">Үнэлгээ</Label>
-                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
-            </div>
-             <Slider
-              id="min-rating"
-              min={1}
-              max={5}
-              step={0.1}
-              value={minRating}
-              onValueChange={setMinRating}
-            />
-          </div>
-      </div>
+        </CardContent>
+      </Card>
 
 
       {status === 'error' && error && (

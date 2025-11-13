@@ -23,7 +23,7 @@ export default function Header() {
           <Logo className="h-8 w-auto" />
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
             <Dialog>
                 <DialogTrigger asChild>
                     <Button variant="ghost">

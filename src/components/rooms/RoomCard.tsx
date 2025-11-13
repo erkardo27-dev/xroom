@@ -92,7 +92,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-shadow duration-300 hover:shadow-xl flex flex-col bg-card">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col bg-card">
         <div className="relative">
           {image && (
             <Image
@@ -101,23 +101,23 @@ export function RoomCard({ room }: { room: Room }) {
               data-ai-hint={image.imageHint}
               width={800}
               height={600}
-              className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
+              className="object-cover w-full h-48 transition-transform duration-500 group-hover:scale-105"
             />
           )}
           {discount > 0 && (
-            <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground border-none text-sm font-bold">
+            <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-none text-sm font-bold shadow-md">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
-          <h3 className="font-bold text-lg leading-tight truncate font-headline">{room.roomName}</h3>
-          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
+          <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
+          <h3 className="font-bold text-lg leading-tight truncate font-headline mt-1">{room.roomName}</h3>
           
-          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-3">
+          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span className="font-semibold text-foreground/90">{room.rating.toFixed(1)}</span>
             </div>
             <div className="flex items-center gap-1">
@@ -131,7 +131,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <TooltipProvider key={a.key}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center gap-1 p-1.5 bg-secondary/50 rounded-md">
+                             <div className="flex items-center justify-center w-8 h-8 bg-secondary/50 rounded-md">
                                 {a.icon}
                             </div>
                         </TooltipTrigger>
@@ -145,14 +145,14 @@ export function RoomCard({ room }: { room: Room }) {
 
           <div className="flex-grow" />
 
-          <div className="flex justify-between items-end mt-4">
+          <div className="flex justify-between items-end mt-4 pt-4 border-t">
             <div>
-              <p className="text-2xl font-bold text-foreground">${room.price}</p>
               {room.originalPrice && (
                 <p className="text-sm text-muted-foreground line-through">${room.originalPrice}</p>
               )}
+              <p className="text-2xl font-bold text-primary">${room.price}</p>
             </div>
-            <Button onClick={handleBookNow} variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+            <Button onClick={handleBookNow} variant="default" className="font-bold shadow-md">
               Шөнөөр захиалах
             </Button>
           </div>
