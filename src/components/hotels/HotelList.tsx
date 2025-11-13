@@ -5,8 +5,9 @@ import type { Hotel, SortOption } from '@/lib/data';
 import { hotels as allHotels } from '@/lib/data';
 import { HotelCard } from './HotelCard';
 import { HotelCardSkeleton } from './HotelCardSkeleton';
+import { HotelMap } from './HotelMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+
+type ViewMode = 'list' | 'map';
 
 const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
     { value: 'distance', label: 'Ойрхон нь дээрээ', icon: MapPin },
@@ -31,6 +34,7 @@ export default function HotelList() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('distance');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([15]);
@@ -115,57 +119,68 @@ export default function HotelList() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost">
-                <MapPin className="mr-2" />
-                Map View
+            <Button variant="ghost" onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
+                {viewMode === 'list' ? (
+                    <>
+                        <MapPin className="mr-2" />
+                        Map View
+                    </>
+                ) : (
+                    <>
+                        <List className="mr-2" />
+                        List View
+                    </>
+                )}
             </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
-                <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
+      {viewMode === 'list' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-lg bg-card">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                  <Label htmlFor="price-range" className="font-semibold">Price Range</Label>
+                  <span className="text-sm font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : priceRange[1]}</span>
+              </div>
+              <Slider
+                id="price-range"
+                min={0}
+                max={MAX_PRICE}
+                step={10}
+                value={priceRange}
+                onValueChange={setPriceRange}
+              />
             </div>
-            <Slider
-              id="price-range"
-              min={0}
-              max={MAX_PRICE}
-              step={10}
-              value={priceRange}
-              onValueChange={setPriceRange}
-            />
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
-                <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                  <Label htmlFor="distance-limit" className="font-semibold">Distance</Label>
+                  <span className="text-sm font-medium text-primary">up to {distanceLimit[0]} km</span>
+              </div>
+              <Slider
+                id="distance-limit"
+                min={1}
+                max={20}
+                step={1}
+                value={distanceLimit}
+                onValueChange={setDistanceLimit}
+              />
             </div>
-            <Slider
-              id="distance-limit"
-              min={1}
-              max={20}
-              step={1}
-              value={distanceLimit}
-              onValueChange={setDistanceLimit}
-            />
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
-                <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                  <Label htmlFor="min-rating" className="font-semibold">Rating</Label>
+                  <span className="text-sm font-medium text-primary">{minRating[0].toFixed(1)}+ stars</span>
+              </div>
+               <Slider
+                id="min-rating"
+                min={1}
+                max={5}
+                step={0.1}
+                value={minRating}
+                onValueChange={setMinRating}
+              />
             </div>
-             <Slider
-              id="min-rating"
-              min={1}
-              max={5}
-              step={0.1}
-              value={minRating}
-              onValueChange={setMinRating}
-            />
-          </div>
-      </div>
+        </div>
+      )}
 
 
       {status === 'error' && error && (
@@ -182,15 +197,15 @@ export default function HotelList() {
             <HotelCardSkeleton key={i} />
           ))}
         </div>
-      ) : (
+      ) : viewMode === 'list' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
           {filteredAndSortedHotels.map(hotel => (
             <HotelCard key={hotel.id} hotel={hotel} />
           ))}
         </div>
+      ) : (
+         <HotelMap hotels={filteredAndSortedHotels} />
       )}
     </div>
   );
 }
-
-    
