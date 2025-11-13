@@ -15,9 +15,10 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
         textAnchor="middle"
         fontSize="80"
         fontWeight="bold"
-        fill="hsl(var(--primary))"
+        fontFamily="Inter, sans-serif"
       >
-        XRoom
+        <tspan fill="hsl(var(--accent))">X</tspan>
+        <tspan fill="hsl(var(--primary))">Room</tspan>
       </text>
     </svg>
   );

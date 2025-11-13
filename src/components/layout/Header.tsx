@@ -26,7 +26,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button variant="ghost">
+                    <Button variant="outline">
                         <PlusCircle className="mr-2" />
                         Өрөө оруулах
                     </Button>
