@@ -65,7 +65,7 @@ export default function RoomList() {
       setTempDistanceLimit(distanceLimit);
       setTempMinRating(minRating);
     }
-  }, [isSheetOpen]);
+  }, [isSheetOpen, priceRange, distanceLimit, minRating]);
 
 
   const handleApplyFilters = () => {
