@@ -36,11 +36,11 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
 };
 
-type BookingStep = 'confirm' | 'payment' | 'booking' | 'success';
+type BookingStep = 'payment' | 'booking' | 'success';
 
 export function RoomCard({ room }: { room: Room }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [bookingStep, setBookingStep] = useState<BookingStep>('confirm');
+  const [bookingStep, setBookingStep] = useState<BookingStep>('payment');
   const [confirmationId, setConfirmationId] = useState('');
   const [paymentCode, setPaymentCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -53,10 +53,6 @@ export function RoomCard({ room }: { room: Room }) {
     setIsBookingOpen(true);
   };
   
-  const handleProceedToPayment = () => {
-    setBookingStep('payment');
-  };
-
   const handleConfirmPayment = () => {
     setBookingStep('booking');
     // Simulate API call for booking
@@ -69,7 +65,7 @@ export function RoomCard({ room }: { room: Room }) {
   const closeAndResetDialog = () => {
     setIsBookingOpen(false);
     setTimeout(() => {
-        setBookingStep('confirm');
+        setBookingStep('payment');
         setConfirmationId('');
         setPaymentCode('');
         setTermsAccepted(false);
@@ -146,26 +142,13 @@ export function RoomCard({ room }: { room: Room }) {
 
       <AlertDialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
         <AlertDialogContent>
-        {bookingStep === 'confirm' && (
-            <>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Энэ шөнө захиалах</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна. Энэ үйлдэл эцсийнх болно.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleProceedToPayment} className="bg-accent hover:bg-accent/90">Төлбөр төлөх</AlertDialogAction>
-              </AlertDialogFooter>
-            </>
-        )}
         {bookingStep === 'payment' && (
             <>
               <AlertDialogHeader>
                 <AlertDialogTitle>Төлбөр гүйцэтгэх</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Төлбөрөө (QPAY, SocialPay) хийж, гүйлгээний утга хэсгээс 4 оронтой баталгаажуулах кодыг оруулна уу.
+                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна.
+                   Төлбөрөө (QPAY, SocialPay) хийж, гүйлгээний утга хэсгээс 4 оронтой баталгаажуулах кодыг оруулна уу.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="py-4 space-y-4">
@@ -204,7 +187,7 @@ export function RoomCard({ room }: { room: Room }) {
                   </div>
               </div>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setBookingStep('confirm')}>Буцах</AlertDialogCancel>
+                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirmPayment} disabled={isPaymentButtonDisabled} className="bg-green-600 hover:bg-green-700 text-white">
                   Төлбөрийг баталгаажуулах
                 </AlertDialogAction>
@@ -232,5 +215,3 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
-
-    
