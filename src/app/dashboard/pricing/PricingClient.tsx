@@ -10,10 +10,10 @@ import { Room } from "@/lib/data";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { addDays, format } from "date-fns";
+import { addDays, format, getDay } from "date-fns";
 import { mn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { BrainCircuit, Loader2 } from "lucide-react";
+import { BrainCircuit, Loader2, RotateCcw } from "lucide-react";
 import { getPricingRecommendation, PricingRecommendation } from "@/ai/flows/pricing-recommendation-flow";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +47,9 @@ export default function PricingClient() {
   }, []);
 
   const handleCellClick = (room: Room, date: Date) => {
+    // Don't allow editing if there's an active AI recommendation
+    if (aiRecommendation) return;
+
     const price = getPriceForRoomTypeOnDate(room.id, date);
     setEditingCell(`${room.id}-${format(date, 'yyyy-MM-dd')}`);
     setEditingValue(price.toString());
@@ -60,9 +63,9 @@ export default function PricingClient() {
     if (!editingCell) return;
 
     const [roomTypeId, dateStr] = editingCell.split('-');
-    const newPrice = editingValue.trim() === '' ? undefined : Number(editingValue);
+    const newPrice = editingValue.trim() === '' ? getPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr)) : Number(editingValue);
 
-    if (newPrice === undefined || !isNaN(newPrice)) {
+    if (!isNaN(newPrice)) {
         setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), newPrice);
     }
     
@@ -79,8 +82,18 @@ export default function PricingClient() {
     }
   }
 
+  const handleResetPrice = () => {
+      if (!editingCell) return;
+      const [roomTypeId, dateStr] = editingCell.split('-');
+      // Setting price to undefined reverts it to the base price
+      setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), undefined);
+      setEditingCell(null);
+      setEditingValue("");
+  }
+
   const handleAiPriceSuggest = async () => {
     setIsAiLoading(true);
+    setAiRecommendation(null); // Clear previous recommendations
     try {
         // MOCK AI IMPLEMENTATION
         await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
@@ -94,8 +107,10 @@ export default function PricingClient() {
                     // Change by -20% to +20%
                     const changeFactor = 1 + (Math.random() - 0.5) * 0.4; 
                     const newPrice = Math.round((currentPrice * changeFactor) / 1000) * 1000;
-                    const key = `${room.id}_${format(date, 'yyyy-MM-dd')}`;
-                    mockRecommendations[key] = newPrice;
+                    if (newPrice !== currentPrice) {
+                        const key = `${room.id}_${format(date, 'yyyy-MM-dd')}`;
+                        mockRecommendations[key] = newPrice;
+                    }
                 }
             });
         });
@@ -104,14 +119,6 @@ export default function PricingClient() {
             summary: "Ачаалал, улирлын байдлыг харгалзан дараах үнийн саналыг шинэчиллээ.",
             recommendations: mockRecommendations,
         };
-
-        // const recommendation = await getPricingRecommendation({
-        //     roomTypes: ownerRoomTypes,
-        //     dateRange: {
-        //         startDate: format(dateColumns[0], 'yyyy-MM-dd'),
-        //         endDate: format(dateColumns[dateColumns.length-1], 'yyyy-MM-dd'),
-        //     }
-        // });
 
         if (Object.keys(recommendation.recommendations).length === 0) {
            toast({
@@ -150,6 +157,16 @@ export default function PricingClient() {
     setAiRecommendation(null);
   }
 
+  const handleCancelAiRecommendation = () => {
+    setAiRecommendation(null);
+  }
+
+  const getPreviewPrice = (roomTypeId: string, date: Date): number | null => {
+      if (!aiRecommendation) return null;
+      const key = `${roomTypeId}_${format(date, 'yyyy-MM-dd')}`;
+      return aiRecommendation.recommendations[key] || null;
+  }
+
 
   const isLoading = isAuthLoading || roomStatus === 'loading';
 
@@ -168,55 +185,27 @@ export default function PricingClient() {
 
   return (
     <>
-    <div className="flex justify-end mb-4">
-        <AlertDialog open={!!aiRecommendation} onOpenChange={(open) => !open && setAiRecommendation(null)}>
-            <AlertDialogTrigger asChild>
-                <Button onClick={handleAiPriceSuggest} disabled={isAiLoading}>
-                    {isAiLoading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            AI үнэ боловсруулж байна...
-                        </>
-                    ) : (
-                        <>
-                            <BrainCircuit className="mr-2 h-4 w-4" />
-                            AI Үнийн Зөвлөмж
-                        </>
-                    )}
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>AI Үнийн Зөвлөмж</AlertDialogTitle>
-                <AlertDialogDescription>
-                    {aiRecommendation?.summary || "Хиймэл оюун ухаан нь эрэлт, улирал, онцгой өдрүүдийг харгалзан таны өрөөнүүдийн үнийг дараах байдлаар оновчлохыг санал болгож байна."}
-                </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="max-h-60 overflow-y-auto text-sm space-y-2">
-                    {aiRecommendation?.recommendations && Object.entries(aiRecommendation.recommendations).map(([key, newPrice]) => {
-                        const [roomTypeId, dateStr] = key.split('_');
-                        const room = ownerRoomTypes.find(r => r.id === roomTypeId);
-                        if (!room) return null;
-                        const oldPrice = getPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr));
-                        return (
-                            <div key={key} className="flex justify-between items-center bg-muted/50 p-2 rounded-md">
-                                <div>
-                                    <p className="font-semibold">{room.roomName} - <span className="font-normal">{format(new Date(dateStr), 'M/dd')}</span></p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                     <span className="text-muted-foreground line-through">{oldPrice.toLocaleString()}₮</span>
-                                     <span className="font-bold text-primary">{newPrice.toLocaleString()}₮</span>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-                <AlertDialogFooter>
-                <AlertDialogCancel>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleAcceptAiRecommendation}>Зөвшөөрөх</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+    <div className="flex justify-end mb-4 gap-2">
+        {aiRecommendation && (
+             <>
+                <Button variant="outline" onClick={handleCancelAiRecommendation}>Цуцлах</Button>
+                <Button onClick={handleAcceptAiRecommendation}>Зөвшөөрөх</Button>
+            </>
+        )}
+       
+        <Button onClick={handleAiPriceSuggest} disabled={isAiLoading}>
+            {isAiLoading ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    AI үнэ боловсруулж байна...
+                </>
+            ) : (
+                <>
+                    <BrainCircuit className="mr-2 h-4 w-4" />
+                    AI Үнийн Зөвлөмж
+                </>
+            )}
+        </Button>
     </div>
     <div className="border rounded-lg">
         <Table>
@@ -224,12 +213,16 @@ export default function PricingClient() {
             <TableHeader>
                 <TableRow>
                     <TableHead className="font-bold text-foreground min-w-[150px] sticky left-0 bg-background z-10">Өрөөний төрөл</TableHead>
-                    {dateColumns.map(date => (
-                        <TableHead key={date.toString()} className="text-center min-w-[120px]">
-                            <div>{format(date, 'M/dd')}</div>
-                            <div className="text-xs font-normal text-muted-foreground">{format(date, 'EEE', {locale: mn})}</div>
-                        </TableHead>
-                    ))}
+                    {dateColumns.map(date => {
+                        const day = getDay(date);
+                        const isWeekend = day === 0 || day === 6;
+                        return (
+                            <TableHead key={date.toString()} className={cn("text-center min-w-[120px]", isWeekend && "bg-muted")}>
+                                <div>{format(date, 'M/dd')}</div>
+                                <div className="text-xs font-normal text-muted-foreground">{format(date, 'EEE', {locale: mn})}</div>
+                            </TableHead>
+                        )
+                    })}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -240,33 +233,52 @@ export default function PricingClient() {
                             <div className="text-xs text-muted-foreground font-normal">{room.price.toLocaleString()}₮</div>
                         </TableCell>
                          {dateColumns.map(date => {
+                            const day = getDay(date);
+                            const isWeekend = day === 0 || day === 6;
                             const cellId = `${room.id}-${format(date, 'yyyy-MM-dd')}`;
                             const isEditing = editingCell === cellId;
+
                             const price = getPriceForRoomTypeOnDate(room.id, date);
                             const isOverridden = price !== room.price;
+                            
+                            const previewPrice = getPreviewPrice(room.id, date);
+                            const isPreviewing = previewPrice !== null && previewPrice !== price;
 
                             return (
                                 <TableCell 
                                     key={date.toString()} 
-                                    className="text-center cursor-pointer"
+                                    className={cn("text-center cursor-pointer", isWeekend && "bg-muted")}
                                     onClick={() => handleCellClick(room, date)}
                                 >
                                     {isEditing ? (
-                                        <Input 
-                                            type="number"
-                                            value={editingValue}
-                                            onChange={handleInputChange}
-                                            onBlur={handleInputBlur}
-                                            onKeyDown={handleInputKeyDown}
-                                            autoFocus
-                                            className="w-24 mx-auto text-center font-semibold"
-                                        />
+                                        <div className="relative w-28 mx-auto">
+                                            <Input 
+                                                type="number"
+                                                value={editingValue}
+                                                onChange={handleInputChange}
+                                                onBlur={handleInputBlur}
+                                                onKeyDown={handleInputKeyDown}
+                                                autoFocus
+                                                className="w-full text-center font-semibold pr-7"
+                                            />
+                                            {isOverridden && (
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                                    onClick={handleResetPrice}
+                                                >
+                                                    <RotateCcw className="h-3.5 w-3.5" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     ) : (
                                         <div className={cn(
-                                            "font-semibold w-24 mx-auto p-2 rounded-md",
-                                            isOverridden && "bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400"
+                                            "font-semibold w-24 mx-auto p-2 rounded-md transition-colors duration-300",
+                                            isOverridden && !isPreviewing && "bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400",
+                                            isPreviewing && "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 ring-2 ring-blue-400/50"
                                         )}>
-                                            {price.toLocaleString()}₮
+                                            {isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮
                                         </div>
                                     )}
                                 </TableCell>
