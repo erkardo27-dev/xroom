@@ -91,7 +91,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                      <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('addRoom')}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Шинэ өрөөний төрөл
+                            Өрөө нэмэх
                         </Button>
                     </DialogTrigger>
                     <DialogTrigger asChild>
@@ -164,7 +164,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                                     <DialogTrigger asChild>
                                          <Button className="justify-start" onClick={() => handleDialogTrigger('addRoom')}>
                                             <PlusCircle className="mr-2 h-4 w-4" />
-                                            Шинэ өрөөний төрөл
+                                            Өрөө нэмэх
                                         </Button>
                                     </DialogTrigger>
                                 </SheetClose>
