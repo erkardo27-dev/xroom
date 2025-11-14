@@ -116,8 +116,8 @@ export default function DashboardClient() {
   return (
     <>
       <div>
-           <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
-            <h1 className="text-2xl font-bold tracking-tight">Миний өрөөнүүд</h1>
+           <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
             <div className="flex items-center gap-1.5 p-1.5 rounded-lg border bg-card">
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                 <ChevronLeft className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default function DashboardClient() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-4 items-end mb-6 p-3 border rounded-lg bg-card/70">
+          <div className="flex flex-wrap gap-4 items-end mb-8 p-3 border rounded-lg bg-secondary/30">
               <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4">
                  <div className="space-y-1">
                     <Label className="text-xs font-semibold flex items-center gap-1"><ListFilter className="w-3.5 h-3.5"/>Шүүлтүүр</Label>
