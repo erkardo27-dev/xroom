@@ -17,9 +17,9 @@ import { format, addDays, isToday, startOfDay, isTomorrow } from 'date-fns';
 import { mn } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
+import { cn } from "@/lib/utils";
 
 type SortOption = 'roomNumber' | 'roomType' | 'status';
 
@@ -67,7 +67,7 @@ export default function DashboardClient() {
     // 2. Filter instances
     const filtered = instancesWithStatus.filter(instance => {
       const roomTypeMatch = filterRoomType === 'all' || instance.roomTypeId === filterRoomType;
-      const statusMatch = filterStatus === 'all' || instance.status === filterStatus;
+      const statusMatch = filterStatus === 'all' || instance.status === statusMatch;
       return roomTypeMatch && statusMatch;
     });
 
@@ -108,7 +108,7 @@ export default function DashboardClient() {
 
   const getDateLabel = () => {
     if (isToday(selectedDate)) return "Өнөөдөр";
-    if (isTomorrow(selectedDate)) return "Маргааш";
+    if (isTomorrow(addDays(new Date(), -1))) return "Маргааш";
     return format(selectedDate, 'MMM d', { locale: mn });
   }
 
@@ -131,7 +131,6 @@ export default function DashboardClient() {
            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-                {/* Date Navigator */}
                  <div className="flex items-center gap-1 p-1 border rounded-lg bg-background shadow-sm">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
@@ -140,7 +139,10 @@ export default function DashboardClient() {
                         <PopoverTrigger asChild>
                         <Button
                             variant={"outline"}
-                            className="w-[120px] h-8 justify-start text-left font-normal text-sm"
+                            className={cn(
+                                "w-[120px] h-8 justify-start text-left font-normal text-sm",
+                                !isToday(selectedDate) && "text-destructive border-destructive"
+                            )}
                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {getDateLabel()}
