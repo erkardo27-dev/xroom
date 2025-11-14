@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/button";
 import { addDays, format, getDay } from "date-fns";
 import { mn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { BrainCircuit, Loader2, RotateCcw } from "lucide-react";
-import { getPricingRecommendation, PricingRecommendation } from "@/ai/flows/pricing-recommendation-flow";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { BrainCircuit, Loader2, RotateCcw, Sparkles } from "lucide-react";
+import { PricingRecommendation } from "@/ai/flows/pricing-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 export default function PricingClient() {
@@ -116,7 +117,7 @@ export default function PricingClient() {
         });
 
         const recommendation: PricingRecommendation = {
-            summary: "Ачаалал, улирлын байдлыг харгалзан дараах үнийн саналыг шинэчиллээ.",
+            summary: "Ачаалал, улирлын байдлыг харгалзан амралтын өдрүүдэд үнийг нэмэгдүүлж, ажлын өдрүүдэд бага зэрэг хямдруулахыг санал болгож байна.",
             recommendations: mockRecommendations,
         };
 
@@ -173,124 +174,145 @@ export default function PricingClient() {
   if (isLoading || !isLoggedIn) {
     return (
         <div className="space-y-4">
-            <div className="border rounded-lg p-2">
-                <Skeleton className="h-12 w-full mb-2" />
-                {Array.from({length: 4}).map((_, i) => (
-                    <Skeleton key={i} className="h-14 w-full mb-1" />
-                ))}
-            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-5 w-1/3" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-12 w-full mb-2" />
+                    {Array.from({length: 4}).map((_, i) => (
+                        <Skeleton key={i} className="h-14 w-full mb-1" />
+                    ))}
+                </CardContent>
+            </Card>
         </div>
     );
   }
 
   return (
-    <>
-    <div className="flex justify-end mb-4 gap-2">
-        {aiRecommendation && (
-             <>
-                <Button variant="outline" onClick={handleCancelAiRecommendation}>Цуцлах</Button>
-                <Button onClick={handleAcceptAiRecommendation}>Зөвшөөрөх</Button>
-            </>
-        )}
-       
-        <Button onClick={handleAiPriceSuggest} disabled={isAiLoading}>
-            {isAiLoading ? (
-                <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    AI үнэ боловсруулж байна...
-                </>
-            ) : (
-                <>
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                    AI Үнийн Зөвлөмж
-                </>
+    <Card>
+        <CardHeader>
+             <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <CardTitle>7 хоногийн үнийн төлөвлөгөө</CardTitle>
+                    <CardDescription>Энд дарж үнээ өөрчлөөрэй. Хоосон орхивол үндсэн үнээр тооцогдоно.</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                    {aiRecommendation && (
+                        <>
+                            <Button variant="outline" onClick={handleCancelAiRecommendation}>Цуцлах</Button>
+                            <Button onClick={handleAcceptAiRecommendation}>Зөвшөөрөх</Button>
+                        </>
+                    )}
+                    <Button onClick={handleAiPriceSuggest} disabled={isAiLoading}>
+                        {isAiLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                AI үнэ боловсруулж байна...
+                            </>
+                        ) : (
+                            <>
+                                <BrainCircuit className="mr-2 h-4 w-4" />
+                                AI Үнийн Зөвлөмж
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             {aiRecommendation && (
+                <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50">
+                    <Sparkles className="h-5 w-5 text-blue-500" />
+                    <AlertTitle className="text-blue-900 dark:text-blue-300 font-semibold">AI Зөвлөмжийн Хураангуй</AlertTitle>
+                    <AlertDescription className="text-blue-800/90 dark:text-blue-400/90">
+                       {aiRecommendation.summary}
+                    </AlertDescription>
+                </Alert>
             )}
-        </Button>
-    </div>
-    <div className="border rounded-lg">
-        <Table>
-            <TableCaption>Энд дарж үнээ өөрчлөөрэй. Хоосон орхивол үндсэн үнээр тооцогдоно.</TableCaption>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="font-bold text-foreground min-w-[150px] sticky left-0 bg-background z-10">Өрөөний төрөл</TableHead>
-                    {dateColumns.map(date => {
-                        const day = getDay(date);
-                        const isWeekend = day === 0 || day === 6;
-                        return (
-                            <TableHead key={date.toString()} className={cn("text-center min-w-[120px]", isWeekend && "bg-muted")}>
-                                <div>{format(date, 'M/dd')}</div>
-                                <div className="text-xs font-normal text-muted-foreground">{format(date, 'EEE', {locale: mn})}</div>
-                            </TableHead>
-                        )
-                    })}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {ownerRoomTypes.map(room => (
-                    <TableRow key={room.id}>
-                        <TableCell className="font-semibold sticky left-0 bg-background z-10">
-                            <div>{room.roomName}</div>
-                            <div className="text-xs text-muted-foreground font-normal">{room.price.toLocaleString()}₮</div>
-                        </TableCell>
-                         {dateColumns.map(date => {
-                            const day = getDay(date);
-                            const isWeekend = day === 0 || day === 6;
-                            const cellId = `${room.id}-${format(date, 'yyyy-MM-dd')}`;
-                            const isEditing = editingCell === cellId;
-
-                            const price = getPriceForRoomTypeOnDate(room.id, date);
-                            const isOverridden = price !== room.price;
-                            
-                            const previewPrice = getPreviewPrice(room.id, date);
-                            const isPreviewing = previewPrice !== null && previewPrice !== price;
-
-                            return (
-                                <TableCell 
-                                    key={date.toString()} 
-                                    className={cn("text-center cursor-pointer", isWeekend && "bg-muted")}
-                                    onClick={() => handleCellClick(room, date)}
-                                >
-                                    {isEditing ? (
-                                        <div className="relative w-28 mx-auto">
-                                            <Input 
-                                                type="number"
-                                                value={editingValue}
-                                                onChange={handleInputChange}
-                                                onBlur={handleInputBlur}
-                                                onKeyDown={handleInputKeyDown}
-                                                autoFocus
-                                                className="w-full text-center font-semibold pr-7"
-                                            />
-                                            {isOverridden && (
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-                                                    onClick={handleResetPrice}
-                                                >
-                                                    <RotateCcw className="h-3.5 w-3.5" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className={cn(
-                                            "font-semibold w-24 mx-auto p-2 rounded-md transition-colors duration-300",
-                                            isOverridden && !isPreviewing && "bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400",
-                                            isPreviewing && "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 ring-2 ring-blue-400/50"
-                                        )}>
-                                            {isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮
-                                        </div>
-                                    )}
+            <div className="border rounded-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="font-bold text-foreground min-w-[150px] sticky left-0 bg-card z-10">Өрөөний төрөл</TableHead>
+                            {dateColumns.map(date => {
+                                const day = getDay(date);
+                                const isWeekend = day === 0 || day === 6;
+                                return (
+                                    <TableHead key={date.toString()} className={cn("text-center min-w-[120px]", isWeekend && "bg-muted/50")}>
+                                        <div>{format(date, 'M/dd')}</div>
+                                        <div className="text-xs font-normal text-muted-foreground">{format(date, 'EEE', {locale: mn})}</div>
+                                    </TableHead>
+                                )
+                            })}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {ownerRoomTypes.map(room => (
+                            <TableRow key={room.id}>
+                                <TableCell className="font-semibold sticky left-0 bg-card z-10">
+                                    <div>{room.roomName}</div>
+                                    <div className="text-xs text-muted-foreground font-normal">{room.price.toLocaleString()}₮</div>
                                 </TableCell>
-                            )
-                         })}
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </div>
-    </>
+                                {dateColumns.map(date => {
+                                    const day = getDay(date);
+                                    const isWeekend = day === 0 || day === 6;
+                                    const cellId = `${room.id}-${format(date, 'yyyy-MM-dd')}`;
+                                    const isEditing = editingCell === cellId;
+
+                                    const price = getPriceForRoomTypeOnDate(room.id, date);
+                                    const isOverridden = price !== room.price;
+                                    
+                                    const previewPrice = getPreviewPrice(room.id, date);
+                                    const isPreviewing = previewPrice !== null && previewPrice !== price;
+
+                                    return (
+                                        <TableCell 
+                                            key={date.toString()} 
+                                            className={cn("text-center cursor-pointer", isWeekend && "bg-muted/50")}
+                                            onClick={() => handleCellClick(room, date)}
+                                        >
+                                            {isEditing ? (
+                                                <div className="relative w-28 mx-auto">
+                                                    <Input 
+                                                        type="number"
+                                                        value={editingValue}
+                                                        onChange={handleInputChange}
+                                                        onBlur={handleInputBlur}
+                                                        onKeyDown={handleInputKeyDown}
+                                                        autoFocus
+                                                        className="w-full text-center font-semibold pr-7"
+                                                    />
+                                                    {isOverridden && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                                            onClick={handleResetPrice}
+                                                        >
+                                                            <RotateCcw className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className={cn(
+                                                    "font-semibold w-24 mx-auto p-2 rounded-md transition-colors duration-300",
+                                                    isOverridden && !isPreviewing && "bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400",
+                                                    isPreviewing && "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 ring-2 ring-blue-400/50"
+                                                )}>
+                                                    {isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                    )
+                                })}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
   );
 }
-
-    

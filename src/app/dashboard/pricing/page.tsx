@@ -9,9 +9,11 @@ export default function PricingPage() {
         <Header isDashboard={true} />
         <main className="flex-1 container mx-auto py-8 px-4 md:px-8">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Үнийн удирдлага</h1>
-            <p className="text-muted-foreground mb-8">Энд та өөрийн өрөөнүүдийн үнийг ирэх 7 хоногийн турш удирдах боломжтой.</p>
+            <p className="text-muted-foreground mb-8">AI зөвлөмж ашиглан эсвэл гараар өөрийн өрөөнүүдийн үнийг ирэх 7 хоногийн турш удирдах боломжтой.</p>
             <PricingClient />
         </main>
       </div>
     </RoomProvider>
   );
+
+}
