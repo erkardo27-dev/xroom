@@ -10,7 +10,7 @@ import { Star, X } from 'lucide-react';
 
 // Mock coordinates for demonstration purposes
 const roomsWithCoords = (rooms: Room[]) =>
-  rooms.map((room, index) => ({
+  rooms.map((room) => ({
     ...room,
     coords: {
       x: Math.random() * 85 + 5, // % position for x

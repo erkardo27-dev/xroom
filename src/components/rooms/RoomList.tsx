@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import type { Room, SortOption } from '@/lib/data';
+import { useState, useMemo } from 'react';
+import type { Room, SortOption, RoomInstance } from '@/lib/data';
 import { locations as allLocations } from '@/lib/data';
 import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
@@ -29,7 +29,7 @@ const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
 export default function RoomList() {
-  const { rooms, status, error } = useRoom();
+  const { rooms, roomInstances, status, error } = useRoom();
   const [sortOption, setSortOption] = useState<SortOption>('distance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -39,9 +39,39 @@ export default function RoomList() {
   const [location, setLocation] = useState<string>('all');
 
 
+  const availableRoomInstances = useMemo(() => 
+    roomInstances.filter(inst => inst.status === 'available'), 
+    [roomInstances]
+  );
+  
+  const availableRoomsByType = useMemo(() => {
+    const roomTypeMap = new Map<string, Room>();
+    const availableInstancesMap = new Map<string, RoomInstance[]>();
+
+    availableRoomInstances.forEach(instance => {
+        if (!roomTypeMap.has(instance.roomTypeId)) {
+            const roomType = rooms.find(r => r.id === instance.roomTypeId);
+            if (roomType) {
+                roomTypeMap.set(instance.roomTypeId, roomType);
+            }
+        }
+        
+        if (!availableInstancesMap.has(instance.roomTypeId)) {
+            availableInstancesMap.set(instance.roomTypeId, []);
+        }
+        availableInstancesMap.get(instance.roomTypeId)!.push(instance);
+    });
+
+    return Array.from(roomTypeMap.values()).map(room => ({
+        ...room,
+        availableInstances: availableInstancesMap.get(room.id) || []
+    }));
+
+  }, [availableRoomInstances, rooms]);
+
+
   const filteredAndSortedRooms = useMemo(() => {
-    const filtered = rooms.filter(room => 
-        room.availableQuantity > 0 &&
+    const filtered = availableRoomsByType.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
@@ -61,7 +91,7 @@ export default function RoomList() {
         break;
     }
     return sorted;
-  }, [rooms, sortOption, priceRange, distanceLimit, location]);
+  }, [availableRoomsByType, sortOption, priceRange, distanceLimit, location]);
   
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -167,7 +197,7 @@ export default function RoomList() {
       {status === 'error' && error && (
          <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Байршлын алдаа</AlertTitle>
+            <AlertTitle>Алдаа</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -182,7 +212,7 @@ export default function RoomList() {
          filteredAndSortedRooms.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
             {filteredAndSortedRooms.map(room => (
-                <RoomCard key={room.id} room={room} />
+                <RoomCard key={room.id} room={room} availableInstances={room.availableInstances} />
             ))}
             </div>
         ) : (

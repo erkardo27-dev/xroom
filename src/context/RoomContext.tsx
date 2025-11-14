@@ -1,14 +1,17 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Room, rooms as initialRooms, NewRoom } from "@/lib/data";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { Room, RoomInstance, initialRooms, initialRoomInstances } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
 type RoomContextType = {
   rooms: Room[];
-  addRoom: (room: NewRoom) => void;
+  roomInstances: RoomInstance[];
+  addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'ownerId'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoom: (roomId: string) => void;
+  updateRoomInstance: (updatedInstance: RoomInstance) => void;
+  getRoomById: (roomId: string) => Room | undefined;
   status: 'loading' | 'success' | 'error';
   error: string | null;
 };
@@ -17,25 +20,29 @@ const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load initial rooms from data.ts
-    // In a real app, this would be an API call
     const timer = setTimeout(() => {
         try {
             const savedRooms = localStorage.getItem('rooms');
-            if (savedRooms) {
+            const savedInstances = localStorage.getItem('roomInstances');
+            
+            if (savedRooms && savedInstances) {
                 setRooms(JSON.parse(savedRooms));
+                setRoomInstances(JSON.parse(savedInstances));
             } else {
                 setRooms(initialRooms);
+                setRoomInstances(initialRoomInstances);
             }
             setStatus('success');
         } catch (e) {
-            console.error("Failed to load rooms from localStorage", e);
-            setRooms(initialRooms); // Fallback to initial data
+            console.error("Failed to load data from localStorage", e);
+            setRooms(initialRooms);
+            setRoomInstances(initialRoomInstances);
             setStatus('success');
         }
     }, 500);
@@ -44,41 +51,66 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Save rooms to localStorage whenever they change
     if (status === 'success') {
         try {
             localStorage.setItem('rooms', JSON.stringify(rooms));
+            localStorage.setItem('roomInstances', JSON.stringify(roomInstances));
         } catch (e) {
-            console.error("Failed to save rooms to localStorage", e);
+            console.error("Failed to save data to localStorage", e);
         }
     }
-  }, [rooms, status]);
+  }, [rooms, roomInstances, status]);
 
-  const addRoom = (roomData: NewRoom) => {
-    const newRoom: Room = {
+  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => {
+    const newRoomType: Room = {
       ...roomData,
-      id: `room-${Date.now()}`,
-      rating: +(Math.random() * 1.5 + 3.5).toFixed(1), // 3.5 to 5.0
-      distance: +(Math.random() * 10 + 0.5).toFixed(1), // 0.5 to 10.5 km
-      availableQuantity: roomData.totalQuantity,
+      id: `room-type-${Date.now()}`,
+      rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
+      distance: +(Math.random() * 10 + 0.5).toFixed(1),
     };
-    setRooms((prevRooms) => [newRoom, ...prevRooms]);
+    
+    const newInstances: RoomInstance[] = Array.from({ length: newRoomType.totalQuantity }).map((_, i) => ({
+      instanceId: `${newRoomType.id}-instance-${i + 1}`,
+      roomTypeId: newRoomType.id,
+      roomNumber: `...`, // Placeholder, user will edit
+      status: 'available',
+      ownerId: newRoomType.ownerId,
+    }));
+    
+    setRooms(prev => [newRoomType, ...prev]);
+    setRoomInstances(prev => [...prev, ...newInstances]);
+
+     toast({
+        title: "Өрөөний төрөл нэмэгдлээ!",
+        description: `${newRoomType.roomName} төрлийн ${newRoomType.totalQuantity} ширхэг өрөө үүслээ. Одоо өрөө тус бүрийн дугаарыг онооно уу.`,
+    });
   };
 
   const updateRoom = (updatedRoom: Room) => {
     setRooms(prevRooms => prevRooms.map(room => room.id === updatedRoom.id ? updatedRoom : room));
   };
+  
+  const updateRoomInstance = (updatedInstance: RoomInstance) => {
+    setRoomInstances(prev => prev.map(instance => instance.instanceId === updatedInstance.instanceId ? updatedInstance : instance));
+  };
 
-  const deleteRoom = (roomId: string) => {
-    setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+
+  const deleteRoom = (roomTypeId: string) => {
+    setRooms(prev => prev.filter(room => room.id !== roomTypeId));
+    setRoomInstances(prev => prev.filter(instance => instance.roomTypeId !== roomTypeId));
     toast({
-        title: "Өрөө устгагдлаа",
-        description: "Таны сонгосон өрөө амжилттай устгагдлаа.",
+        title: "Өрөөний төрөл устгагдлаа",
+        description: "Таны сонгосон өрөөний төрөл болон хамаарах бүх өрөөнүүд амжилттай устгагдлаа.",
+        variant: "destructive",
     });
   };
 
+  const getRoomById = useCallback((roomId: string) => {
+    return rooms.find(r => r.id === roomId);
+  }, [rooms]);
+
   return (
-    <RoomContext.Provider value={{ rooms, addRoom, updateRoom, deleteRoom, status, error }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoom, status, error, getRoomById, updateRoomInstance }}>
       {children}
     </RoomContext.Provider>
   );

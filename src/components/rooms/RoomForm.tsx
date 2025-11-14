@@ -86,7 +86,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
              toast({
                 variant: "destructive",
                 title: "Алдаа",
-                description: "Нэвтэрч орж байж өрөө нэмэх/засах боломжтой.",
+                description: "Нэвтэрч орж байж өрөөний төрөл нэмэх/засах боломжтой.",
             });
             return;
         }
@@ -103,20 +103,14 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
              const updatedRoom: Room = {
                 ...roomToEdit,
                 ...roomDataPayload,
-                // When editing, if total quantity changes, we might need to adjust available quantity
-                availableQuantity: roomToEdit.availableQuantity + (values.totalQuantity - roomToEdit.totalQuantity),
             };
             updateRoom(updatedRoom);
              toast({
                 title: "Амжилттай заслаа!",
-                description: `${values.roomName} өрөөний мэдээлэл шинэчлэгдлээ.`,
+                description: `${values.roomName} өрөөний төрлийн мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
             addRoom(roomDataPayload);
-             toast({
-                title: "Өрөө бүртгэгдлээ!",
-                description: `${hotelInfo.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
-            });
         }
        
         form.reset();
@@ -131,7 +125,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                     name="roomName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Өрөөний нэр</FormLabel>
+                            <FormLabel>Өрөөний төрлийн нэр</FormLabel>
                             <FormControl>
                                 <Input placeholder="ж.нь: Делюкс люкс" {...field} />
                             </FormControl>
@@ -159,10 +153,10 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         <FormItem>
                             <FormLabel>Нийт өрөөний тоо</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="ж.нь: 5" {...field} />
+                                <Input type="number" placeholder="ж.нь: 5" {...field} disabled={isEditMode} />
                             </FormControl>
                              <FormDescription>
-                                Энэ төрлийн нийт хэдэн өрөө байгаа вэ?
+                                Энэ төрлийн нийт хэдэн өрөө байгаа вэ? (Үүсгэсний дараа засах боломжгүй)
                             </FormDescription>
                             <FormMessage />
                         </FormItem>
@@ -268,7 +262,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                     )}
                 />
                 <Button type="submit" className="w-full">
-                    {isEditMode ? 'Мэдээлэл хадгалах' : 'Шинэ өрөө нэмэх'}
+                    {isEditMode ? 'Мэдээлэл хадгалах' : 'Шинэ төрөл нэмэх'}
                 </Button>
             </form>
         </Form>

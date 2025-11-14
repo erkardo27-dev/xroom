@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, ChevronDown, LogOut, Settings, Building } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -69,7 +69,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                      <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('addRoom')}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Шинэ өрөө
+                            Шинэ өрөөний төрөл
                         </Button>
                     </DialogTrigger>
                     <DropdownMenu>
@@ -130,9 +130,9 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                  {openDialog === 'addRoom' && isLoggedIn && (
                     <>
                          <DialogHeader>
-                            <DialogTitle>Шинэ өрөө оруулах</DialogTitle>
+                            <DialogTitle>Шинэ өрөөний төрөл нэмэх</DialogTitle>
                             <DialogDescription>
-                                {hotelInfo?.hotelName}-д шинээр сул өрөө бүртгүүлэх.
+                                {hotelInfo?.hotelName}-д шинээр өрөөний төрөл үүсгэнэ үү.
                             </DialogDescription>
                         </DialogHeader>
                         <RoomForm onFormSubmit={() => handleOpenChange(false)}/>

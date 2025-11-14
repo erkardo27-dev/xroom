@@ -4,22 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoom } from "@/context/RoomContext";
-import { RoomCard } from "@/components/rooms/RoomCard";
+import { Room, RoomInstance } from "@/lib/data";
 import { Skeleton } from "../ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Info, X } from "lucide-react";
-import { Room } from "@/lib/data";
+import { Info } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
+import { RoomInstanceCard } from "./RoomInstanceCard";
 
 export default function DashboardClient() {
   const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, status: roomStatus, deleteRoom } = useRoom();
+  const { rooms, roomInstances, status: roomStatus, deleteRoom } = useRoom();
   const router = useRouter();
 
-  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
-  const [roomToEdit, setRoomToEdit] = useState<Room | null>(null);
+  const [roomTypeToEdit, setRoomTypeToEdit] = useState<Room | null>(null);
+  const [roomTypeToDelete, setRoomTypeToDelete] = useState<Room | null>(null);
 
   useEffect(() => {
     if (!isAuthLoading && !isLoggedIn) {
@@ -27,17 +27,17 @@ export default function DashboardClient() {
     }
   }, [isLoggedIn, isAuthLoading, router]);
 
-  const ownerRooms = useMemo(() => {
+  const ownerRoomInstances = useMemo(() => {
     if (!userEmail) return [];
-    return rooms.filter(room => room.ownerId === userEmail);
-  }, [rooms, userEmail]);
+    return roomInstances.filter(instance => instance.ownerId === userEmail);
+  }, [roomInstances, userEmail]);
 
   const isLoading = isAuthLoading || roomStatus === 'loading';
 
   const handleDelete = () => {
-    if (roomToDelete) {
-      deleteRoom(roomToDelete.id);
-      setRoomToDelete(null);
+    if (roomTypeToDelete) {
+      deleteRoom(roomTypeToDelete.id);
+      setRoomTypeToDelete(null);
     }
   }
 
@@ -46,8 +46,8 @@ export default function DashboardClient() {
         <div className="space-y-4">
             <h1 className="text-3xl font-bold tracking-tight mb-8">Миний өрөөнүүд</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-[450px] w-full" />
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-[200px] w-full" />
                 ))}
             </div>
       </div>
@@ -59,23 +59,22 @@ export default function DashboardClient() {
       <div>
           <h1 className="text-3xl font-bold tracking-tight mb-8">Миний өрөөнүүд</h1>
 
-          {ownerRooms.length === 0 ? (
+          {ownerRoomInstances.length === 0 ? (
               <Alert>
                   <Info className="h-4 w-4" />
                   <AlertTitle>Өрөө оруулаагүй байна</AlertTitle>
                   <AlertDescription>
-                      Та одоогоор ямар ч өрөө оруулаагүй байна. "Шинэ өрөө" товчийг дарж өрөөгөө нэмнэ үү.
+                      Та одоогоор ямар ч өрөө оруулаагүй байна. "Шинэ өрөөний төрөл" товчийг дарж өрөөгөө нэмнэ үү.
                   </AlertDescription>
               </Alert>
           ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-                  {ownerRooms.map(room => (
-                      <RoomCard 
-                        key={room.id} 
-                        room={room} 
-                        isDashboard 
-                        onEdit={() => setRoomToEdit(room)}
-                        onDelete={() => setRoomToDelete(room)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {ownerRoomInstances.map(instance => (
+                      <RoomInstanceCard 
+                        key={instance.instanceId} 
+                        instance={instance} 
+                        onEditType={(roomType) => setRoomTypeToEdit(roomType)}
+                        onDeleteType={(roomType) => setRoomTypeToDelete(roomType)}
                       />
                   ))}
               </div>
@@ -83,12 +82,12 @@ export default function DashboardClient() {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!roomToDelete} onOpenChange={(open) => !open && setRoomToDelete(null)}>
+      <AlertDialog open={!!roomTypeToDelete} onOpenChange={(open) => !open && setRoomTypeToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Та энэ өрөөг устгахдаа итгэлтэй байна уу?</AlertDialogTitle>
+            <AlertDialogTitle>Та энэ өрөөний төрлийг устгахдаа итгэлтэй байна уу?</AlertDialogTitle>
             <AlertDialogDescription>
-              Энэ үйлдлийг буцаах боломжгүй. Энэ нь таны өрөөний мэдээллийг манай серверээс бүрмөсөн устгах болно.
+              Энэ үйлдлийг буцаах боломжгүй. Энэ нь таны сонгосон өрөөний төрөл болон түүнд хамаарах бүх өрөөний мэдээллийг устгах болно.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -99,17 +98,17 @@ export default function DashboardClient() {
       </AlertDialog>
 
        {/* Edit Dialog */}
-       <Dialog open={!!roomToEdit} onOpenChange={(open) => !open && setRoomToEdit(null)}>
+       <Dialog open={!!roomTypeToEdit} onOpenChange={(open) => !open && setRoomTypeToEdit(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Өрөөний мэдээлэл засах</DialogTitle>
+            <DialogTitle>Өрөөний төрөл засах</DialogTitle>
             <DialogDescription>
-              Өрөөний мэдээллийг доорх талбаруудад өөрчлөн хадгална уу.
+              Энд хийсэн өөрчлөлт энэ төрлийн бүх өрөөнд нөлөөлнө.
             </DialogDescription>
           </DialogHeader>
           <RoomForm
-            roomToEdit={roomToEdit}
-            onFormSubmit={() => setRoomToEdit(null)}
+            roomToEdit={roomTypeToEdit}
+            onFormSubmit={() => setRoomTypeToEdit(null)}
           />
         </DialogContent>
       </Dialog>
