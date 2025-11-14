@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Legend, CartesianGrid, LegendProps, Tooltip, ReferenceLine } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Legend, CartesianGrid, LegendProps, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Room } from "@/lib/data";
@@ -104,7 +104,7 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
                     content={
                         <ChartTooltipContent 
                           hideIndicator
-                          formatter={(value, name, props) => {
+                          formatter={(value, name) => {
                              if (name === 'yourPrice') {
                                 return [`${Number(value).toLocaleString()}₮`, 'Таны үнэ'];
                             }
