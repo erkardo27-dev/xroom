@@ -11,8 +11,9 @@ import { AlertCircle, Zap, MapPin, Star, DollarSign, List, Filter } from 'lucide
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import * as SliderPrimitive from "@radix-ui/react-slider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import Hero from '@/components/layout/Hero';
 
 type ViewMode = 'list' | 'map';
 
@@ -62,6 +63,11 @@ export default function RoomList() {
   }, []);
 
   const filteredAndSortedRooms = useMemo(() => {
+    let activeFilters = 0;
+    if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) activeFilters++;
+    if (distanceLimit[0] < MAX_DISTANCE) activeFilters++;
+    if (minRating[0] > 1) activeFilters++;
+
     const filtered = rooms.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
@@ -84,112 +90,113 @@ export default function RoomList() {
     return sorted;
   }, [rooms, sortOption, priceRange, distanceLimit, minRating]);
   
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) count++;
+    if (distanceLimit[0] < MAX_DISTANCE) count++;
+    if (minRating[0] > 1) count++;
+    return count;
+  }, [priceRange, distanceLimit, minRating]);
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
-       <div className="text-center mb-8">
-        <p className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4" />
-            Сүүлчийн минутын хямдрал
-        </p>
-        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl mt-2">Энэ шөнийн онцгой буудлууд</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          {status === 'loading'
-            ? "Шилдэг саналуудыг хайж байна..."
-            : filteredAndSortedRooms.length > 0
-              ? `${filteredAndSortedRooms.length} өрөө олдлоо. Та доорх шүүлтүүрүүдийг ашиглан хайлтаа нарийвчлах боломжтой.`
-              : "Таны хайлтад тохирох өрөө олдсонгүй. Шүүлтүүрээ өөрчилж дахин оролдоно уу."}
-          </p>
-       </div>
+      <Hero 
+          status={status}
+          filteredCount={filteredAndSortedRooms.length}
+      />
       
-       <div className="sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm rounded-xl border shadow-sm mb-8">
-        <div className="p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 items-center">
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                        <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
-                        <span className="font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : `$${priceRange[1]}`}</span>
-                    </div>
-                    <Slider
-                      id="price-range"
-                      min={0}
-                      max={MAX_PRICE}
-                      step={10}
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                    >
-                      {priceRange.map((_, i) => (
-                        <SliderPrimitive.Thumb key={i} className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-                      ))}
-                    </Slider>
-                </div>
-                 <div className="space-y-2">
-                     <div className="flex justify-between items-center text-sm">
-                        <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
-                        <span className="font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
-                    </div>
-                    <Slider
-                      id="distance-limit"
-                      min={1}
-                      max={MAX_DISTANCE}
-                      step={1}
-                      value={distanceLimit}
-                      onValueChange={setDistanceLimit}
-                    />
-                </div>
-                 <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                        <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
-                        <span className="font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
-                    </div>
-                     <Slider
-                      id="min-rating"
-                      min={1}
-                      max={5}
-                      step={0.1}
-                      value={minRating}
-                      onValueChange={setMinRating}
-                    />
-                </div>
-            </div>
-        </div>
-        <div className="flex items-center justify-between gap-4 p-4 border-t bg-background/50 rounded-b-xl">
-            <div className='flex items-center gap-2'>
-                <span className="text-sm font-semibold text-muted-foreground hidden sm:inline">Эрэмбэлэх:</span>
-                <ToggleGroup
-                    type="single"
-                    value={sortOption}
-                    onValueChange={(value) => {
-                        if (value) setSortOption(value as SortOption);
-                    }}
-                    aria-label="Эрэмбэлэх"
-                    className="gap-2"
-                >
-                    {sortOptionsConfig.map(option => (
-                          <ToggleGroupItem key={option.value} value={option.value} aria-label={option.label} className="gap-2 data-[state=on]:bg-primary/20 data-[state=on]:text-primary-foreground">
-                            <option.icon className="h-4 w-4" />
-                            {option.label}
-                        </ToggleGroupItem>
-                    ))}
-                </ToggleGroup>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
-              className="w-36 justify-center"
-            >
-              {viewMode === 'list' ? (
-                <>
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Газрын зураг
-                </>
-              ) : (
-                <>
-                  <List className="mr-2 h-4 w-4" />
-                  Жагсаалт
-                </>
-              )}
-            </Button>
-        </div>
+       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-8 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-center gap-x-8 gap-y-4">
+              {/* Filters */}
+              <div className="lg:col-span-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
+                      <div className="space-y-2">
+                          <div className="flex justify-between items-center text-sm">
+                              <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
+                              <span className="font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : `$${priceRange[1]}`}</span>
+                          </div>
+                          <Slider
+                            id="price-range"
+                            min={0}
+                            max={MAX_PRICE}
+                            step={10}
+                            value={priceRange}
+                            onValueChange={setPriceRange}
+                          >
+                            {priceRange.map((_, i) => (
+                              <SliderPrimitive.Thumb key={i} className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+                            ))}
+                          </Slider>
+                      </div>
+                       <div className="space-y-2">
+                           <div className="flex justify-between items-center text-sm">
+                              <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                              <span className="font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
+                          </div>
+                          <Slider
+                            id="distance-limit"
+                            min={1}
+                            max={MAX_DISTANCE}
+                            step={1}
+                            value={distanceLimit}
+                            onValueChange={setDistanceLimit}
+                          />
+                      </div>
+                       <div className="space-y-2">
+                          <div className="flex justify-between items-center text-sm">
+                              <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
+                              <span className="font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
+                          </div>
+                           <Slider
+                            id="min-rating"
+                            min={1}
+                            max={5}
+                            step={0.1}
+                            value={minRating}
+                            onValueChange={setMinRating}
+                          />
+                      </div>
+                  </div>
+              </div>
+
+              {/* Sort and View */}
+              <div className="flex items-center justify-between lg:justify-end gap-4">
+                  <div className='flex items-center gap-2'>
+                      <ToggleGroup
+                          type="single"
+                          value={sortOption}
+                          onValueChange={(value) => {
+                              if (value) setSortOption(value as SortOption);
+                          }}
+                          aria-label="Эрэмбэлэх"
+                          className="gap-1"
+                      >
+                          {sortOptionsConfig.map(option => (
+                                <ToggleGroupItem key={option.value} value={option.value} aria-label={option.label} className="h-9 w-9 p-0 data-[state=on]:bg-primary/20 data-[state=on]:text-primary" data-state={sortOption === option.value ? 'on' : 'off'}>
+                                  <option.icon className="h-4 w-4" />
+                              </ToggleGroupItem>
+                          ))}
+                      </ToggleGroup>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+                    className="w-28 justify-center"
+                  >
+                    {viewMode === 'list' ? (
+                      <>
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Зураг
+                      </>
+                    ) : (
+                      <>
+                        <List className="mr-2 h-4 w-4" />
+                        Жагсаалт
+                      </>
+                    )}
+                  </Button>
+              </div>
+          </div>
       </div>
       
       {status === 'error' && error && (
