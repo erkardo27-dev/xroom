@@ -144,16 +144,16 @@ export function RoomCard({ room }: { room: Room }) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 transition-opacity h-8 w-8" />
-          <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity h-8 w-8" />
+            <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+            <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
           
         </Carousel>
          {discount > 0 && (
             <Badge 
               variant="destructive"
-              className="absolute top-3 right-3 text-xs font-bold px-2 py-1 shadow-lg z-10"
+              className="absolute top-3 right-3 text-base font-bold px-3 py-1 shadow-lg z-10"
             >
-              {discount}%
+              -{discount}%
             </Badge>
           )}
         </div>
@@ -315,5 +315,7 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
+
+    
 
     
