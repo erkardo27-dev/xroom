@@ -195,9 +195,9 @@ export function RoomCard({ room }: { room: Room }) {
           <div className="flex justify-between items-end mt-6 pt-4 border-t">
             <div>
               {room.originalPrice && (
-                <p className="text-sm text-muted-foreground line-through">${room.originalPrice}</p>
+                <p className="text-sm text-muted-foreground line-through">{room.originalPrice.toLocaleString()}₮</p>
               )}
-              <p className="text-2xl font-bold text-primary">${room.price}</p>
+              <p className="text-2xl font-bold text-primary">{room.price.toLocaleString()}₮</p>
             </div>
             <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30">
               Захиалах
@@ -213,7 +213,7 @@ export function RoomCard({ room }: { room: Room }) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
                 <AlertDialogDescription>
-                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна.
+                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">{room.price.toLocaleString()}₮</span> үнээр захиалах гэж байна.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="py-4 space-y-6">

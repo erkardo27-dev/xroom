@@ -23,7 +23,7 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
     { value: 'rating', label: 'Үнэлгээ', icon: Star },
 ];
 
-const MAX_PRICE = 400;
+const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
 export default function RoomList() {
@@ -113,13 +113,13 @@ export default function RoomList() {
                       <div className="space-y-2">
                           <div className="flex justify-between items-center text-sm">
                               <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
-                              <span className="font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : `$${priceRange[1]}`}</span>
+                              <span className="font-medium text-primary">{priceRange[0].toLocaleString()}₮ - {priceRange[1] === MAX_PRICE ? `${(MAX_PRICE / 1000)}k+₮` : `${priceRange[1].toLocaleString()}₮`}</span>
                           </div>
                           <Slider
                             id="price-range"
                             min={0}
                             max={MAX_PRICE}
-                            step={10}
+                            step={10000}
                             value={priceRange}
                             onValueChange={setPriceRange}
                           >

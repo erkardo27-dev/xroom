@@ -43,12 +43,12 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
       {mappedRooms.map(room => (
         <button
           key={room.id}
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-primary text-primary-foreground rounded-full w-8 h-8 font-bold text-sm shadow-lg hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold shadow-lg hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           style={{ left: `${room.coords.x}%`, top: `${room.coords.y}%` }}
           onClick={() => handleMarkerClick(room)}
           aria-label={`View ${room.roomName}`}
         >
-         ${room.price}
+         {(room.price / 1000).toFixed(0)}k
         </button>
       ))}
 
@@ -75,7 +75,7 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
                         </div>
                         <div className="flex-grow"/>
                         <div className="flex items-end gap-4 mt-2">
-                             <p className="text-xl font-bold text-foreground">${selectedRoom.price}</p>
+                             <p className="text-xl font-bold text-foreground">{selectedRoom.price.toLocaleString()}₮</p>
                              <Button size="sm" className="bg-primary hover:bg-primary/90">Захиалах</Button>
                         </div>
                     </div>

@@ -38,7 +38,7 @@ export function AddRoomForm() {
         console.log("New Room Data:", values);
         toast({
             title: "Өрөө бүртгэгдлээ!",
-            description: `${values.hotelName}-д ${values.roomName} өрөөг $${values.price} үнээр бүртгэв.`,
+            description: `${values.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
         });
         form.reset();
         // In a real app, you'd send this to the backend.
@@ -78,9 +78,9 @@ export function AddRoomForm() {
                     name="price"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Энэ шөнийн үнэ ($)</FormLabel>
+                            <FormLabel>Энэ шөнийн үнэ (₮)</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="ж.нь: 150" {...field} />
+                                <Input type="number" placeholder="ж.нь: 150000" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
