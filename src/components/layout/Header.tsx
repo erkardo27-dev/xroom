@@ -66,6 +66,10 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
         <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
                 <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => router.push('/dashboard/stats')}>
+                        <BarChart2 className="mr-2 h-4 w-4" />
+                        Статистик
+                    </Button>
                      <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('addRoom')}>
                             <PlusCircle className="mr-2 h-4 w-4" />
@@ -97,10 +101,6 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                              <DropdownMenuItem onClick={() => router.push(isDashboard ? '/' : '/dashboard')}>
                                 {isDashboard ? 'Нүүр хуудас' : 'Миний самбар'}
                             </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => router.push('/dashboard/stats')}>
-                                <BarChart2 className="mr-2 h-4 w-4" />
-                                Статистик
-                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout}>
                                 <LogOut className="mr-2 h-4 w-4" />
@@ -110,7 +110,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                     </DropdownMenu>
                 </div>
             ) : (
-                <DialogTrigger asChild>
+                 <DialogTrigger asChild>
                     <Button onClick={() => handleDialogTrigger('login')}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Өрөө нэмэх
@@ -121,10 +121,10 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
             <DialogContent className="sm:max-w-md">
                 {openDialog === 'login' && (
                     <>
-                        <DialogHeader>
+                       <DialogHeader>
                             <DialogTitle>XRoom Tonight-д тавтай морил!</DialogTitle>
                             <DialogDescription>
-                                Өөрийн зочид буудлаа бүртгүүлж, өрөөгөө сүүлчийн минутын хямдралтай үнээр борлуулаарай.
+                                Та буудал ажиллуулдаг бөгөөд манай сайтад өрөө оруулах гэж байгаа бол бүртгүүлнэ үү.
                             </DialogDescription>
                         </DialogHeader>
                         <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
