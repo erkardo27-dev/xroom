@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -224,13 +225,15 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
 
           <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
           
-          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4" />
-              <span>{room.location}</span>
+          {!isDashboard && (
+            <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4" />
+                <span>{room.location}</span>
+              </div>
+              <span>{room.distance}км</span>
             </div>
-            <span>{room.distance}км</span>
-          </div>
+          )}
 
           <div className="flex-grow" />
 
@@ -398,3 +401,5 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
     </>
   );
 }
+
+    
