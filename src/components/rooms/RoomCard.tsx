@@ -102,8 +102,9 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col bg-card border rounded-xl">
-         <Carousel className="relative w-full group/carousel">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 flex flex-col bg-card border rounded-2xl">
+        <div className="relative">
+         <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index}>
@@ -122,22 +123,26 @@ export function RoomCard({ room }: { room: Room }) {
           <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
           <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
           
-          {discount > 0 && (
-             <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground border-none text-sm font-bold shadow-md z-10">
+        </Carousel>
+         {discount > 0 && (
+             <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-2 border-background/50 text-sm font-bold shadow-lg z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
-        </Carousel>
+        </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
-          <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
+          <div className='flex justify-between items-start'>
+            <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
+            <div className="flex items-center gap-1 text-sm">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              <span className="font-semibold text-foreground/90 pt-px">{room.rating.toFixed(1)}</span>
+            </div>
+          </div>
+
           <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
           
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="font-semibold text-foreground/90">{room.rating.toFixed(1)}</span>
-            </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               <span>{room.distance}км зайтай</span>
@@ -149,7 +154,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <TooltipProvider key={a.key}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center justify-center w-8 h-8 bg-secondary rounded-md">
+                             <div className="flex items-center justify-center w-8 h-8 bg-secondary rounded-lg">
                                 {a.icon}
                             </div>
                         </TooltipTrigger>
@@ -163,7 +168,7 @@ export function RoomCard({ room }: { room: Room }) {
 
           <div className="flex-grow" />
 
-          <div className="flex justify-between items-end mt-4 pt-4 border-t">
+          <div className="flex justify-between items-end mt-6 pt-4 border-t">
             <div>
               {room.originalPrice && (
                 <p className="text-sm text-muted-foreground line-through">${room.originalPrice}</p>
@@ -185,23 +190,12 @@ export function RoomCard({ room }: { room: Room }) {
                 <AlertDialogTitle>Төлбөр гүйцэтгэх</AlertDialogTitle>
                 <AlertDialogDescription>
                    Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна.
-                   Төлбөрөө (QPAY, SocialPay) хийж, гүйлгээний утга хэсгээс 4 оронтой баталгаажуулах кодыг оруулна уу.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <div className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-code" className="flex items-center">
-                        Баталгаажуулах код (4 оронтой)
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <HelpCircle className="w-4 h-4 ml-1.5 text-muted-foreground cursor-help" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Гүйлгээний утга дээр ирэх 4 оронтой код.</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+              <div className="py-4 space-y-6">
+                  <div className="space-y-2 text-center">
+                    <Label htmlFor="payment-code" className="text-sm font-medium text-muted-foreground">
+                        Гүйлгээний утга дээрх 4 оронтой кодыг оруулна уу
                     </Label>
                     <Input
                         id="payment-code"
@@ -211,7 +205,7 @@ export function RoomCard({ room }: { room: Room }) {
                         maxLength={4}
                         value={paymentCode}
                         onChange={(e) => setPaymentCode(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="text-center text-2xl tracking-[0.5em] font-mono"
+                        className="text-center text-3xl tracking-[0.5em] font-mono h-14"
                     />
                   </div>
                   <div className="flex items-center space-x-2">
