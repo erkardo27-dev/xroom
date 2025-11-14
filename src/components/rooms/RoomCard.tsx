@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Edit, Trash2 } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,8 +36,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import { Switch } from "@/components/ui/switch"
-
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
 import { useToast } from '@/hooks/use-toast';
@@ -356,5 +354,3 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
-
-    
