@@ -36,6 +36,7 @@ export type RoomInstance = {
         [date: string]: {
             status: RoomStatus;
             bookingCode?: string;
+            price?: number; // Price for this specific day
         }
     };
 };

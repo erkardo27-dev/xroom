@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { formatISO, startOfDay, format } from 'date-fns';
+import { format } from 'date-fns';
 
 type RoomContextType = {
   rooms: Room[];
@@ -17,6 +17,7 @@ type RoomContextType = {
   error: string | null;
   getRoomStatusForDate: (instanceId: string, date: Date) => RoomStatus;
   setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => void;
+  getRoomPriceForDate: (instanceId: string, date: Date) => number;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -141,6 +142,18 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   }, [roomInstances]);
 
+    const getRoomPriceForDate = useCallback((instanceId: string, date: Date): number => {
+        const instance = roomInstances.find(i => i.instanceId === instanceId);
+        if (!instance) return 0;
+        const room = rooms.find(r => r.id === instance.roomTypeId);
+        if (!room) return 0;
+
+        const dateKey = format(date, 'yyyy-MM-dd');
+        // In a real app, you might have date-specific pricing. For now, we use the base price.
+        const price = instance.overrides?.[dateKey]?.price || room.price;
+        return price;
+    }, [roomInstances, rooms]);
+
   const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => {
     const dateKey = format(date, 'yyyy-MM-dd');
     const todayKey = format(new Date(), 'yyyy-MM-dd');
@@ -165,7 +178,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             if (status === defaultStatusForFuture) {
                 delete newInstance.overrides[dateKey];
             } else {
-                newInstance.overrides[dateKey] = { status, bookingCode };
+                const roomType = getRoomById(instance.roomTypeId);
+                newInstance.overrides[dateKey] = { status, bookingCode, price: roomType?.price };
             }
           }
           return newInstance;
@@ -173,10 +187,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return instance;
       })
     );
-  }, []);
+  }, [getRoomById]);
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate }}>
       {children}
     </RoomContext.Provider>
   );
