@@ -18,15 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose,
-} from "@/components/ui/sheet";
+
 
 type ViewMode = 'list' | 'map';
 
@@ -37,6 +29,7 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
 ];
 
 const MAX_PRICE = 400;
+const MAX_DISTANCE = 20;
 
 export default function RoomList() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -45,51 +38,10 @@ export default function RoomList() {
   const [sortOption, setSortOption] = useState<SortOption>('distance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
-  // Temporary filter state for the sheet
-  const [tempPriceRange, setTempPriceRange] = useState<number[]>([0, MAX_PRICE]);
-  const [tempDistanceLimit, setTempDistanceLimit] = useState<number[]>([15]);
-  const [tempMinRating, setTempMinRating] = useState<number[]>([3]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-
-  // Actual filter state
+  // Filter state
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
-  const [distanceLimit, setDistanceLimit] = useState<number[]>([15]);
-  const [minRating, setMinRating] = useState<number[]>([3]);
-
-  useEffect(() => {
-    // Sync temp filters when sheet opens
-    if (isSheetOpen) {
-      setTempPriceRange(priceRange);
-      setTempDistanceLimit(distanceLimit);
-      setTempMinRating(minRating);
-    }
-  }, [isSheetOpen, priceRange, distanceLimit, minRating]);
-
-
-  const handleApplyFilters = () => {
-    setPriceRange(tempPriceRange);
-    setDistanceLimit(tempDistanceLimit);
-    setMinRating(tempMinRating);
-    setIsSheetOpen(false);
-  };
-  
-  const resetFilters = () => {
-    const defaultPrice = [0, MAX_PRICE];
-    const defaultDistance = [15];
-    const defaultRating = [3];
-    
-    setTempPriceRange(defaultPrice);
-    setTempDistanceLimit(defaultDistance);
-    setTempMinRating(defaultRating);
-
-    // Also apply them right away
-    setPriceRange(defaultPrice);
-    setDistanceLimit(defaultDistance);
-    setMinRating(defaultRating);
-    setIsSheetOpen(false);
-  };
-
+  const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
+  const [minRating, setMinRating] = useState<number[]>([1]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -140,8 +92,6 @@ setStatus('success');
 
   const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
   
-  const activeFilterCount = (priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE ? 1 : 0) + (distanceLimit[0] !== 15 ? 1 : 0) + (minRating[0] !== 3 ? 1 : 0);
-
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
        <div className="text-center mb-8">
@@ -152,108 +102,82 @@ setStatus('success');
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mt-2">Энэ шөнийн онцгой буудлууд</h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
             {filteredAndSortedRooms.length > 0
-              ? `${filteredAndSortedRooms.length} өрөө олдлоо. Та шүүлтүүр ашиглан хайлтаа нарийвчлах боломжтой.`
+              ? `${filteredAndSortedRooms.length} өрөө олдлоо. Та доорх шүүлтүүрүүдийг ашиглан хайлтаа нарийвчлах боломжтой.`
               : "Таны хайлтад тохирох өрөө олдсонгүй. Шүүлтүүрээ өөрчилж дахин оролдоно уу."}
           </p>
        </div>
       
-       <div className="sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 border-b mb-8">
-        <div className="flex items-center justify-between gap-4 max-w-screen-2xl mx-auto">
-            <div className="flex items-center gap-2">
-                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="outline" className="relative">
-                                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                                Шүүлтүүр
-                                {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                        {activeFilterCount}
-                                    </span>
-                                )}
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent>
-                            <SheetHeader>
-                                <SheetTitle className="text-xl font-bold">Шүүлтүүр</SheetTitle>
-                            </SheetHeader>
-                            <div className="py-6 space-y-8">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
-                                        <span className="text-sm font-medium text-primary">${tempPriceRange[0]} - ${tempPriceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : tempPriceRange[1]}</span>
-                                    </div>
-                                    <Slider
-                                      id="price-range"
-                                      min={0}
-                                      max={MAX_PRICE}
-                                      step={10}
-                                      value={tempPriceRange}
-                                      onValueChange={setTempPriceRange}
-                                    />
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
-                                        <span className="text-sm font-medium text-primary">{tempDistanceLimit[0]} км хүртэл</span>
-                                    </div>
-                                    <Slider
-                                      id="distance-limit"
-                                      min={1}
-                                      max={20}
-                                      step={1}
-                                      value={tempDistanceLimit}
-                                      onValueChange={setTempDistanceLimit}
-                                    />
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
-                                        <span className="text-sm font-medium text-primary">{tempMinRating[0].toFixed(1)}+ од</span>
-                                    </div>
-                                     <Slider
-                                      id="min-rating"
-                                      min={1}
-                                      max={5}
-                                      step={0.1}
-                                      value={tempMinRating}
-                                      onValueChange={setTempMinRating}
-                                    />
-                                </div>
-                            </div>
-                             <SheetFooter className="grid grid-cols-2 gap-2">
-                                  <Button variant="ghost" onClick={resetFilters} className="w-full">
-                                    <X className="mr-2 h-4 w-4" />
-                                    Цэвэрлэх
-                                  </Button>
-                                  <SheetClose asChild>
-                                      <Button onClick={handleApplyFilters} className="w-full">Хэрэглэх</Button>
-                                  </SheetClose>
-                            </SheetFooter>
-                        </SheetContent>
-                    </Sheet>
-                
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-[220px] justify-start">
-                                <ActiveSortIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                                {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[220px]">
-                            <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                                {sortOptionsConfig.map(option => (
-                                     <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
-                                        <option.icon className="h-4 w-4 text-muted-foreground" />
-                                        {option.label}
-                                    </DropdownMenuRadioItem>
-                                ))}
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+       <div className="sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 border-y mb-8">
+        <div className="max-w-screen-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
+                        <span className="font-medium text-primary">${priceRange[0]} - ${priceRange[1] === MAX_PRICE ? `${MAX_PRICE}+` : `$${priceRange[1]}`}</span>
+                    </div>
+                    <Slider
+                      id="price-range"
+                      min={0}
+                      max={MAX_PRICE}
+                      step={10}
+                      value={priceRange}
+                      onValueChange={setPriceRange}
+                    />
+                </div>
+                 <div className="space-y-2">
+                     <div className="flex justify-between items-center text-sm">
+                        <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                        <span className="font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
+                    </div>
+                    <Slider
+                      id="distance-limit"
+                      min={1}
+                      max={MAX_DISTANCE}
+                      step={1}
+                      value={distanceLimit}
+                      onValueChange={setDistanceLimit}
+                    />
+                </div>
+                 <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
+                        <span className="font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
+                    </div>
+                     <Slider
+                      id="min-rating"
+                      min={1}
+                      max={5}
+                      step={0.1}
+                      value={minRating}
+                      onValueChange={setMinRating}
+                    />
+                </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-                 <Button
+            <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t">
+              <div>
+                  <span className="text-sm font-semibold text-foreground">{filteredAndSortedRooms.length} үр дүн</span>
+              </div>
+              <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-[220px] justify-start">
+                              <ActiveSortIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                              {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[220px]">
+                          <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                              {sortOptionsConfig.map(option => (
+                                   <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
+                                      <option.icon className="h-4 w-4 text-muted-foreground" />
+                                      {option.label}
+                                  </DropdownMenuRadioItem>
+                              ))}
+                          </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <Button
                     variant="outline"
                     onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
                     className="w-40 justify-center"
@@ -270,6 +194,7 @@ setStatus('success');
                       </>
                     )}
                   </Button>
+              </div>
             </div>
         </div>
       </div>
