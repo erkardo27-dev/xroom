@@ -2,6 +2,9 @@ import { PlaceHolderImages } from './placeholder-images';
 
 export type Amenity = 'wifi' | 'parking' | 'restaurant';
 export type SortOption = 'distance' | 'price' | 'rating';
+export const locations = ['Хотын төв', 'Зайсан', 'Яармаг', 'Сансар', '1-р хороолол', 'Хороолол'] as const;
+export type Location = typeof locations[number];
+
 
 export type Room = {
   id: string;
@@ -13,9 +16,10 @@ export type Room = {
   distance: number;
   amenities: Amenity[];
   imageIds: string[];
+  location: Location;
 };
 
-const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] = [
+const roomsData: Omit<Room, 'distance'>[] = [
     {
       id: 'room-101',
       roomName: 'Стандарт Кинг Өрөө',
@@ -25,6 +29,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.5,
       amenities: ['wifi', 'parking', 'restaurant'],
       imageIds: ['hotel-1', 'hotel-7', 'hotel-8'],
+      location: 'Хотын төв',
     },
     {
       id: 'room-102',
@@ -34,6 +39,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.2,
       amenities: ['wifi', 'restaurant'],
       imageIds: ['hotel-2', 'hotel-9', 'hotel-1'],
+      location: 'Хотын төв',
     },
     {
       id: 'room-103',
@@ -44,6 +50,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.8,
       amenities: ['wifi', 'parking'],
       imageIds: ['hotel-3', 'hotel-10', 'hotel-2'],
+      location: 'Зайсан',
     },
     {
       id: 'room-104',
@@ -53,6 +60,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 3.9,
       amenities: ['wifi'],
       imageIds: ['hotel-4', 'hotel-11', 'hotel-3'],
+      location: 'Сансар',
     },
     {
       id: 'room-105',
@@ -63,6 +71,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.9,
       amenities: ['wifi', 'parking', 'restaurant'],
       imageIds: ['hotel-5', 'hotel-12', 'hotel-4'],
+      location: 'Зайсан',
     },
     {
       id: 'room-106',
@@ -72,6 +81,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.1,
       amenities: ['wifi', 'parking'],
       imageIds: ['hotel-6', 'hotel-1', 'hotel-5'],
+      location: '1-р хороолол',
     },
      {
       id: 'room-107',
@@ -82,6 +92,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 4.3,
       amenities: ['wifi'],
       imageIds: ['hotel-7', 'hotel-2', 'hotel-6'],
+      location: 'Хороолол',
     },
     {
       id: 'room-108',
@@ -91,6 +102,7 @@ const roomsData: Omit<Room, 'distance' | 'imageIds'> & { imageIds: string[] }[] 
       rating: 5.0,
       amenities: ['wifi', 'parking', 'restaurant'],
       imageIds: ['hotel-8', 'hotel-3', 'hotel-7'],
+      location: 'Яармаг',
     }
 ];
 

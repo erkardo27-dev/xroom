@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { Room, SortOption } from '@/lib/data';
-import { rooms as allRooms } from '@/lib/data';
+import { rooms as allRooms, locations as allLocations } from '@/lib/data';
 import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
@@ -13,6 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Hero from '@/components/layout/Hero';
 
 type ViewMode = 'list' | 'map';
@@ -37,6 +38,8 @@ export default function RoomList() {
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
   const [minRating, setMinRating] = useState<number[]>([1]);
+  const [location, setLocation] = useState<string>('all');
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -72,7 +75,8 @@ export default function RoomList() {
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
-        room.rating >= minRating[0]
+        room.rating >= minRating[0] &&
+        (location === 'all' || room.location === location)
     );
 
     const sorted = [...filtered];
@@ -88,15 +92,16 @@ export default function RoomList() {
         break;
     }
     return sorted;
-  }, [rooms, sortOption, priceRange, distanceLimit, minRating]);
+  }, [rooms, sortOption, priceRange, distanceLimit, minRating, location]);
   
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) count++;
     if (distanceLimit[0] < MAX_DISTANCE) count++;
     if (minRating[0] > 1) count++;
+    if (location !== 'all') count++;
     return count;
-  }, [priceRange, distanceLimit, minRating]);
+  }, [priceRange, distanceLimit, minRating, location]);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -106,10 +111,24 @@ export default function RoomList() {
       />
       
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-8 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-center gap-x-8 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-center gap-x-8 gap-y-4">
               {/* Filters */}
-              <div className="lg:col-span-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
+              <div className="lg:col-span-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="location-filter" className="font-semibold text-sm">Байршил</Label>
+                        <Select value={location} onValueChange={setLocation}>
+                          <SelectTrigger id="location-filter" className="w-full">
+                            <SelectValue placeholder="Байршил сонгох" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Бүгд</SelectItem>
+                            {allLocations.map((loc) => (
+                              <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="space-y-2">
                           <div className="flex justify-between items-center text-sm">
                               <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
