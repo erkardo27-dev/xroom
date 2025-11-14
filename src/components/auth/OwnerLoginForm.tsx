@@ -46,7 +46,7 @@ type OwnerLoginFormProps = {
 
 export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
     const { login } = useAuth();
-    const [isRegistering, setIsRegistering] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(true);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -224,12 +224,12 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                 </form>
             </Form>
              <div className="mt-4 text-center text-sm">
-                {isRegistering ? "Бүртгэлтэй юу?" : "Бүртгэлгүй юу?"}{' '}
+                {isRegistering ? "Аль хэдийн бүртгүүлсэн бол" : "Шинэ буудал бүртгүүлэх бол"}{' '}
                 <Button variant="link" className="p-0 h-auto" onClick={() => {
                     setIsRegistering(!isRegistering);
                     form.reset();
                 }}>
-                    {isRegistering ? "Нэвтрэх" : "Шинээр бүртгүүлэх"}
+                    {isRegistering ? "энд дарж нэвтэрнэ үү." : "энд дарна уу."}
                 </Button>
             </div>
         </>

@@ -120,7 +120,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                         <DialogHeader>
                             <DialogTitle>Эзэмшигчийн хэсэг</DialogTitle>
                             <DialogDescription>
-                                Бүртгэлтэй бол нэвтэрч, шинээр зочид буудлаа бүртгүүлнэ үү.
+                                Та буудал ажиллуулдаг бөгөөд манай сайтад өрөө оруулах гэж байгаа бол бүртгүүлнэ үү.
                             </DialogDescription>
                         </DialogHeader>
                         <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
