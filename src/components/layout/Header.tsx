@@ -65,11 +65,16 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
 
         <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                      <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('addRoom')}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Шинэ өрөөний төрөл
+                        </Button>
+                    </DialogTrigger>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" onClick={() => handleDialogTrigger('settings')}>
+                            <Settings className="h-4 w-4" />
                         </Button>
                     </DialogTrigger>
                     <DropdownMenu>
@@ -92,12 +97,6 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                              <DropdownMenuItem onClick={() => router.push(isDashboard ? '/' : '/dashboard')}>
                                 {isDashboard ? 'Нүүр хуудас' : 'Миний самбар'}
                             </DropdownMenuItem>
-                             <DialogTrigger asChild>
-                                <DropdownMenuItem onClick={() => handleDialogTrigger('settings')}>
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Буудлын тохиргоо
-                                </DropdownMenuItem>
-                            </DialogTrigger>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout}>
                                 <LogOut className="mr-2 h-4 w-4" />
