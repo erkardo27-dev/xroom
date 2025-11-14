@@ -91,19 +91,20 @@ export default function OccupancyForecastChart() {
       </CardHeader>
       <CardContent className="space-y-4">
         <ChartContainer config={chartConfig} className="h-64 w-full">
-          <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <defs>
                 <linearGradient id="colorOccupancy" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-occupancy)" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="var(--color-occupancy)" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="var(--color-occupancy)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="var(--color-occupancy)" stopOpacity={0}/>
                 </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--muted) / 0.5)" />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
             />
             <YAxis
               tickLine={false}
@@ -111,9 +112,10 @@ export default function OccupancyForecastChart() {
               tickMargin={8}
               tickFormatter={(value) => `${value}%`}
               domain={[0, 100]}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
             />
             <ChartTooltip
-              cursor={true}
+              cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1.5, strokeDasharray: "3 3" }}
               content={<ChartTooltipContent 
                 formatter={(value) => `${value}%`}
                 indicator="dot"
@@ -121,25 +123,25 @@ export default function OccupancyForecastChart() {
             />
             <Area
               dataKey="occupancy"
-              type="monotone"
-              stroke="var(--color-occupancy)"
-              fillOpacity={1} 
+              type="natural"
               fill="url(#colorOccupancy)"
+              stroke="var(--color-occupancy)"
               strokeWidth={2.5}
               dot={{
-                r: 5,
-                strokeWidth: 2,
-                fill: 'hsl(var(--background))',
-                stroke: 'var(--color-occupancy)'
+                r: 4,
+                strokeWidth: 0,
+                fill: 'var(--color-occupancy)',
               }}
               activeDot={{
-                r: 7,
+                r: 6,
                 strokeWidth: 2,
+                stroke: 'hsl(var(--background))',
+                fill: 'var(--color-occupancy)'
               }}
             />
           </AreaChart>
         </ChartContainer>
-         <Alert variant="default" className="bg-accent/20 border-accent/40">
+         <Alert variant="default" className="bg-accent/50 border-accent/30">
             <Lightbulb className="h-5 w-5 text-accent-foreground" />
             <AlertTitle className="font-semibold text-accent-foreground">Ухаалаг зөвлөгөө</AlertTitle>
             <AlertDescription className="text-muted-foreground">
