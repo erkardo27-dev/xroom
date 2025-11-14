@@ -6,21 +6,22 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
       className="text-primary"
       {...props}
     >
-      <g fill="currentColor" className="font-bold">
+      <defs>
+        <path id="parallelogram" d="M0 0 H50 L70 100 H20 Z" />
+      </defs>
+
+      <g transform="translate(5, -12) scale(1.1)">
+        <g transform="translate(10, 10)">
+            <use href="#parallelogram" fill="currentColor" opacity="0.7" transform="skewX(-20)"/>
+            <use href="#parallelogram" fill="currentColor" transform="skewX(20) scale(-1, 1) translate(-70, 0)"/>
+        </g>
         <text
-          x="0"
-          y="80"
-          fontSize="90"
-          fontWeight="bold"
-        >
-          X
-        </text>
-        <text
-          x="60"
-          y="70"
+          x="100"
+          y="72"
           fontSize="60"
           letterSpacing="2"
           fontWeight="bold"
+          fill="currentColor"
         >
           ROOM
         </text>
