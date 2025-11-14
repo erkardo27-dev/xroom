@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Area, AreaChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -39,12 +39,24 @@ const generateForecastData = () => {
     lastOccupancy = newOccupancy;
 
     data.push({
-      date: `Дол ${Math.floor(i/7) + 1}`, // Week 1, Week 2, etc.
+      date: date,
       day: i + 1,
       occupancy: parseFloat(newOccupancy.toFixed(1)),
     });
   }
-  return data.filter((_, i) => i % 7 === 6); // Show only end of week
+
+  // Aggregate by week
+  const weeklyData = [];
+  for (let i = 0; i < 4; i++) {
+    const weekSlice = data.slice(i * 7, (i + 1) * 7);
+    const avgOccupancy = weekSlice.reduce((sum, d) => sum + d.occupancy, 0) / weekSlice.length;
+    weeklyData.push({
+      date: `Дол ${i + 1}`,
+      occupancy: parseFloat(avgOccupancy.toFixed(1)),
+    })
+  }
+
+  return weeklyData;
 };
 
 
@@ -79,14 +91,14 @@ export default function OccupancyForecastChart() {
       </CardHeader>
       <CardContent className="space-y-4">
         <ChartContainer config={chartConfig} className="h-64 w-full">
-          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
             <defs>
                 <linearGradient id="colorOccupancy" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-occupancy)" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="var(--color-occupancy)" stopOpacity={0.1}/>
                 </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -113,11 +125,12 @@ export default function OccupancyForecastChart() {
               stroke="var(--color-occupancy)"
               fillOpacity={1} 
               fill="url(#colorOccupancy)"
-              strokeWidth={2}
+              strokeWidth={2.5}
               dot={{
                 r: 5,
                 strokeWidth: 2,
-                fill: 'var(--background)'
+                fill: 'hsl(var(--background))',
+                stroke: 'var(--color-occupancy)'
               }}
               activeDot={{
                 r: 7,

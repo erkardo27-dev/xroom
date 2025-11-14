@@ -10,13 +10,6 @@ type CompetitorPriceChartProps = {
   selectedRoom: Room;
 };
 
-const formatCurrency = (value: number) => {
-    if (value >= 1000) {
-        return `${(value / 1000).toFixed(0)}k₮`;
-    }
-    return `${value.toLocaleString()}₮`;
-};
-
 const chartConfig = {
   yourPrice: {
     label: "Таны үнэ",
@@ -58,7 +51,7 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">
-          <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
+          <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
             <YAxis
               dataKey="label"
               type="category"
@@ -66,7 +59,7 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
               axisLine={false}
               tick={false}
             />
-            <XAxis type="number" dataKey="yourPrice" hide />
+            <XAxis type="number" hide />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent 
@@ -74,15 +67,13 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
               />}
             />
              <Legend verticalAlign="top" height={40} />
-            <Bar dataKey="yourPrice" name={chartConfig.yourPrice.label} fill="var(--color-yourPrice)" radius={4} barSize={32} />
-            <Bar dataKey="competitorAvg" name={chartConfig.competitorAvg.label} fill="var(--color-competitorAvg)" radius={4} barSize={32} />
-            <Bar dataKey="competitorLow" name={chartConfig.competitorLow.label} fill="var(--color-competitorLow)" radius={4} barSize={32} />
-            <Bar dataKey="competitorHigh" name={chartConfig.competitorHigh.label} fill="var(--color-competitorHigh)" radius={4} barSize={32} />
+            <Bar dataKey="yourPrice" name={chartConfig.yourPrice.label} fill="var(--color-yourPrice)" radius={4} barSize={24} />
+            <Bar dataKey="competitorAvg" name={chartConfig.competitorAvg.label} fill="var(--color-competitorAvg)" radius={4} barSize={24} />
+            <Bar dataKey="competitorLow" name={chartConfig.competitorLow.label} fill="var(--color-competitorLow)" radius={4} barSize={24} />
+            <Bar dataKey="competitorHigh" name={chartConfig.competitorHigh.label} fill="var(--color-competitorHigh)" radius={4} barSize={24} />
           </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
   );
 }
-
-    
