@@ -27,7 +27,6 @@ import {
   SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type ViewMode = 'list' | 'map';
 
@@ -235,12 +234,12 @@ setStatus('success');
                 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-auto">
+                            <Button variant="outline" className="w-[220px] justify-start">
                                 <ActiveSortIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                 {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[200px]">
+                        <DropdownMenuContent align="start" className="w-[220px]">
                             <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
                                 {sortOptionsConfig.map(option => (
                                      <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
@@ -254,12 +253,23 @@ setStatus('success');
             </div>
             
             <div className="flex items-center gap-2">
-                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="hidden sm:block">
-                  <TabsList>
-                    <TabsTrigger value="list" className="gap-2"><List className="h-4 w-4" /> Жагсаалт</TabsTrigger>
-                    <TabsTrigger value="map" className="gap-2"><MapPin className="h-4 w-4" /> Газрын зураг</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                 <Button
+                    variant="outline"
+                    onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+                    className="w-40 justify-center"
+                  >
+                    {viewMode === 'list' ? (
+                      <>
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Газрын зураг
+                      </>
+                    ) : (
+                      <>
+                        <List className="mr-2 h-4 w-4" />
+                        Жагсаалт
+                      </>
+                    )}
+                  </Button>
             </div>
         </div>
       </div>
