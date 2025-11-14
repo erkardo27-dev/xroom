@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { formatISO, startOfDay } from 'date-fns';
+import { formatISO, startOfDay, format } from 'date-fns';
 
 type RoomContextType = {
   rooms: Room[];
@@ -16,7 +16,7 @@ type RoomContextType = {
   status: 'loading' | 'success' | 'error';
   error: string | null;
   getRoomStatusForDate: (instanceId: string, date: Date) => RoomStatus;
-  setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus) => void;
+  setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => void;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -114,49 +114,48 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const getRoomStatusForDate = useCallback((instanceId: string, date: Date): RoomStatus => {
     const instance = roomInstances.find(i => i.instanceId === instanceId);
-    if (!instance) return 'closed'; // Should not happen
+    if (!instance) return 'closed'; 
 
-    const dateKey = formatISO(startOfDay(date), { representation: 'date' });
-    const todayKey = formatISO(startOfDay(new Date()), { representation: 'date' });
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
     
-    // Check for a specific override for the given date
     if (instance.overrides && instance.overrides[dateKey]) {
       return instance.overrides[dateKey].status;
     }
     
-    // If it's today, return the base status
     if (dateKey === todayKey) {
         return instance.status;
     }
 
-    // For future dates without overrides, assume 'available' unless the base status is 'closed'
-    return instance.status === 'closed' ? 'closed' : 'available';
+    return instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
 
   }, [roomInstances]);
 
-  const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus) => {
-    const dateKey = formatISO(startOfDay(date), { representation: 'date' });
-    const todayKey = formatISO(startOfDay(new Date()), { representation: 'date' });
+  const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
 
     setRoomInstances(prev =>
       prev.map(instance => {
         if (instance.instanceId === instanceId) {
-          const newInstance = { ...instance };
+          const newInstance = { ...instance, overrides: {...instance.overrides} };
           
-          // If the date is today, modify the base status
-          if (dateKey === todayKey) {
+          const isToday = dateKey === todayKey;
+
+          if (isToday) {
             newInstance.status = status;
-          } else {
-            // For other dates, use overrides
-            if (!newInstance.overrides) {
-              newInstance.overrides = {};
+            if(status !== 'booked') {
+                 delete newInstance.bookingCode;
+            } else if (bookingCode) {
+                 newInstance.bookingCode = bookingCode;
             }
-            // If setting to the default status, remove the override
-            const defaultStatus = newInstance.status === 'closed' ? 'closed' : 'available';
-            if (status === defaultStatus) {
+          } else {
+             const defaultStatusForFuture = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
+
+            if (status === defaultStatusForFuture) {
                 delete newInstance.overrides[dateKey];
             } else {
-                newInstance.overrides[dateKey] = { status };
+                newInstance.overrides[dateKey] = { status, bookingCode };
             }
           }
           return newInstance;

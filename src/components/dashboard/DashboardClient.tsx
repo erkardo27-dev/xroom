@@ -53,10 +53,15 @@ export default function DashboardClient() {
     // 1. Get all instances for the owner and augment with status for the selected date
     const instancesWithStatus = roomInstances
       .filter(instance => instance.ownerId === userEmail)
-      .map(instance => ({
-        ...instance,
-        status: getRoomStatusForDate(instance.instanceId, selectedDate),
-      }));
+      .map(instance => {
+          const statusForDate = getRoomStatusForDate(instance.instanceId, selectedDate);
+          return {
+            ...instance,
+            status: statusForDate,
+            // Also update booking code based on override status
+            bookingCode: statusForDate === 'booked' ? instance.overrides?.[format(selectedDate, 'yyyy-MM-dd')]?.bookingCode || instance.bookingCode : undefined,
+          };
+      });
 
     // 2. Filter instances
     const filtered = instancesWithStatus.filter(instance => {
@@ -73,7 +78,7 @@ export default function DashboardClient() {
           const roomB = getRoomById(b.roomTypeId);
           return (roomA?.roomName || '').localeCompare(roomB?.roomName || '');
         case 'status':
-           const statusOrder: Record<RoomStatus, number> = { 'booked': 1, 'available': 2, 'maintenance': 3, 'closed': 4 };
+           const statusOrder: Record<RoomStatus, number> = { 'booked': 1, 'occupied': 2, 'available': 3, 'maintenance': 4, 'closed': 5 };
            return statusOrder[a.status] - statusOrder[b.status];
         case 'roomNumber':
         default:
@@ -151,7 +156,7 @@ export default function DashboardClient() {
           </div>
           
           <div className="flex flex-wrap gap-4 items-end mb-8 p-3 border rounded-lg bg-secondary/30">
-              <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div className="space-y-1">
                     <Label className="text-xs font-semibold flex items-center gap-1"><ListFilter className="w-3.5 h-3.5"/>Шүүлтүүр</Label>
                     <div className="grid grid-cols-2 gap-2">
@@ -168,6 +173,7 @@ export default function DashboardClient() {
                                 <SelectItem value="all">Бүх төлөв</SelectItem>
                                 <SelectItem value="available">Сул</SelectItem>
                                 <SelectItem value="booked">Захиалгатай</SelectItem>
+                                <SelectItem value="occupied">Байрлаж байна</SelectItem>
                                 <SelectItem value="maintenance">Засвартай</SelectItem>
                                 <SelectItem value="closed">Хаалттай</SelectItem>
                             </SelectContent>

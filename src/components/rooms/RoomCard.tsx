@@ -39,6 +39,7 @@ import {
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
 import { useToast } from '@/hooks/use-toast';
+import { startOfDay } from 'date-fns';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
@@ -82,7 +83,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   
-  const { updateRoomInstance } = useRoom();
+  const { setRoomStatusForDate } = useRoom();
   const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
@@ -121,16 +122,16 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     if (isSoldOut) return;
 
     setBookingStep('booking');
-    const bookingCode = Math.floor(1000 + Math.random() * 9000).toString();
     const instanceToBook = availableInstances[0]; // Book the first available instance
     
     // Simulate API call for booking
     setTimeout(() => {
-        updateRoomInstance({
-            ...instanceToBook,
-            status: 'booked',
-            bookingCode: bookingCode
-        });
+        setRoomStatusForDate(
+            instanceToBook.instanceId,
+            startOfDay(new Date()), // Booking for today
+            'booked',
+            checkinCode
+        );
 
         setConfirmationId(`XR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`);
         setBookingStep('success');

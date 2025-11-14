@@ -5,7 +5,7 @@ export type SortOption = 'distance' | 'price' | 'rating';
 export const locations = ['Хотын төв', 'Зайсан', 'Яармаг', 'Сансар', '1-р хороолол', 'Хороолол'] as const;
 export type Location = typeof locations[number];
 
-export type RoomStatus = 'available' | 'booked' | 'maintenance' | 'closed';
+export type RoomStatus = 'available' | 'booked' | 'maintenance' | 'closed' | 'occupied';
 
 // Represents a template for a room type
 export type Room = {
