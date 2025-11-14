@@ -64,7 +64,7 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
     borderColor: 'border-yellow-500/50', 
     icon: <Tag className="w-4 h-4 mr-2" />,
     action: {
-        text: 'Зочин ирлээ',
+        text: 'Зочинг оруулах',
         icon: <UserCheck className="w-4 h-4 mr-2"/>,
         nextStatus: 'occupied',
         disabled: false,
