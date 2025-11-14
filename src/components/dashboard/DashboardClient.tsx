@@ -24,7 +24,7 @@ import { RecommendationCard } from "./RecommendationCard";
 type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
-  const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
@@ -45,10 +45,10 @@ export default function DashboardClient() {
   }, [isLoggedIn, isAuthLoading, router]);
 
   const ownerRoomTypes = useMemo(() => {
-      return rooms.filter(r => r.ownerId === "owner@example.com");
-  }, [rooms]);
+      return rooms.filter(r => r.ownerId === userEmail);
+  }, [rooms, userEmail]);
 
-  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === "owner@example.com"), [roomInstances]);
+  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userEmail), [roomInstances, userEmail]);
 
   const filteredAndSortedInstances = useMemo(() => {
     // 1. Get all instances for the owner and augment with status for the selected date
@@ -137,11 +137,7 @@ export default function DashboardClient() {
       <div>
          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            {/* Left side: Date & Recommendations */}
-            <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2">
                  <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
@@ -185,7 +181,9 @@ export default function DashboardClient() {
                     </PopoverContent>
                 </Popover>
             </div>
+        </div>
 
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             {/* Right side: Filters & Sort */}
             <div className="flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-2">

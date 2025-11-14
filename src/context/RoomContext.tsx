@@ -8,7 +8,7 @@ import { format, startOfDay } from 'date-fns';
 type RoomContextType = {
   rooms: Room[];
   roomInstances: RoomInstance[];
-  addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'ownerId'>) => void;
+  addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoomInstance: (instanceId: string) => void;
   updateRoomInstance: (updatedInstance: RoomInstance) => void;
@@ -30,6 +30,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
+  const [toastInfo, setToastInfo] = useState<{ title: string, description: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,6 +68,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         }
     }
   }, [rooms, roomInstances, status]);
+
+  useEffect(() => {
+    if (toastInfo) {
+      toast(toastInfo);
+      setToastInfo(null);
+    }
+  }, [toastInfo, toast]);
 
   const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => {
     const newRoomType: Room = {
@@ -130,8 +138,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const instance = roomInstances.find(i => i.instanceId === instanceId);
     if (!instance) return 'closed'; 
 
-    const dateKey = format(date, 'yyyy-MM-dd');
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
+    const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
     
     if (instance.overrides && instance.overrides[dateKey]) {
       return instance.overrides[dateKey].status;
@@ -143,7 +151,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     
     // For future or past dates without specific overrides, derive from base status.
     // If base is 'closed' or 'maintenance', it affects all dates unless overridden.
-    return instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
+    return (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > todayKey ? 'closed' : 'available';
 
   }, [roomInstances]);
 
@@ -153,15 +161,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         const room = rooms.find(r => r.id === instance.roomTypeId);
         if (!room) return 0;
 
-        const dateKey = format(date, 'yyyy-MM-dd');
+        const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
         // Check for a date-specific price override first
         const price = instance.overrides?.[dateKey]?.price ?? room.price;
         return price;
     }, [roomInstances, rooms]);
 
   const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => {
-    const dateKey = format(date, 'yyyy-MM-dd');
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
+    const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
 
     setRoomInstances(prev =>
       prev.map(instance => {
@@ -177,7 +185,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                  delete newInstance.bookingCode;
             }
           } else {
-             const defaultStatusForFuture = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
+             const defaultStatusForFuture = (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > todayKey ? 'closed' : 'available';
 
              if (!newInstance.overrides[dateKey]) {
                 const roomType = getRoomById(instance.roomTypeId);
@@ -203,7 +211,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   }, [getRoomById]);
 
   const setRoomPriceForDate = useCallback((instanceId: string, date: Date, price: number) => {
-     const dateKey = format(date, 'yyyy-MM-dd');
+     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
       setRoomInstances(prev =>
         prev.map(instance => {
             if (instance.instanceId === instanceId) {
@@ -216,7 +224,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 if (price === roomType.price) {
                     if (newInstance.overrides[dateKey]) {
                         delete newInstance.overrides[dateKey].price;
-                        const defaultStatus = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
+                        const defaultStatus = (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > format(new Date(), 'yyyy-MM-dd') ? 'closed' : 'available';
                         if (newInstance.overrides[dateKey].status === defaultStatus) {
                             delete newInstance.overrides[dateKey];
                         }
@@ -228,7 +236,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                         newInstance.overrides[dateKey].price = price;
                     }
                 }
-                toast({
+                 setToastInfo({
                   title: "Үнэ шинэчлэгдлээ",
                   description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
                 });
@@ -237,7 +245,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             return instance;
         })
       );
-  }, [getRoomById, getRoomStatusForDate, toast]);
+  }, [getRoomById, getRoomStatusForDate]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
@@ -264,13 +272,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             const index = newInstances.findIndex(i => i.instanceId === inst.instanceId);
             if (index !== -1) {
                 const updatedInstance = { ...newInstances[index], overrides: { ...newInstances[index].overrides } };
-                const dateKey = format(date, 'yyyy-MM-dd');
+                const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
                 const currentStatus = getRoomStatusForDate(inst.instanceId, date);
 
                 if (price === undefined || price === roomType.price) {
                     if (updatedInstance.overrides[dateKey]) {
                         delete updatedInstance.overrides[dateKey].price;
-                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 1 && updatedInstance.overrides[dateKey].status === (inst.status === 'closed' || inst.status === 'maintenance' ? 'closed' : 'available')) {
+                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 1 && updatedInstance.overrides[dateKey].status === ((inst.status === 'closed' || inst.status === 'maintenance') && dateKey > format(new Date(), 'yyyy-MM-dd') ? 'closed' : 'available')) {
                            delete updatedInstance.overrides[dateKey];
                         }
                     }
@@ -286,12 +294,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return newInstances;
     });
 
-    toast({
+    setToastInfo({
         title: "Үнэ шинэчлэгдлээ",
         description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
     });
 
-  }, [getRoomById, roomInstances, getRoomStatusForDate, toast]);
+  }, [getRoomById, roomInstances, getRoomStatusForDate]);
 
 
   return (
