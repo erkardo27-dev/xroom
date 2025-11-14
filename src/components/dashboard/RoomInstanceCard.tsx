@@ -26,7 +26,7 @@ import {
 type RoomInstanceCardProps = {
   instance: RoomInstance;
   onEditType: (roomType: Room) => void;
-  onDeleteType: (roomType: Room) => void;
+  onDeleteInstance: (instance: RoomInstance) => void;
   selectedDate: Date;
 };
 
@@ -107,7 +107,7 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
 };
 
 
-export function RoomInstanceCard({ instance, onEditType, onDeleteType, selectedDate }: RoomInstanceCardProps) {
+export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selectedDate }: RoomInstanceCardProps) {
   const { getRoomById, updateRoomInstance, setRoomStatusForDate } = useRoom();
   const [isEditingNumber, setIsEditingNumber] = useState(false);
   const [roomNumber, setRoomNumber] = useState(instance.roomNumber);
@@ -186,12 +186,12 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType, selectedD
                  <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onDeleteType(roomType)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onDeleteInstance(instance)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                             <p>Өрөөний төрөл устгах</p>
+                             <p>Энэ өрөөг устгах</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

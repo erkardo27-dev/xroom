@@ -10,7 +10,7 @@ type RoomContextType = {
   roomInstances: RoomInstance[];
   addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'ownerId'>) => void;
   updateRoom: (updatedRoom: Room) => void;
-  deleteRoom: (roomId: string) => void;
+  deleteRoomInstance: (instanceId: string) => void;
   updateRoomInstance: (updatedInstance: RoomInstance) => void;
   getRoomById: (roomId: string) => Room | undefined;
   status: 'loading' | 'success' | 'error';
@@ -98,12 +98,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     setRoomInstances(prev => prev.map(instance => instance.instanceId === updatedInstance.instanceId ? updatedInstance : instance));
   };
 
-  const deleteRoom = (roomTypeId: string) => {
-    setRooms(prev => prev.filter(room => room.id !== roomTypeId));
-    setRoomInstances(prev => prev.filter(instance => instance.roomTypeId !== roomTypeId));
+  const deleteRoomInstance = (instanceId: string) => {
+    setRoomInstances(prev => prev.filter(instance => instance.instanceId !== instanceId));
     toast({
-        title: "Өрөөний төрөл устгагдлаа",
-        description: "Таны сонгосон өрөөний төрөл болон хамаарах бүх өрөөнүүд амжилттай устгагдлаа.",
+        title: "Өрөө устгагдлаа",
+        description: "Сонгосон өрөө амжилттай устгагдлаа.",
         variant: "destructive",
     });
   };
@@ -166,7 +165,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoom, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate }}>
       {children}
     </RoomContext.Provider>
   );

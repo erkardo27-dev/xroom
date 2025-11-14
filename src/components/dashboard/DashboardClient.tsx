@@ -16,7 +16,6 @@ import { RoomInstanceCard } from "./RoomInstanceCard";
 import { format, addDays, isToday, startOfDay } from 'date-fns';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 
@@ -24,12 +23,12 @@ type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
   const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, roomInstances, status: roomStatus, deleteRoom, getRoomStatusForDate, getRoomById } = useRoom();
+  const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<Room | null>(null);
-  const [roomTypeToDelete, setRoomTypeToDelete] = useState<Room | null>(null);
+  const [instanceToDelete, setInstanceToDelete] = useState<RoomInstance | null>(null);
 
   // Filtering and Sorting State
   const [sortOption, setSortOption] = useState<SortOption>('roomNumber');
@@ -93,9 +92,9 @@ export default function DashboardClient() {
   const isLoading = isAuthLoading || roomStatus === 'loading';
 
   const handleDelete = () => {
-    if (roomTypeToDelete) {
-      deleteRoom(roomTypeToDelete.id);
-      setRoomTypeToDelete(null);
+    if (instanceToDelete) {
+      deleteRoomInstance(instanceToDelete.instanceId);
+      setInstanceToDelete(null);
     }
   }
 
@@ -212,7 +211,7 @@ export default function DashboardClient() {
                         key={instance.instanceId} 
                         instance={instance} 
                         onEditType={(roomType) => setRoomTypeToEdit(roomType)}
-                        onDeleteType={(roomType) => setRoomTypeToDelete(roomType)}
+                        onDeleteInstance={(instance) => setInstanceToDelete(instance)}
                         selectedDate={selectedDate}
                       />
                   ))}
@@ -221,12 +220,12 @@ export default function DashboardClient() {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!roomTypeToDelete} onOpenChange={(open) => !open && setRoomTypeToDelete(null)}>
+      <AlertDialog open={!!instanceToDelete} onOpenChange={(open) => !open && setInstanceToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Та энэ өрөөний төрлийг устгахдаа итгэлтэй байна уу?</AlertDialogTitle>
+            <AlertDialogTitle>Та энэ өрөөг устгахдаа итгэлтэй байна уу?</AlertDialogTitle>
             <AlertDialogDescription>
-              Энэ үйлдлийг буцаах боломжгүй. Энэ нь таны сонгосон өрөөний төрөл болон түүнд хамаарах бүх өрөөний мэдээллийг устгах болно.
+              Энэ үйлдлийг буцаах боломжгүй. Энэ нь {instanceToDelete?.roomNumber} тоот өрөөний мэдээллийг устгах болно.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
