@@ -17,9 +17,10 @@ export type Room = {
   amenities: Amenity[];
   imageIds: string[];
   location: Location;
+  ownerId: string | null;
 };
 
-const roomsData: Omit<Room, 'distance'>[] = [
+const roomsData: Omit<Room, 'distance' | 'ownerId'>[] = [
     {
       id: 'room-101',
       roomName: 'Стандарт Кинг Өрөө',
@@ -106,8 +107,9 @@ const roomsData: Omit<Room, 'distance'>[] = [
     }
 ];
 
-// Add random distances to rooms for variety
+// Add random distances and a null ownerId to initial rooms for variety
 export const rooms: Room[] = roomsData.map(room => ({
     ...room,
     distance: +(Math.random() * 10 + 0.5).toFixed(1), // Random distance between 0.5 and 10.5 km
+    ownerId: null, // Initially, no rooms have owners
 }));

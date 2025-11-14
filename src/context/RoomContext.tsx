@@ -5,7 +5,7 @@ import { Room, rooms as initialRooms } from "@/lib/data";
 
 type RoomContextType = {
   rooms: Room[];
-  addRoom: (room: Room) => void;
+  addRoom: (room: Omit<Room, 'id' | 'rating' | 'distance'>) => void;
   status: 'loading' | 'success' | 'error';
   error: string | null;
 };
@@ -18,22 +18,20 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Load initial rooms from data.ts
+    // In a real app, this would be an API call
     const timer = setTimeout(() => {
-        if (typeof window !== 'undefined' && 'geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setRooms(initialRooms);
-              setStatus('success');
-            },
-            (err) => {
-              setError(`Таны байршлыг олоход алдаа гарлаа: ${err.message}. Үндсэн үр дүнг харуулж байна.`);
-              setRooms(initialRooms);
-              setStatus('success'); 
+        try {
+            const savedRooms = localStorage.getItem('rooms');
+            if (savedRooms) {
+                setRooms(JSON.parse(savedRooms));
+            } else {
+                setRooms(initialRooms);
             }
-          );
-        } else {
-            setError("Таны хөтөч байршил тодорхойлохыг дэмжихгүй байна. Үндсэн үр дүнг харуулж байна.");
-            setRooms(initialRooms);
+            setStatus('success');
+        } catch (e) {
+            console.error("Failed to load rooms from localStorage", e);
+            setRooms(initialRooms); // Fallback to initial data
             setStatus('success');
         }
     }, 500);
@@ -41,8 +39,25 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const addRoom = (room: Room) => {
-    setRooms((prevRooms) => [room, ...prevRooms]);
+  useEffect(() => {
+    // Save rooms to localStorage whenever they change
+    if (status === 'success') {
+        try {
+            localStorage.setItem('rooms', JSON.stringify(rooms));
+        } catch (e) {
+            console.error("Failed to save rooms to localStorage", e);
+        }
+    }
+  }, [rooms, status]);
+
+  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => {
+    const newRoom: Room = {
+      ...roomData,
+      id: `room-${Date.now()}`,
+      rating: +(Math.random() * 1.5 + 3.5).toFixed(1), // 3.5 to 5.0
+      distance: +(Math.random() * 10 + 0.5).toFixed(1), // 0.5 to 10.5 km
+    };
+    setRooms((prevRooms) => [newRoom, ...prevRooms]);
   };
 
   return (

@@ -16,10 +16,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
-import { Amenity, locations } from "@/lib/data";
+import { Amenity, locations, Room } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "../ui/checkbox";
+import { useAuth } from "@/context/AuthContext";
 
 const amenityOptions: { id: Amenity, label: string }[] = [
     { id: 'wifi', label: 'Wi-Fi' },
@@ -47,6 +48,7 @@ type AddRoomFormProps = {
 export function AddRoomForm({ onFormSubmit }: AddRoomFormProps) {
     const { toast } = useToast();
     const { addRoom } = useRoom();
+    const { userEmail } = useAuth();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -60,15 +62,22 @@ export function AddRoomForm({ onFormSubmit }: AddRoomFormProps) {
     });
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        const newRoom = {
-            id: `room-${Date.now()}`,
-            rating: +(Math.random() * 1.5 + 3.5).toFixed(1), // 3.5 to 5.0
-            distance: +(Math.random() * 10 + 0.5).toFixed(1),
+        if (!userEmail) {
+             toast({
+                variant: "destructive",
+                title: "Алдаа",
+                description: "Нэвтэрч орж байж өрөө нэмэх боломжтой.",
+            });
+            return;
+        }
+
+        const newRoomData: Omit<Room, 'id' | 'rating' | 'distance'> = {
             ...values,
-            amenities: values.amenities as Amenity[]
+            amenities: values.amenities as Amenity[],
+            ownerId: userEmail,
         };
 
-        addRoom(newRoom);
+        addRoom(newRoomData);
 
         toast({
             title: "Өрөө бүртгэгдлээ!",

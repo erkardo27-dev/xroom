@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoom } from "@/context/RoomContext";
@@ -10,15 +10,22 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Info } from "lucide-react";
 
 export default function DashboardClient() {
-  const { isLoggedIn, isLoading } = useAuth();
-  const { rooms } = useRoom();
+  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { rooms, status: roomStatus } = useRoom();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
+    if (!isAuthLoading && !isLoggedIn) {
       router.push("/");
     }
-  }, [isLoggedIn, isLoading, router]);
+  }, [isLoggedIn, isAuthLoading, router]);
+
+  const ownerRooms = useMemo(() => {
+    if (!userEmail) return [];
+    return rooms.filter(room => room.ownerId === userEmail);
+  }, [rooms, userEmail]);
+
+  const isLoading = isAuthLoading || roomStatus === 'loading';
 
   if (isLoading || !isLoggedIn) {
     return (
@@ -37,7 +44,7 @@ export default function DashboardClient() {
     <div>
         <h1 className="text-3xl font-bold tracking-tight mb-8">Миний өрөөнүүд</h1>
 
-        {rooms.length === 0 ? (
+        {ownerRooms.length === 0 ? (
              <Alert>
                 <Info className="h-4 w-4" />
                 <AlertTitle>Өрөө оруулаагүй байна</AlertTitle>
@@ -47,7 +54,7 @@ export default function DashboardClient() {
             </Alert>
         ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-                {rooms.map(room => (
+                {ownerRooms.map(room => (
                     <RoomCard key={room.id} room={room} />
                 ))}
             </div>
