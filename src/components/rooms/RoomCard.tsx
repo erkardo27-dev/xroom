@@ -102,8 +102,8 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col bg-card border">
-        <Carousel className="relative w-full group/carousel">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col bg-card border rounded-xl">
+         <Carousel className="relative w-full group/carousel">
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index}>
@@ -123,7 +123,7 @@ export function RoomCard({ room }: { room: Room }) {
           <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity h-8 w-8" />
           
           {discount > 0 && (
-            <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground border-none text-sm font-bold shadow-md z-10">
+             <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground border-none text-sm font-bold shadow-md z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
@@ -144,7 +144,7 @@ export function RoomCard({ room }: { room: Room }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mt-3 text-muted-foreground">
+          <div className="flex items-center gap-2 mt-4">
              {amenities.map(a => (
                 <TooltipProvider key={a.key}>
                     <Tooltip>
