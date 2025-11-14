@@ -10,7 +10,7 @@ type HeroProps = {
 
 export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
   return (
-    <div className="relative rounded-xl overflow-hidden mb-8 h-[400px] md:h-[450px] flex items-center justify-center text-center p-4">
+    <div className="relative rounded-xl overflow-hidden mb-8 h-[350px] md:h-[400px] flex items-center justify-center text-center p-4">
       <Image
         src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
         alt="Night city view from a hotel room"
@@ -28,16 +28,16 @@ export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mt-2 !leading-tight text-shadow-lg">
           Энэ шөнийн онцгой буудлууд
         </h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-white/80">
+        <div className='mt-8'>
+            <HeroSearch onSearch={onSearch} />
+        </div>
+         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80">
           {status === 'loading'
             ? "Шилдэг саналуудыг хайж байна..."
             : filteredCount > 0
               ? `${filteredCount} өрөө олдлоо. Доорх шүүлтүүрээр хайлтаа нарийвчлаарай.`
               : "Таны хайлтад тохирох өрөө олдсонгүй."}
         </p>
-        <div className='mt-8'>
-            <HeroSearch onSearch={onSearch} />
-        </div>
       </div>
     </div>
   );
