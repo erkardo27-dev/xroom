@@ -40,7 +40,6 @@ type StatusConfig = {
         icon: React.ReactNode;
         nextStatus: RoomStatus;
         disabled: boolean;
-        style: string;
     };
 };
 
@@ -55,7 +54,6 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
       icon: <PowerOff className="w-4 h-4 mr-2"/>,
       nextStatus: 'closed',
       disabled: false,
-      style: 'bg-gray-500 hover:bg-gray-600',
     }
   },
   booked: { 
@@ -68,7 +66,6 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
         icon: <UserCheck className="w-4 h-4 mr-2"/>,
         nextStatus: 'occupied',
         disabled: false,
-        style: 'bg-yellow-500 hover:bg-yellow-600',
     }
   },
   occupied: {
@@ -81,7 +78,6 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
         icon: <LogOut className="w-4 h-4 mr-2" />,
         nextStatus: 'available',
         disabled: false,
-        style: 'bg-blue-500 hover:bg-blue-600',
     }
   },
   maintenance: { 
@@ -94,7 +90,6 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
         icon: <Wrench className="w-4 h-4 mr-2"/>,
         nextStatus: 'maintenance',
         disabled: true,
-        style: 'bg-orange-500 hover:bg-orange-600',
     }
   },
   closed: { 
@@ -107,7 +102,6 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
         icon: <Power className="w-4 h-4 mr-2"/>,
         nextStatus: 'available',
         disabled: false,
-        style: 'bg-green-500 hover:bg-green-600',
     }
   },
 };
@@ -219,7 +213,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType, selectedD
       <CardFooter>
         <Button 
             onClick={handleActionClick} 
-            className={cn("w-full", currentStatus.action.style)} 
+            className={cn("w-full hover:brightness-110", currentStatus.color)} 
             disabled={currentStatus.action.disabled}
         >
             {currentStatus.action.icon}
