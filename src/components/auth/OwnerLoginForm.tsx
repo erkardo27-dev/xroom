@@ -10,18 +10,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
   password: z.string().min(6, { message: "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой." }),
 });
 
-export function OwnerLoginForm() {
-    const { toast } = useToast();
+type OwnerLoginFormProps = {
+    onFormSubmit: () => void;
+};
+
+
+export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
+    const { login } = useAuth();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -32,15 +37,8 @@ export function OwnerLoginForm() {
     });
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Mock submission
-        console.log("Login attempt:", values);
-        toast({
-            title: "Амжилттай нэвтэрлээ",
-            description: "Хяналтын самбар луу шилжиж байна...",
-        });
-        // In a real app, you would handle backend auth here.
-        // We can close the dialog for now. This requires state lift up.
-        // For MVP, we just show a toast.
+        login(values.email);
+        onFormSubmit();
     }
 
     return (

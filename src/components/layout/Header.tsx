@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, ChevronDown } from 'lucide-react';
+import { PlusCircle, LogIn, ChevronDown, LogOut } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +16,21 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
   } from "@/components/ui/dropdown-menu"
 import { OwnerLoginForm } from '@/components/auth/OwnerLoginForm';
 import { AddRoomForm } from '@/components/rooms/AddRoomForm';
 import { Logo } from './Logo';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 
 type DialogType = 'addRoom' | 'login' | null;
 
 export default function Header() {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const { isLoggedIn, userEmail, logout } = useAuth();
 
 
   const handleOpenChange = (open: boolean) => {
@@ -40,6 +44,10 @@ export default function Header() {
     setOpenDialog(dialog);
     setIsFormOpen(true);
   };
+  
+  const getAvatarFallback = (email: string | null) => {
+    return email ? email.charAt(0).toUpperCase() : '?';
+  }
 
 
   return (
@@ -50,28 +58,58 @@ export default function Header() {
         </Link>
 
         <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                        Эзэмшигч
-                        <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
-                        <DropdownMenuItem>
+            {isLoggedIn ? (
+                <div className="flex items-center gap-4">
+                     <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
+                        <Button>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Өрөө оруулах
-                        </DropdownMenuItem>
+                        </Button>
                     </DialogTrigger>
-                    <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
-                        <DropdownMenuItem>
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Нэвтрэх
-                        </DropdownMenuItem>
-                    </DialogTrigger>
-                </DropdownMenuContent>
-            </DropdownMenu>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                               <Avatar className="h-9 w-9">
+                                    <AvatarFallback>{getAvatarFallback(userEmail)}</AvatarFallback>
+                                </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem disabled>
+                                {userEmail}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={logout}>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Гарах
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            ) : (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            Эзэмшигч
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
+                            <DropdownMenuItem>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Өрөө оруулах (Нэвтрэх)
+                            </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
+                            <DropdownMenuItem>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Нэвтрэх
+                            </DropdownMenuItem>
+                        </DialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
 
             <DialogContent className="sm:max-w-[425px]">
                 {openDialog === 'addRoom' && (
@@ -79,10 +117,10 @@ export default function Header() {
                          <DialogHeader>
                             <DialogTitle>Өрөө оруулах</DialogTitle>
                             <DialogDescription>
-                                Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.
+                                {isLoggedIn ? 'Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.' : 'Өрөө оруулахын тулд эхлээд нэвтэрнэ үү.'}
                             </DialogDescription>
                         </DialogHeader>
-                        <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/>
+                        {isLoggedIn ? <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)} />}
                     </>
                 )}
                 {openDialog === 'login' && (
@@ -93,7 +131,7 @@ export default function Header() {
                                 Зочид буудлын удирдлагын самбартаа нэвтрэх.
                             </DialogDescription>
                         </DialogHeader>
-                        <OwnerLoginForm />
+                        <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
                     </>
                 )}
             </DialogContent>
