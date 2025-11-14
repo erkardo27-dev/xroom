@@ -9,23 +9,16 @@ import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type ViewMode = 'list' | 'map';
 
 const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
-    { value: 'distance', label: 'Ойрхон нь эхэндээ', icon: MapPin },
-    { value: 'price', label: 'Хямд нь эхэндээ', icon: DollarSign },
-    { value: 'rating', label: 'Өндөр үнэлгээтэй нь', icon: Star },
+    { value: 'distance', label: 'Ойрхон', icon: MapPin },
+    { value: 'price', label: 'Хямд', icon: DollarSign },
+    { value: 'rating', label: 'Үнэлгээ', icon: Star },
 ];
 
 const MAX_PRICE = 400;
@@ -107,9 +100,9 @@ setStatus('success');
           </p>
        </div>
       
-       <div className="sticky top-[65px] z-40 bg-background/80 backdrop-blur-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 border-y mb-8">
+       <div className="sticky top-[65px] z-40 bg-background/90 backdrop-blur-sm rounded-lg border shadow-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 mb-8">
         <div className="max-w-screen-2xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 items-center">
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
                         <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
@@ -154,29 +147,25 @@ setStatus('success');
                 </div>
             </div>
             <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t">
-              <div>
-                  <span className="text-sm font-semibold text-foreground">{filteredAndSortedRooms.length} үр дүн</span>
+              <div className='flex items-center gap-2'>
+                  <span className="text-sm font-semibold text-muted-foreground mr-2">Эрэмбэлэх:</span>
+                  <ToggleGroup
+                      type="single"
+                      value={sortOption}
+                      onValueChange={(value) => {
+                          if (value) setSortOption(value as SortOption);
+                      }}
+                      aria-label="Эрэмбэлэх"
+                  >
+                      {sortOptionsConfig.map(option => (
+                           <ToggleGroupItem key={option.value} value={option.value} aria-label={option.label} className="gap-2">
+                              <option.icon className="h-4 w-4" />
+                              {option.label}
+                          </ToggleGroupItem>
+                      ))}
+                  </ToggleGroup>
               </div>
               <div className="flex items-center gap-2">
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="w-[220px] justify-start">
-                              <ActiveSortIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                              {sortOptionsConfig.find(o => o.value === sortOption)?.label || 'Эрэмбэлэх'}
-                          </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[220px]">
-                          <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                              {sortOptionsConfig.map(option => (
-                                   <DropdownMenuRadioItem key={option.value} value={option.value} className="gap-2">
-                                      <option.icon className="h-4 w-4 text-muted-foreground" />
-                                      {option.label}
-                                  </DropdownMenuRadioItem>
-                              ))}
-                          </DropdownMenuRadioGroup>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-                  
                   <Button
                     variant="outline"
                     onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
