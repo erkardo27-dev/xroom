@@ -135,9 +135,10 @@ export default function DashboardClient() {
   return (
     <>
       <div>
-         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-             <div className="flex items-center gap-2">
+         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6">Миний өрөөнүүд</h1>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <div className="flex flex-wrap items-center gap-2">
                  <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
@@ -180,12 +181,9 @@ export default function DashboardClient() {
                         <RecommendationCard selectedDate={selectedDate} />
                     </PopoverContent>
                 </Popover>
-            </div>
-        </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            {/* Right side: Filters & Sort */}
-            <div className="flex flex-wrap items-center gap-2">
+                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
+
                 <div className="flex items-center gap-2">
                     <ListFilter className="w-4 h-4 text-muted-foreground" />
                     <Select value={filterRoomType} onValueChange={setFilterRoomType}>
@@ -283,3 +281,5 @@ export default function DashboardClient() {
     </>
   );
 }
+
+    
