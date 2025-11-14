@@ -38,13 +38,9 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
   const chartData = [
     {
       label: "Таны үнэ",
-      value: selectedRoom.price,
-      fill: "var(--color-yourPrice)"
-    },
-    {
-      label: "Зах зээлийн үнэ",
-      value: [competitorLow, competitorAvg, competitorHigh],
-    },
+      yourPrice: selectedRoom.price,
+      competitorPrice: [competitorLow, competitorAvg, competitorHigh],
+    }
   ];
 
   return (
@@ -61,33 +57,29 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
                 layout="vertical"
                 data={chartData}
                 margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
+                barGap={4}
             >
-                <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} className="text-sm" />
+                <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tick={false} />
                 <XAxis type="number" hide />
                 <ChartTooltip
                     cursor={{ fill: 'hsl(var(--muted) / 0.5)' }}
                     content={<ChartTooltipContent 
-                      formatter={(value) => Array.isArray(value) ? value.map(v => `${Number(v).toLocaleString()}₮`).join(' - ') : `${Number(value).toLocaleString()}₮`}
+                      formatter={(value, name) => {
+                          if (name === 'yourPrice') return `${Number(value).toLocaleString()}₮`;
+                          if (Array.isArray(value)) {
+                            return value.map(v => `${Number(v).toLocaleString()}₮`).join(' - ');
+                          }
+                          return `${Number(value).toLocaleString()}₮`;
+                      }}
                     />}
                 />
                  <Legend verticalAlign="top" align="right" />
 
-                <Bar dataKey="value" radius={5}>
-                    {chartData.map((d, i) => {
-                        if (d.label === "Таны үнэ") {
-                             return <Rectangle key={d.label} fill={chartConfig.yourPrice.color} />;
-                        }
-                        // For competitor prices
-                         return (
-                            <Rectangle key={d.label} fill="transparent" /* We color in the background */ />
-                        );
-                    })}
-                </Bar>
-                 <Bar dataKey="value[2]" name={chartConfig.competitorHigh.label} stackId="a" fill={chartConfig.competitorHigh.color} radius={5} />
-                 <Bar dataKey="value[1]" name={chartConfig.competitorAvg.label} stackId="a" fill={chartConfig.competitorAvg.color} radius={5}/>
-                 <Bar dataKey="value[0]" name={chartConfig.competitorLow.label} stackId="a" fill={chartConfig.competitorLow.color} radius={5}/>
+                 <Bar dataKey="yourPrice" name={chartConfig.yourPrice.label} barSize={32} fill={chartConfig.yourPrice.color} radius={5} />
+                 <Bar dataKey="competitorPrice[2]" name={chartConfig.competitorHigh.label} stackId="a" fill={chartConfig.competitorHigh.color} radius={5} barSize={32} />
+                 <Bar dataKey="competitorPrice[1]" name={chartConfig.competitorAvg.label} stackId="a" fill={chartConfig.competitorAvg.color} radius={5} barSize={32}/>
+                 <Bar dataKey="competitorPrice[0]" name={chartConfig.competitorLow.label} stackId="a" fill={chartConfig.competitorLow.color} radius={5} barSize={32}/>
 
-                 <Bar dataKey="value" name={chartConfig.yourPrice.label} barSize={32} fill={chartConfig.yourPrice.color} radius={5} />
             </BarChart>
         </ChartContainer>
       </CardContent>
