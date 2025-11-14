@@ -102,7 +102,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col bg-card">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col bg-card border">
         <Carousel className="relative w-full group/carousel">
           <CarouselContent>
             {images.map((image, index) => (
@@ -149,7 +149,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <TooltipProvider key={a.key}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center justify-center w-8 h-8 bg-secondary/50 rounded-md">
+                             <div className="flex items-center justify-center w-8 h-8 bg-secondary rounded-md">
                                 {a.icon}
                             </div>
                         </TooltipTrigger>
@@ -244,7 +244,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <CheckCircle className="w-16 h-16 text-green-500" />
                 <h2 className="text-2xl font-bold">Захиалга баталгаажлаа!</h2>
                 <p className="text-muted-foreground"><span className="font-semibold text-foreground">{room.hotelName}</span>-д таны өрөө баталгаажлаа. <br/> Таны захиалгын дугаар:</p>
-                <p className="text-xl font-bold text-primary tracking-widest bg-secondary/80 px-4 py-2 rounded-md">{confirmationId}</p>
+                <p className="text-xl font-bold text-primary tracking-widest bg-secondary px-4 py-2 rounded-md">{confirmationId}</p>
                 <Button onClick={closeAndResetDialog} className="mt-4 w-full">Дуусгах</Button>
             </div>
         )}
@@ -253,5 +253,3 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
-
-    
