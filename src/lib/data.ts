@@ -28,9 +28,16 @@ export type RoomInstance = {
     instanceId: string; // Unique ID for each physical room, e.g., 'room-101-1'
     roomTypeId: string; // Foreign key to Room (the template)
     roomNumber: string; // e.g., "101", "205A"
-    status: RoomStatus;
-    bookingCode?: string; // 4-digit code if booked
+    status: RoomStatus; // Base status for TODAY. Future dates default to this.
+    bookingCode?: string; // 4-digit code if booked for TODAY
     ownerId: string;
+    // Date-specific overrides. Key is ISO date string (YYYY-MM-DD)
+    overrides: { 
+        [date: string]: {
+            status: RoomStatus;
+            bookingCode?: string;
+        }
+    };
 };
 
 
@@ -80,7 +87,8 @@ export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomTyp
         roomTypeId: roomType.id,
         roomNumber: `${Math.floor(Math.random() * 4) + 1}0${i + 1}`, // e.g., 101, 202...
         status: 'available',
-        ownerId: roomType.ownerId
+        ownerId: roomType.ownerId,
+        overrides: {}
     }));
 });
 

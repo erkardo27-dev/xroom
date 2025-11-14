@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { Room, RoomInstance, initialRooms, initialRoomInstances } from "@/lib/data";
+import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { formatISO, startOfDay } from 'date-fns';
 
 type RoomContextType = {
   rooms: Room[];
@@ -14,6 +15,8 @@ type RoomContextType = {
   getRoomById: (roomId: string) => Room | undefined;
   status: 'loading' | 'success' | 'error';
   error: string | null;
+  getRoomStatusForDate: (instanceId: string, date: Date) => RoomStatus;
+  setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus) => void;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -75,6 +78,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       roomNumber: `...`, // Placeholder, user will edit
       status: 'available',
       ownerId: newRoomType.ownerId,
+      overrides: {},
     }));
     
     setRooms(prev => [newRoomType, ...prev]);
@@ -94,7 +98,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     setRoomInstances(prev => prev.map(instance => instance.instanceId === updatedInstance.instanceId ? updatedInstance : instance));
   };
 
-
   const deleteRoom = (roomTypeId: string) => {
     setRooms(prev => prev.filter(room => room.id !== roomTypeId));
     setRoomInstances(prev => prev.filter(instance => instance.roomTypeId !== roomTypeId));
@@ -109,8 +112,62 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     return rooms.find(r => r.id === roomId);
   }, [rooms]);
 
+  const getRoomStatusForDate = useCallback((instanceId: string, date: Date): RoomStatus => {
+    const instance = roomInstances.find(i => i.instanceId === instanceId);
+    if (!instance) return 'closed'; // Should not happen
+
+    const dateKey = formatISO(startOfDay(date), { representation: 'date' });
+    const todayKey = formatISO(startOfDay(new Date()), { representation: 'date' });
+    
+    // Check for a specific override for the given date
+    if (instance.overrides && instance.overrides[dateKey]) {
+      return instance.overrides[dateKey].status;
+    }
+    
+    // If it's today, return the base status
+    if (dateKey === todayKey) {
+        return instance.status;
+    }
+
+    // For future dates without overrides, assume 'available' unless the base status is 'closed'
+    return instance.status === 'closed' ? 'closed' : 'available';
+
+  }, [roomInstances]);
+
+  const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus) => {
+    const dateKey = formatISO(startOfDay(date), { representation: 'date' });
+    const todayKey = formatISO(startOfDay(new Date()), { representation: 'date' });
+
+    setRoomInstances(prev =>
+      prev.map(instance => {
+        if (instance.instanceId === instanceId) {
+          const newInstance = { ...instance };
+          
+          // If the date is today, modify the base status
+          if (dateKey === todayKey) {
+            newInstance.status = status;
+          } else {
+            // For other dates, use overrides
+            if (!newInstance.overrides) {
+              newInstance.overrides = {};
+            }
+            // If setting to the default status, remove the override
+            const defaultStatus = newInstance.status === 'closed' ? 'closed' : 'available';
+            if (status === defaultStatus) {
+                delete newInstance.overrides[dateKey];
+            } else {
+                newInstance.overrides[dateKey] = { status };
+            }
+          }
+          return newInstance;
+        }
+        return instance;
+      })
+    );
+  }, []);
+
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoom, status, error, getRoomById, updateRoomInstance }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoom, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate }}>
       {children}
     </RoomContext.Provider>
   );

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -29,6 +27,7 @@ type RoomInstanceCardProps = {
   instance: RoomInstance;
   onEditType: (roomType: Room) => void;
   onDeleteType: (roomType: Room) => void;
+  selectedDate: Date;
 };
 
 const statusConfig: { [key in RoomStatus]: { label: string; color: string; borderColor: string; icon: React.ReactNode } } = {
@@ -39,8 +38,8 @@ const statusConfig: { [key in RoomStatus]: { label: string; color: string; borde
 };
 
 
-export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomInstanceCardProps) {
-  const { getRoomById, updateRoomInstance } = useRoom();
+export function RoomInstanceCard({ instance, onEditType, onDeleteType, selectedDate }: RoomInstanceCardProps) {
+  const { getRoomById, updateRoomInstance, setRoomStatusForDate } = useRoom();
   const [isEditingNumber, setIsEditingNumber] = useState(false);
   const [roomNumber, setRoomNumber] = useState(instance.roomNumber);
   const { toast } = useToast();
@@ -64,7 +63,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomIns
 
   const handleToggleState = () => {
     const newStatus = instance.status === 'closed' ? 'available' : 'closed';
-    updateRoomInstance({ ...instance, status: newStatus });
+    setRoomStatusForDate(instance.instanceId, selectedDate, newStatus);
      toast({
       title: `Өрөөний төлөв өөрчлөгдлөө`,
       description: `"${roomType.roomName}" (${instance.roomNumber}) өрөөг ${newStatus === 'available' ? 'нээлээ' : 'хаалаа'}.`,
@@ -76,6 +75,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomIns
         toast({ variant: 'destructive', title: "Өрөөний дугаар хоосон байж болохгүй." });
         return;
     }
+    // Note: this only updates the base roomNumber, not a date-specific one.
     updateRoomInstance({ ...instance, roomNumber: roomNumber.trim() });
     setIsEditingNumber(false);
   }
