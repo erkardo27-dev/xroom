@@ -24,13 +24,15 @@ import { Logo } from './Logo';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback } from '../ui/avatar';
+import { useRouter } from 'next/navigation';
 
 type DialogType = 'addRoom' | 'login' | null;
 
-export default function Header() {
+export default function Header({ isDashboard = false }: { isDashboard?: boolean }) {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { isLoggedIn, userEmail, logout } = useAuth();
+  const router = useRouter();
 
 
   const handleOpenChange = (open: boolean) => {
@@ -49,12 +51,17 @@ export default function Header() {
     return email ? email.charAt(0).toUpperCase() : '?';
   }
 
+  const handleLogout = async () => {
+    await logout();
+  }
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
         <Link href="/" className="flex items-center gap-3">
           <Logo className="h-8 w-auto text-primary" />
+           {isDashboard && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ Миний самбар</span>}
         </Link>
 
         <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
@@ -63,7 +70,7 @@ export default function Header() {
                      <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
                         <Button>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Өрөө оруулах
+                            Шинэ өрөө
                         </Button>
                     </DialogTrigger>
                     <DropdownMenu>
@@ -75,11 +82,15 @@ export default function Header() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                             <DropdownMenuItem onClick={() => router.push(isDashboard ? '/' : '/dashboard')}>
+                                {isDashboard ? 'Нүүр хуудас' : 'Миний самбар'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem disabled>
                                 {userEmail}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={logout}>
+                            <DropdownMenuItem onClick={handleLogout}>
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Гарах
                             </DropdownMenuItem>
@@ -87,28 +98,30 @@ export default function Header() {
                     </DropdownMenu>
                 </div>
             ) : (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            Эзэмшигч
-                            <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
-                            <DropdownMenuItem>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Өрөө оруулах (Нэвтрэх)
-                            </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
-                            <DropdownMenuItem>
-                                <LogIn className="mr-2 h-4 w-4" />
-                                Нэвтрэх
-                            </DropdownMenuItem>
-                        </DialogTrigger>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                 !isDashboard && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Эзэмшигч
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
+                                <DropdownMenuItem>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Өрөө оруулах (Нэвтрэх)
+                                </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
+                                <DropdownMenuItem>
+                                    <LogIn className="mr-2 h-4 w-4" />
+                                    Нэвтрэх
+                                </DropdownMenuItem>
+                            </DialogTrigger>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                 )
             )}
 
             <DialogContent className="sm:max-w-[425px]">
@@ -120,7 +133,7 @@ export default function Header() {
                                 {isLoggedIn ? 'Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.' : 'Өрөө оруулахын тулд эхлээд нэвтэрнэ үү.'}
                             </DialogDescription>
                         </DialogHeader>
-                        {isLoggedIn ? <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)} />}
+                        {isLoggedIn ? <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }} />}
                     </>
                 )}
                 {openDialog === 'login' && (
@@ -131,7 +144,7 @@ export default function Header() {
                                 Зочид буудлын удирдлагын самбартаа нэвтрэх.
                             </DialogDescription>
                         </DialogHeader>
-                        <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
+                        <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }}/>
                     </>
                 )}
             </DialogContent>

@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
@@ -27,6 +28,7 @@ type OwnerLoginFormProps = {
 
 export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
     const { login } = useAuth();
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -36,8 +38,8 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        login(values.email);
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        await login(values.email);
         onFormSubmit();
     }
 
