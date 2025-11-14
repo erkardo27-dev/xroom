@@ -7,7 +7,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, SlidersHorizontal, X } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -47,7 +47,7 @@ export default function RoomList() {
             (err) => {
               setError(`Таны байршлыг олоход алдаа гарлаа: ${err.message}. Үндсэн үр дүнг харуулж байна.`);
               setRooms(allRooms);
-setStatus('success'); 
+              setStatus('success'); 
             }
           );
         } else {
@@ -82,8 +82,6 @@ setStatus('success');
     }
     return sorted;
   }, [rooms, sortOption, priceRange, distanceLimit, minRating]);
-
-  const ActiveSortIcon = sortOptionsConfig.find(o => o.value === sortOption)?.icon || ArrowUpDown;
   
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -100,7 +98,7 @@ setStatus('success');
           </p>
        </div>
       
-       <div className="sticky top-[65px] z-40 bg-background/90 backdrop-blur-sm rounded-lg border shadow-sm -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 mb-8">
+       <div className="sticky top-[65px] z-40 bg-background/90 backdrop-blur-sm rounded-lg -mx-4 sm:mx-0 sm:border sm:shadow-sm px-4 sm:px-8 py-4 mb-8">
         <div className="max-w-screen-2xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 items-center">
                 <div className="space-y-2">
