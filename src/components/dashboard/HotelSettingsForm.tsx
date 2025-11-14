@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,6 +22,7 @@ import { useEffect } from "react";
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
+  phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
 });
 
 type HotelSettingsFormProps = {
@@ -36,6 +38,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         defaultValues: {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
+            phoneNumber: hotelInfo?.phoneNumber || "",
         },
     });
     
@@ -83,6 +86,22 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                             </SelectContent>
                         </Select>
                         <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Утасны дугаар</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
+                            </FormControl>
+                             <FormDescription>
+                                Шинэ захиалга орж ирэх үед энэ дугаарт мэдэгдэл илгээнэ.
+                            </FormDescription>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

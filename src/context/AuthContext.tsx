@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 type HotelInfo = {
     hotelName: string;
     location: string;
+    phoneNumber: string;
 };
 
 type AuthContextType = {

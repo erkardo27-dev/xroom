@@ -26,6 +26,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
+  phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
   password: z.string().min(6, { message: "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой." }),
 });
@@ -50,18 +51,25 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
 
     const registerForm = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
-        defaultValues: { hotelName: "", location: undefined, email: "", password: "" },
+        defaultValues: { hotelName: "", location: undefined, phoneNumber: "", email: "", password: "" },
     });
 
     const form = isRegistering ? registerForm : loginForm;
     
     async function onSubmit(values: LoginFormValues | RegisterFormValues) {
-        const hotelInfo = isRegistering 
-            ? { hotelName: (values as RegisterFormValues).hotelName, location: (values as RegisterFormValues).location }
-            // In a real app, you'd fetch this for a logging-in user
-            : { hotelName: "Миний буудал", location: "Хотын төв"};
+        if (isRegistering) {
+            const regValues = values as RegisterFormValues;
+            await login(regValues.email, { 
+                hotelName: regValues.hotelName, 
+                location: regValues.location,
+                phoneNumber: regValues.phoneNumber,
+            });
+        } else {
+             // In a real app, you'd fetch this for a logging-in user
+            const hotelInfo = { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811"};
+            await login(values.email, hotelInfo);
+        }
 
-        await login(values.email, hotelInfo);
         onFormSubmit();
     }
 
@@ -101,6 +109,19 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Утасны дугаар</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
