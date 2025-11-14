@@ -21,6 +21,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 const amenityOptions: { id: Amenity, label: string }[] = [
     { id: 'wifi', label: 'Wi-Fi' },
@@ -41,14 +42,17 @@ const formSchema = z.object({
   }),
 });
 
-type AddRoomFormProps = {
+type RoomFormProps = {
     onFormSubmit: () => void;
+    roomToEdit?: Room | null;
 };
 
-export function AddRoomForm({ onFormSubmit }: AddRoomFormProps) {
+export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const { toast } = useToast();
-    const { addRoom } = useRoom();
+    const { addRoom, updateRoom } = useRoom();
     const { userEmail } = useAuth();
+    
+    const isEditMode = !!roomToEdit;
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -60,36 +64,63 @@ export function AddRoomForm({ onFormSubmit }: AddRoomFormProps) {
             amenities: [],
         },
     });
+    
+    useEffect(() => {
+        if (isEditMode && roomToEdit) {
+            form.reset(roomToEdit);
+        } else {
+            form.reset({
+                hotelName: "",
+                roomName: "",
+                price: 0,
+                location: undefined,
+                imageIds: [],
+                amenities: [],
+            });
+        }
+    }, [roomToEdit, isEditMode, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         if (!userEmail) {
              toast({
                 variant: "destructive",
                 title: "Алдаа",
-                description: "Нэвтэрч орж байж өрөө нэмэх боломжтой.",
+                description: "Нэвтэрч орж байж өрөө нэмэх/засах боломжтой.",
             });
             return;
         }
 
-        const newRoomData: Omit<Room, 'id' | 'rating' | 'distance'> = {
-            ...values,
-            amenities: values.amenities as Amenity[],
-            ownerId: userEmail,
-        };
-
-        addRoom(newRoomData);
-
-        toast({
-            title: "Өрөө бүртгэгдлээ!",
-            description: `${values.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
-        });
+        if (isEditMode && roomToEdit) {
+             const updatedRoom: Room = {
+                ...roomToEdit,
+                ...values,
+                amenities: values.amenities as Amenity[],
+            };
+            updateRoom(updatedRoom);
+             toast({
+                title: "Амжилттай заслаа!",
+                description: `${values.hotelName}-н ${values.roomName} өрөөний мэдээлэл шинэчлэгдлээ.`,
+            });
+        } else {
+            const newRoomData: Omit<Room, 'id' | 'rating' | 'distance'> = {
+                ...values,
+                amenities: values.amenities as Amenity[],
+                ownerId: userEmail,
+            };
+            addRoom(newRoomData);
+             toast({
+                title: "Өрөө бүртгэгдлээ!",
+                description: `${values.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
+            });
+        }
+       
         form.reset();
         onFormSubmit();
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <FormField
                     control={form.control}
                     name="hotelName"
@@ -249,7 +280,7 @@ export function AddRoomForm({ onFormSubmit }: AddRoomFormProps) {
                     )}
                 />
                 <Button type="submit" className="w-full">
-                    Өрөөгөө шөнөөр бүртгүүлэх
+                    {isEditMode ? 'Мэдээлэл хадгалах' : 'Өрөөгөө шөнөөр бүртгүүлэх'}
                 </Button>
             </form>
         </Form>

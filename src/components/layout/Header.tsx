@@ -19,7 +19,7 @@ import {
     DropdownMenuSeparator,
   } from "@/components/ui/dropdown-menu"
 import { OwnerLoginForm } from '@/components/auth/OwnerLoginForm';
-import { AddRoomForm } from '@/components/rooms/AddRoomForm';
+import { RoomForm } from '@/components/rooms/RoomForm';
 import { Logo } from './Logo';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -30,13 +30,11 @@ type DialogType = 'addRoom' | 'login' | null;
 
 export default function Header({ isDashboard = false }: { isDashboard?: boolean }) {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const { isLoggedIn, userEmail, logout } = useAuth();
   const router = useRouter();
 
 
   const handleOpenChange = (open: boolean) => {
-    setIsFormOpen(open);
     if (!open) {
       setOpenDialog(null);
     }
@@ -44,7 +42,6 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
 
   const handleDialogTrigger = (dialog: DialogType) => {
     setOpenDialog(dialog);
-    setIsFormOpen(true);
   };
   
   const getAvatarFallback = (email: string | null) => {
@@ -64,7 +61,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
            {isDashboard && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ Миний самбар</span>}
         </Link>
 
-        <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
+        <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
                 <div className="flex items-center gap-4">
                      <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
@@ -133,7 +130,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                                 {isLoggedIn ? 'Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.' : 'Өрөө оруулахын тулд эхлээд нэвтэрнэ үү.'}
                             </DialogDescription>
                         </DialogHeader>
-                        {isLoggedIn ? <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }} />}
+                        {isLoggedIn ? <RoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }} />}
                     </>
                 )}
                 {openDialog === 'login' && (
@@ -144,7 +141,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                                 Зочид буудлын удирдлагын самбартаа нэвтрэх.
                             </DialogDescription>
                         </DialogHeader>
-                        <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }}/>
+                        <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
                     </>
                 )}
             </DialogContent>

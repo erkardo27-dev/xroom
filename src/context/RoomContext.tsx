@@ -2,10 +2,13 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Room, rooms as initialRooms } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 type RoomContextType = {
   rooms: Room[];
   addRoom: (room: Omit<Room, 'id' | 'rating' | 'distance'>) => void;
+  updateRoom: (updatedRoom: Room) => void;
+  deleteRoom: (roomId: string) => void;
   status: 'loading' | 'success' | 'error';
   error: string | null;
 };
@@ -16,6 +19,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Load initial rooms from data.ts
@@ -60,8 +64,20 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     setRooms((prevRooms) => [newRoom, ...prevRooms]);
   };
 
+  const updateRoom = (updatedRoom: Room) => {
+    setRooms(prevRooms => prevRooms.map(room => room.id === updatedRoom.id ? updatedRoom : room));
+  };
+
+  const deleteRoom = (roomId: string) => {
+    setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+    toast({
+        title: "Өрөө устгагдлаа",
+        description: "Таны сонгосон өрөө амжилттай устгагдлаа.",
+    });
+  };
+
   return (
-    <RoomContext.Provider value={{ rooms, addRoom, status, error }}>
+    <RoomContext.Provider value={{ rooms, addRoom, updateRoom, deleteRoom, status, error }}>
       {children}
     </RoomContext.Provider>
   );

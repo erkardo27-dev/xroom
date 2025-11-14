@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Edit, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,8 +66,15 @@ const TransferIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+type RoomCardProps = {
+  room: Room;
+  isDashboard?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+};
 
-export function RoomCard({ room }: { room: Room }) {
+
+export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCardProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingStep, setBookingStep] = useState<BookingStep>('selection');
   const [confirmationId, setConfirmationId] = useState('');
@@ -90,7 +97,7 @@ export function RoomCard({ room }: { room: Room }) {
     [room.imageIds]
   );
   
-  const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;
+  const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.price) * 100) : 0;
 
   const handleBookNow = () => {
     setIsBookingOpen(true);
@@ -130,7 +137,7 @@ export function RoomCard({ room }: { room: Room }) {
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
-            {images.map((image, index) => (
+            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
               <CarouselItem key={index}>
                 <div className="relative h-56 w-full">
                   <Image
@@ -159,7 +166,7 @@ export function RoomCard({ room }: { room: Room }) {
           )}
         </div>
 
-        <CardContent className="p-4">
+        <CardContent className="p-4 flex flex-col flex-1">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
             <div className="flex items-center gap-1 text-sm">
@@ -173,9 +180,12 @@ export function RoomCard({ room }: { room: Room }) {
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
-              <span>{room.location}, {room.distance}км</span>
+              <span>{room.location}</span>
             </div>
+            <span>{room.distance}км</span>
           </div>
+
+          <div className="flex-grow" />
 
           <div className="flex items-center gap-2 mt-4">
              {amenities.map(a => (
@@ -201,9 +211,20 @@ export function RoomCard({ room }: { room: Room }) {
               )}
               <p className="text-2xl font-bold text-primary">{room.price.toLocaleString()}₮</p>
             </div>
-            <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30">
-              Захиалах
-            </Button>
+            {isDashboard ? (
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={onEdit}>
+                        <Edit className="w-4 h-4 mr-2" /> Засах
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={onDelete}>
+                        <Trash2 className="w-4 h-4 mr-2" /> Устгах
+                    </Button>
+                </div>
+            ) : (
+                <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30">
+                Захиалах
+                </Button>
+            )}
           </div>
         </CardContent>
       </Card>
