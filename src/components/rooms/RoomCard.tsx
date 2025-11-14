@@ -151,7 +151,7 @@ export function RoomCard({ room }: { room: Room }) {
          {discount > 0 && (
             <Badge 
               variant="destructive"
-              className="absolute top-3 right-3 text-sm font-bold shadow-lg"
+              className="absolute top-3 left-3 text-sm font-bold shadow-lg"
             >
               <Zap className="w-4 h-4 mr-1.5" />
               {discount}% Хямдрал
@@ -159,7 +159,7 @@ export function RoomCard({ room }: { room: Room }) {
           )}
         </div>
 
-        <CardContent className="p-4 flex flex-col flex-1">
+        <CardContent className="p-4 flex flex-col">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
             <div className="flex items-center gap-1 text-sm">
