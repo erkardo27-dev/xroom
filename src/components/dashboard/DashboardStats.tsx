@@ -1,143 +1,244 @@
+
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, Percent, TrendingUp, Wallet, Activity, Target } from "lucide-react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { DollarSign, Percent, TrendingUp, Wallet, Activity, Target, CalendarDays, BarChart4 } from "lucide-react"
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 import { Separator } from "../ui/separator"
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
+import { useState } from "react"
+import { ChartDataPoint, TimeRange } from "@/app/dashboard/stats/StatsClient"
+
+type Metric = 'revenue' | 'occupancy' | 'adr';
+
+const chartConfigs: Record<Metric, ChartConfig> = {
+    revenue: {
+        revenue: { label: "Орлого", color: "hsl(var(--chart-1))" },
+    },
+    occupancy: {
+        occupancy: { label: "Ачаалал", color: "hsl(var(--chart-2))" },
+    },
+    adr: {
+        adr: { label: "ADR", color: "hsl(var(--chart-5))" },
+    },
+};
+
+const metricDetails: Record<Metric, { title: string; icon: React.ElementType }> = {
+    revenue: { title: "Нийт орлого", icon: TrendingUp },
+    occupancy: { title: "Ачаалал", icon: BarChart4 },
+    adr: { title: "Дундаж орлого (ADR)", icon: Activity },
+};
 
 type StatCardProps = {
     title: string
     value: string
-    description: string
+    description?: string
     icon: React.ElementType
+    className?: string
 }
 
-const StatCard = ({ title, value, description, icon: Icon }: StatCardProps) => (
-  <Card>
+const StatCard = ({ title, value, description, icon: Icon, className }: StatCardProps) => (
+  <Card className={className}>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       <Icon className="h-4 w-4 text-muted-foreground" />
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      {description && <p className="text-xs text-muted-foreground">{description}</p>}
     </CardContent>
   </Card>
 )
 
-type StatsProps = {
-    stats: {
-        todaysRevenue: number;
-        monthRevenue: number;
-        occupancyToday: number;
-        adr: number;
-        revPar: number;
-        occupancyMonth: number;
-        dailyRevenue: { date: string; revenue: number }[];
-    }
+type MainMetricCardProps = {
+    title: string;
+    value: string;
+    description: string;
+    icon: React.ElementType;
 }
 
-const chartConfig = {
-    revenue: {
-        label: "Орлого",
-        color: "hsl(var(--primary))",
-    },
-} satisfies ChartConfig
+const MainMetricCard = ({ title, value, description, icon: Icon }: MainMetricCardProps) => (
+    <Card className="shadow-lg">
+        <CardHeader>
+            <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                    <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                    <CardDescription>{title}</CardDescription>
+                    <CardTitle className="text-3xl">{value}</CardTitle>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <p className="text-sm text-muted-foreground">{description}</p>
+        </CardContent>
+    </Card>
+);
 
-export default function DashboardStats({ stats }: StatsProps) {
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)} сая ₮`;
-    }
-    if (value >= 1000) {
-        return `${(value / 1000).toFixed(0)} мян. ₮`;
-    }
-    return `${value.toLocaleString()} ₮`;
+
+type StatsProps = {
+    stats: {
+        revPar: number;
+        adr: number;
+        occupancy: number;
+        todaysRevenue: number;
+        weekRevenue: number;
+        monthRevenue: number;
+        chartData: ChartDataPoint[];
+    };
+    timeRange: TimeRange;
+    setTimeRange: (range: TimeRange) => void;
+}
+
+
+export default function DashboardStats({ stats, timeRange, setTimeRange }: StatsProps) {
+  
+  const [activeMetric, setActiveMetric] = useState<Metric>('revenue');
+  const activeChartConfig = chartConfigs[activeMetric];
+  const activeMetricDetail = metricDetails[activeMetric];
+  
+  const formatCurrency = (value: number) => `${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}₮`;
+  
+  const formatters: Record<Metric, (value: number) => string> = {
+    revenue: formatCurrency,
+    adr: formatCurrency,
+    occupancy: (value) => `${value.toFixed(1)}%`
   };
 
   return (
     <div className="mb-8 space-y-6">
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard 
-                title="Сарын Дундаж Орлого (ADR)"
-                value={`${formatCurrency(stats.adr)}`}
-                description="Энэ сард нэг өрөөний дундаж орлого"
-                icon={Activity}
-            />
-             <StatCard 
-                title="Сарын Орлогот Өрөө (RevPAR)"
+       <div className="grid gap-6 md:grid-cols-3">
+            <MainMetricCard 
+                title="RevPAR"
                 value={`${formatCurrency(stats.revPar)}`}
-                description="Нэг өрөө тутмаас олох боломжит орлого"
+                description="Нэг өрөө тутмаас олох боломжит дундаж орлого. Буудлын ерөнхий гүйцэтгэлийг илтгэх хамгийн чухал үзүүлэлт."
                 icon={Target}
             />
-            <StatCard 
-                title="Сарын Ачаалал"
-                value={`${stats.occupancyMonth.toFixed(1)}%`}
-                description="Энэ сарын нийт өрөө ашиглалт"
+            <MainMetricCard 
+                title="ADR"
+                value={`${formatCurrency(stats.adr)}`}
+                description="Нэг шөнө зарагдсан өрөөний дундаж үнэ. Таны үнийн бодлогын үр дүнг харуулна."
+                icon={Activity}
+            />
+            <MainMetricCard 
+                title="Ачаалал"
+                value={`${stats.occupancy.toFixed(1)}%`}
+                description="Нийт өрөөнүүдийн хэдэн хувь нь дүүрснийг харуулна. Маркетингийн үр дүнг илтгэнэ."
                 icon={Percent}
             />
         </div>
-       <Separator />
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard 
-                title="Өнөөдрийн орлого"
-                value={`${stats.todaysRevenue.toLocaleString()} ₮`}
-                description="Зөвхөн баталгаажсан орлого"
-                icon={DollarSign}
-            />
-            <StatCard 
-                title="Энэ сарын орлого"
-                value={`${stats.monthRevenue.toLocaleString()} ₮`}
-                description="Энэ сарын нийт орлого"
-                icon={Wallet}
-            />
-            <StatCard 
-                title="Ачаалал (өнөөдөр)"
-                value={`${stats.occupancyToday.toFixed(1)}%`}
-                description="Захиалгатай / Байрлаж буй"
-                icon={Percent}
-            />
-        </div>
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                    Сүүлийн 7 хоногийн орлого
-                </CardTitle>
+       
+       <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div className="space-y-1">
+                    <CardTitle className="flex items-center gap-2">
+                        <activeMetricDetail.icon className="h-5 w-5 text-muted-foreground" />
+                        {activeMetricDetail.title}-н тойм
+                    </CardTitle>
+                    <CardDescription>
+                        Сонгосон хугацааны өдөр тутмын гүйцэтгэлийг харна уу.
+                    </CardDescription>
+                </div>
+                <div className="flex items-center gap-4">
+                     <ToggleGroup
+                        type="single"
+                        value={timeRange}
+                        onValueChange={(value: TimeRange) => value && setTimeRange(value)}
+                        className="h-9"
+                    >
+                        <ToggleGroupItem value="7d">7 хоног</ToggleGroupItem>
+                        <ToggleGroupItem value="14d">14 хоног</ToggleGroupItem>
+                        <ToggleGroupItem value="30d">30 хоног</ToggleGroupItem>
+                    </ToggleGroup>
+                    <Separator orientation="vertical" className="h-6" />
+                    <ToggleGroup
+                        type="single"
+                        value={activeMetric}
+                        onValueChange={(value: Metric) => value && setActiveMetric(value)}
+                        className="h-9"
+                    >
+                        <ToggleGroupItem value="revenue">Орлого</ToggleGroupItem>
+                        <ToggleGroupItem value="occupancy">Ачаалал</ToggleGroupItem>
+                        <ToggleGroupItem value="adr">ADR</ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
             </CardHeader>
             <CardContent className="pl-2">
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                    <BarChart accessibilityLayer data={stats.dailyRevenue} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                         <XAxis
+                 <ChartContainer config={activeChartConfig} className="h-[300px] w-full">
+                    <AreaChart
+                        data={stats.chartData}
+                        margin={{ top: 5, right: 15, left: 0, bottom: 5 }}
+                    >
+                        <defs>
+                            <linearGradient id={`color-${activeMetric}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={`var(--color-${activeMetric})`} stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor={`var(--color-${activeMetric})`} stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <XAxis
                             dataKey="date"
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={(value) => value.slice(-2)}
+                             tickFormatter={(value) => value.slice(-2)}
+                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
                         />
-                        <YAxis
+                         <YAxis
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={formatCurrency}
+                            tickFormatter={formatters[activeMetric]}
+                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
                         />
                          <ChartTooltip
-                            cursor={false}
+                            cursor={{stroke: `hsl(var(--color-${activeMetric}))`, strokeWidth: 1.5, strokeDasharray: "3 3", fill: `hsl(var(--color-${activeMetric}) / 0.1)`}}
                             content={<ChartTooltipContent 
-                                formatter={(value) => `${Number(value).toLocaleString()} ₮`} 
+                                formatter={(value) => [formatters[activeMetric](value as number), activeMetricDetail.title]} 
                                 indicator="dot"
                             />}
                         />
-                        <Bar
-                            dataKey="revenue"
-                            fill="var(--color-revenue)"
-                            radius={[4, 4, 0, 0]}
+                        <Area
+                            dataKey={activeMetric}
+                            type="natural"
+                            fill={`url(#color-${activeMetric})`}
+                            stroke={`var(--color-${activeMetric})`}
+                            strokeWidth={2.5}
+                             dot={{
+                                r: 3,
+                                strokeWidth: 1,
+                                fill: 'hsl(var(--background))'
+                            }}
+                            activeDot={{
+                                r: 6,
+                                strokeWidth: 2,
+                                stroke: 'hsl(var(--background))',
+                                fill: `var(--color-${activeMetric})`
+                            }}
                         />
-                    </BarChart>
+                    </AreaChart>
                 </ChartContainer>
             </CardContent>
         </Card>
+
+        <div className="grid gap-6 md:grid-cols-3">
+            <StatCard 
+                title="Өнөөдрийн орлого"
+                value={formatCurrency(stats.todaysRevenue)}
+                icon={DollarSign}
+            />
+            <StatCard 
+                title="Энэ долоо хоногийн орлого"
+                value={formatCurrency(stats.weekRevenue)}
+                icon={CalendarDays}
+            />
+            <StatCard 
+                title="Энэ сарын орлого"
+                value={formatCurrency(stats.monthRevenue)}
+                icon={Wallet}
+            />
+        </div>
     </div>
   )
 }
