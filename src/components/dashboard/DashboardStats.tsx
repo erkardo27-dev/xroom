@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, Percent, TrendingUp, Wallet } from "lucide-react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 
 type StatCardProps = {
@@ -82,7 +82,7 @@ export default function DashboardStats({ stats }: StatsProps) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="pl-2">
-                <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <ChartContainer config={chartConfig} className="h-[250px] w-full">
                     <BarChart accessibilityLayer data={stats.dailyRevenue} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                          <XAxis
                             dataKey="date"

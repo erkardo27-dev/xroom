@@ -12,24 +12,22 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
 import { RoomInstanceCard } from "./RoomInstanceCard";
-import { format, addDays, isToday, isThisMonth, startOfMonth, startOfDay, subDays, eachDayOfInterval } from 'date-fns';
+import { format, addDays, isToday } from 'date-fns';
 import { mn } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Label } from "../ui/label";
 import { cn } from "@/lib/utils";
-import DashboardStats from "./DashboardStats";
 
 type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
-  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById, getRoomPriceForDate } = useRoom();
+  const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
-  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<Room | null>(null);
   const [instanceToDelete, setInstanceToDelete] = useState<RoomInstance | null>(null);
 
@@ -46,61 +44,10 @@ export default function DashboardClient() {
   }, [isLoggedIn, isAuthLoading, router]);
 
   const ownerRoomTypes = useMemo(() => {
-      return rooms.filter(r => r.ownerId === userEmail);
-  }, [rooms, userEmail]);
+      return rooms.filter(r => r.ownerId === "owner@example.com");
+  }, [rooms]);
 
-  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userEmail), [roomInstances, userEmail]);
-
-  const stats = useMemo(() => {
-    const today = startOfDay(new Date());
-    const startOfCurrentMonth = startOfMonth(today);
-
-    let todaysRevenue = 0;
-    let monthRevenue = 0;
-    let occupiedToday = 0;
-
-    const sevenDayInterval = { start: subDays(today, 6), end: today };
-    const last7Days = eachDayOfInterval(sevenDayInterval);
-    const dailyRevenue = last7Days.map(date => ({
-      date: format(date, 'MM/dd'),
-      revenue: 0,
-    }));
-
-    ownerRoomInstances.forEach(instance => {
-      // Today's stats
-      const todayStatus = getRoomStatusForDate(instance.instanceId, today);
-      if (todayStatus === 'occupied' || todayStatus === 'booked') {
-        const price = getRoomPriceForDate(instance.instanceId, today);
-        todaysRevenue += price;
-        occupiedToday++;
-      }
-      
-      // Last 7 days stats
-      last7Days.forEach((day, index) => {
-        const status = getRoomStatusForDate(instance.instanceId, day);
-        if (status === 'occupied' || status === 'booked') {
-          const price = getRoomPriceForDate(instance.instanceId, day);
-          dailyRevenue[index].revenue += price;
-        }
-      });
-      
-      // This month stats
-       const monthDays = eachDayOfInterval({start: startOfCurrentMonth, end: today});
-       monthDays.forEach(day => {
-         const status = getRoomStatusForDate(instance.instanceId, day);
-         if (status === 'occupied' || status === 'booked') {
-             const price = getRoomPriceForDate(instance.instanceId, day);
-             monthRevenue += price;
-         }
-       })
-    });
-
-    const occupancy = ownerRoomInstances.length > 0 ? (occupiedToday / ownerRoomInstances.length) * 100 : 0;
-
-    return { todaysRevenue, monthRevenue, occupancy, dailyRevenue };
-
-  }, [ownerRoomInstances, getRoomStatusForDate, getRoomPriceForDate]);
-
+  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === "owner@example.com"), [roomInstances]);
 
   const filteredAndSortedInstances = useMemo(() => {
     // 1. Get all instances for the owner and augment with status for the selected date
@@ -154,17 +101,18 @@ export default function DashboardClient() {
 
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
-        setSelectedDate(startOfDay(date));
+        setSelectedDate(date);
     }
   }
-
+  
   const getDateLabel = () => {
-    const today = startOfDay(new Date());
-    const tomorrow = addDays(today, 1);
-    if (selectedDate.getTime() === today.getTime()) return "Өнөөдөр";
-    if (selectedDate.getTime() === tomorrow.getTime()) return "Маргааш";
+    if (isToday(selectedDate)) return "Өнөөдөр";
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (selectedDate.toDateString() === tomorrow.toDateString()) return "Маргааш";
     return format(selectedDate, 'MMM d', { locale: mn });
   }
+
 
   if (isLoading || !isLoggedIn) {
     return (
@@ -172,13 +120,7 @@ export default function DashboardClient() {
              <div className="flex items-center justify-between mb-6">
                 <Skeleton className="h-9 w-48" />
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full lg:col-span-1" />
-            </div>
-
+            
             <h1 className="text-3xl font-bold tracking-tight mb-8">Миний өрөөнүүд</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -191,7 +133,6 @@ export default function DashboardClient() {
 
   return (
     <>
-      <DashboardStats stats={stats} />
       <div>
            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
@@ -203,13 +144,13 @@ export default function DashboardClient() {
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
-                           variant={!isToday(selectedDate) ? "destructive" : "outline"}
+                           variant={"outline"}
                            className={cn(
                                 "w-[120px] h-8 justify-start text-left font-normal text-sm",
                                 !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                            )}
                         >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className={cn("mr-2 h-4 w-4", !isToday(selectedDate) && "text-destructive-foreground")} />
                             {getDateLabel()}
                         </Button>
                         </PopoverTrigger>
