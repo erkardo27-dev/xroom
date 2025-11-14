@@ -18,9 +18,11 @@ export type Room = {
   imageIds: string[];
   location: Location;
   ownerId: string | null;
+  totalQuantity: number;
+  availableQuantity: number;
 };
 
-const roomsData: Omit<Room, 'distance' | 'ownerId'>[] = [
+const roomsData: Omit<Room, 'distance' | 'ownerId' | 'totalQuantity' | 'availableQuantity'>[] = [
     {
       id: 'room-101',
       roomName: 'Стандарт Кинг Өрөө',
@@ -107,9 +109,14 @@ const roomsData: Omit<Room, 'distance' | 'ownerId'>[] = [
     }
 ];
 
-// Add random distances and a null ownerId to initial rooms for variety
-export const rooms: Room[] = roomsData.map(room => ({
-    ...room,
-    distance: +(Math.random() * 10 + 0.5).toFixed(1), // Random distance between 0.5 and 10.5 km
-    ownerId: null, // Initially, no rooms have owners
-}));
+// Add random distances, quantities and a null ownerId to initial rooms for variety
+export const rooms: Room[] = roomsData.map(room => {
+    const totalQuantity = Math.floor(Math.random() * 10) + 1; // 1 to 10 rooms
+    return {
+        ...room,
+        distance: +(Math.random() * 10 + 0.5).toFixed(1), // Random distance between 0.5 and 10.5 km
+        ownerId: null, // Initially, no rooms have owners
+        totalQuantity: totalQuantity,
+        availableQuantity: totalQuantity,
+    }
+});

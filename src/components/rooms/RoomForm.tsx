@@ -33,6 +33,7 @@ const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
+  totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
   imageIds: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one item.",
@@ -60,6 +61,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             hotelName: "",
             roomName: "",
             price: 0,
+            totalQuantity: 1,
             imageIds: [],
             amenities: [],
         },
@@ -67,12 +69,17 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     
     useEffect(() => {
         if (isEditMode && roomToEdit) {
-            form.reset(roomToEdit);
+            form.reset({
+                ...roomToEdit,
+                price: roomToEdit.price || 0,
+                totalQuantity: roomToEdit.totalQuantity || 1,
+            });
         } else {
             form.reset({
                 hotelName: "",
                 roomName: "",
                 price: 0,
+                totalQuantity: 1,
                 location: undefined,
                 imageIds: [],
                 amenities: [],
@@ -95,6 +102,8 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 ...roomToEdit,
                 ...values,
                 amenities: values.amenities as Amenity[],
+                // When editing, if total quantity changes, we might need to adjust available quantity
+                availableQuantity: roomToEdit.availableQuantity + (values.totalQuantity - roomToEdit.totalQuantity),
             };
             updateRoom(updatedRoom);
              toast({
@@ -102,7 +111,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 description: `${values.hotelName}-н ${values.roomName} өрөөний мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
-            const newRoomData: Omit<Room, 'id' | 'rating' | 'distance'> = {
+            const newRoomData: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'> = {
                 ...values,
                 amenities: values.amenities as Amenity[],
                 ownerId: userEmail,
@@ -156,6 +165,22 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                             <FormControl>
                                 <Input type="number" placeholder="ж.нь: 150000" {...field} />
                             </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="totalQuantity"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Нийт өрөөний тоо</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="ж.нь: 5" {...field} />
+                            </FormControl>
+                             <FormDescription>
+                                Энэ төрлийн нийт хэдэн өрөө байгаа вэ?
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

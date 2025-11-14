@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type RoomContextType = {
   rooms: Room[];
-  addRoom: (room: Omit<Room, 'id' | 'rating' | 'distance'>) => void;
+  addRoom: (room: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoom: (roomId: string) => void;
   status: 'loading' | 'success' | 'error';
@@ -54,12 +54,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [rooms, status]);
 
-  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => {
+  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>) => {
     const newRoom: Room = {
       ...roomData,
       id: `room-${Date.now()}`,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1), // 3.5 to 5.0
       distance: +(Math.random() * 10 + 0.5).toFixed(1), // 0.5 to 10.5 km
+      availableQuantity: roomData.totalQuantity,
     };
     setRooms((prevRooms) => [newRoom, ...prevRooms]);
   };

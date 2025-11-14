@@ -35,8 +35,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { Switch } from "@/components/ui/switch"
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useRoom } from '@/context/RoomContext';
+import { useToast } from '@/hooks/use-toast';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
@@ -81,8 +84,15 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
   const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
-
+  
+  const { updateRoom } = useRoom();
+  const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
+  
+  // State for sold out toggle
+  const [isSoldOut, setIsSoldOut] = useState(room.availableQuantity === 0);
+  const [lastAvailableQuantity, setLastAvailableQuantity] = useState(room.availableQuantity);
+
 
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'selection') {
@@ -91,6 +101,13 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
       }, 100);
     }
   }, [isBookingOpen, bookingStep]);
+  
+  useEffect(() => {
+    setIsSoldOut(room.availableQuantity === 0);
+    if (room.availableQuantity > 0) {
+        setLastAvailableQuantity(room.availableQuantity);
+    }
+  }, [room.availableQuantity]);
 
   const images = useMemo(() => 
     room.imageIds.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean) as typeof PlaceHolderImages, 
@@ -100,6 +117,14 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
   const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.price) * 100) : 0;
 
   const handleBookNow = () => {
+    if (room.availableQuantity <= 0) {
+        toast({
+            variant: "destructive",
+            title: "Уучлаарай, өрөө дууссан байна",
+            description: "Энэ төрлийн бүх өрөө захиалагдсан байна.",
+        });
+        return;
+    }
     setIsBookingOpen(true);
   };
   
@@ -107,10 +132,27 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
     setBookingStep('booking');
     // Simulate API call for booking
     setTimeout(() => {
+        const updatedRoom = { ...room, availableQuantity: room.availableQuantity - 1 };
+        updateRoom(updatedRoom);
         setConfirmationId(`XR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`);
         setBookingStep('success');
     }, 1500);
   };
+  
+  const handleSoldOutToggle = (checked: boolean) => {
+    setIsSoldOut(checked);
+    if (checked) {
+      // Set available to 0 but remember the last state
+      setLastAvailableQuantity(room.availableQuantity);
+      updateRoom({ ...room, availableQuantity: 0 });
+      toast({ title: "Өрөөг түр хаалаа", description: `${room.roomName} өрөөг зочдод харагдахгүй болголоо.` });
+    } else {
+      // Restore to the last known available quantity
+      updateRoom({ ...room, availableQuantity: lastAvailableQuantity > 0 ? lastAvailableQuantity : room.totalQuantity });
+      toast({ title: "Өрөөг нээлээ", description: `${room.roomName} өрөөг зочдод харагддаг болголоо.` });
+    }
+  };
+
 
   const closeAndResetDialog = () => {
     setIsBookingOpen(false);
@@ -133,7 +175,7 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10 flex flex-col">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
@@ -155,13 +197,18 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
             <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
           
         </Carousel>
-          {discount > 0 && (
+          {discount > 0 && !isDashboard && (
             <Badge 
               variant="destructive"
               className="absolute top-3 left-3 text-sm font-bold flex items-center gap-1 shadow-lg"
             >
               <Zap className="w-4 h-4" />
               <span>{discount}% Хямдрал</span>
+            </Badge>
+          )}
+           {room.availableQuantity === 0 && !isDashboard && (
+            <Badge className="absolute top-3 right-3 text-sm font-bold bg-black/60 text-white">
+              Дууссан
             </Badge>
           )}
         </div>
@@ -187,26 +234,42 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
 
           <div className="flex-grow" />
 
-          <div className="flex items-center gap-2 mt-4">
-             {amenities.map(a => (
-                <TooltipProvider key={a.key}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <div className="flex items-center justify-center w-8 h-8 bg-secondary/70 rounded-lg">
-                                {a.icon}
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{a.label}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-             ))}
-          </div>
+          {isDashboard ? (
+            <div className='mt-4 space-y-3'>
+                <div className='text-sm font-medium flex justify-between items-center'>
+                    <Label>Боломжит байдал</Label>
+                    <Badge variant={room.availableQuantity > 0 ? 'default' : 'destructive'} className='bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'>
+                        {room.availableQuantity} / {room.totalQuantity} боломжтой
+                    </Badge>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Switch id={`sold-out-toggle-${room.id}`} checked={isSoldOut} onCheckedChange={handleSoldOutToggle} />
+                    <Label htmlFor={`sold-out-toggle-${room.id}`} className='text-sm'>Түр хаах (Sold Out)</Label>
+                </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mt-4">
+              {amenities.map(a => (
+                  <TooltipProvider key={a.key}>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center w-8 h-8 bg-secondary/70 rounded-lg">
+                                  {a.icon}
+                              </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{a.label}</p>
+                          </TooltipContent>
+                      </Tooltip>
+                  </TooltipProvider>
+              ))}
+            </div>
+          )}
 
-          <div className="flex justify-between items-end mt-6 pt-4 border-t">
+
+          <div className="flex justify-between items-end mt-4 pt-4 border-t">
             <div>
-              {room.originalPrice && (
+              {room.originalPrice && !isDashboard && (
                 <p className="text-sm text-muted-foreground line-through">{room.originalPrice.toLocaleString()}₮</p>
               )}
               <p className="text-2xl font-bold text-primary">{room.price.toLocaleString()}₮</p>
@@ -221,8 +284,8 @@ export function RoomCard({ room, isDashboard = false, onEdit, onDelete }: RoomCa
                     </Button>
                 </div>
             ) : (
-                <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30">
-                Захиалах
+                <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30" disabled={room.availableQuantity <= 0}>
+                 {room.availableQuantity > 0 ? 'Захиалах' : 'Дууссан'}
                 </Button>
             )}
           </div>

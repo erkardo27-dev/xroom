@@ -44,10 +44,10 @@ export default function DashboardClient() {
   if (isLoading || !isLoggedIn) {
     return (
         <div className="space-y-4">
-            <Skeleton className="h-10 w-1/4" />
+            <h1 className="text-3xl font-bold tracking-tight mb-8">Миний өрөөнүүд</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-96 w-full" />
+                    <Skeleton key={i} className="h-[450px] w-full" />
                 ))}
             </div>
       </div>
@@ -93,7 +93,7 @@ export default function DashboardClient() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Цуцлах</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Устгах</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Устгах</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

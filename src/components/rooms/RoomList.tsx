@@ -41,6 +41,7 @@ export default function RoomList() {
 
   const filteredAndSortedRooms = useMemo(() => {
     const filtered = rooms.filter(room => 
+        room.availableQuantity > 0 &&
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
@@ -178,14 +179,21 @@ export default function RoomList() {
           ))}
         </div>
       ) : viewMode === 'list' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-          {filteredAndSortedRooms.map(room => (
-            <RoomCard key={room.id} room={room} />
-          ))}
-        </div>
+         filteredAndSortedRooms.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+            {filteredAndSortedRooms.map(room => (
+                <RoomCard key={room.id} room={room} />
+            ))}
+            </div>
+        ) : (
+            <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Өрөө олдсонгүй</AlertTitle>
+                <AlertDescription>Таны хайлтад тохирох өрөө одоогоор алга байна. Шүүлтүүрээ өөрчилж дахин оролдоно уу.</AlertDescription>
+            </Alert>
+        )
       ) : (
          <RoomMap rooms={filteredAndSortedRooms} />
       )}
     </div>
   );
-}
