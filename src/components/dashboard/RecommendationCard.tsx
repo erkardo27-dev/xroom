@@ -44,7 +44,6 @@ export function RecommendationCard({ selectedDate }: RecommendationCardProps) {
     alert('Үнийн тохиргооны хэсэг рүү шилжих үйлдэл энд хийгдэнэ.');
   };
 
-d
   return (
     <Card className="bg-accent/20 border-accent/30 shadow-sm">
       <CardHeader className="pb-4">
