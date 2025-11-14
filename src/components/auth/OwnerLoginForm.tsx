@@ -16,8 +16,8 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { locations } from "@/lib/data";
-import { useState } from "react";
-import { Separator } from "../ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
@@ -43,8 +43,7 @@ type OwnerLoginFormProps = {
 
 export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
     const { login } = useAuth();
-    const [isRegistering, setIsRegistering] = useState(true);
-
+    
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: { email: "", password: "" },
@@ -57,124 +56,168 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
             location: undefined, 
             phoneNumber: "", 
             email: "", 
-            password: "",
+            password: ""
         },
     });
 
-    const form = isRegistering ? registerForm : loginForm;
+    async function onLoginSubmit(values: LoginFormValues) {
+        // In a real app, you'd fetch this for a logging-in user
+        const hotelInfo = { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811"};
+        await login(values.email, hotelInfo);
+        onFormSubmit();
+    }
     
-    async function onSubmit(values: LoginFormValues | RegisterFormValues) {
-        if (isRegistering) {
-            const regValues = values as RegisterFormValues;
-            await login(regValues.email, { 
-                hotelName: regValues.hotelName, 
-                location: regValues.location,
-                phoneNumber: regValues.phoneNumber,
-            });
-        } else {
-             // In a real app, you'd fetch this for a logging-in user
-            const hotelInfo = { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811"};
-            await login(values.email, hotelInfo);
-        }
-
+    async function onRegisterSubmit(values: RegisterFormValues) {
+        await login(values.email, { 
+            hotelName: values.hotelName, 
+            location: values.location,
+            phoneNumber: values.phoneNumber,
+        });
         onFormSubmit();
     }
 
     return (
-        <>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                    {isRegistering && (
-                        <>
-                             <FormField
-                                control={form.control}
-                                name="hotelName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Зочид буудлын нэр</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Танай буудлын нэр" {...field} />
-                                        </FormControl>
+        <Tabs defaultValue="register" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Нэвтрэх</TabsTrigger>
+                <TabsTrigger value="register">Бүртгүүлэх</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Нэвтрэх</CardTitle>
+                        <CardDescription>
+                            Бүртгэлтэй хэрэглэгч мэдээллээ оруулан нэвтэрнэ үү.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <Form {...loginForm}>
+                            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                                <FormField
+                                    control={loginForm.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>И-мэйл</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="tanii@email.com" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={loginForm.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Нууц үг</FormLabel>
+                                            <FormControl>
+                                                <Input type="password" placeholder="••••••••" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" className="w-full">
+                                    Нэвтрэх
+                                </Button>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="register">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Бүртгүүлэх</CardTitle>
+                        <CardDescription>
+                            Шинээр бүртгүүлж, зочид буудлын мэдээллээ оруулна уу.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                       <Form {...registerForm}>
+                            <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                                <FormField
+                                    control={registerForm.control}
+                                    name="hotelName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Зочид буудлын нэр</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Танай буудлын нэр" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={registerForm.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Байршил</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Буудлын байршил сонгоно уу" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="location"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Байршил</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Буудлын байршил сонгоно уу" />
-                                        </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                        {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="phoneNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Утасны дугаар</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </>
-                    )}
-                    <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>И-мэйл</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="tanii@email.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Нууц үг</FormLabel>
-                                <FormControl>
-                                    <Input type="password" placeholder="••••••••" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <Button type="submit" className="w-full">
-                        {isRegistering ? 'Бүртгүүлэх' : 'Нэвтрэх'}
-                    </Button>
-                </form>
-            </Form>
-             <div className="mt-4 text-center text-sm">
-                {isRegistering ? "Аль хэдийн бүртгүүлсэн үү? " : "Бүртгэл байхгүй юу? "}
-                <Button variant="link" className="p-0 h-auto font-bold" onClick={() => {
-                    setIsRegistering(!isRegistering);
-                    form.reset();
-                }}>
-                    {isRegistering ? "Нэвтрэх" : "Бүртгүүлэх"}
-                </Button>
-            </div>
-        </>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={registerForm.control}
+                                    name="phoneNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Утасны дугаар</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={registerForm.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>И-мэйл</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="tanii@email.com" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={registerForm.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Нууц үг</FormLabel>
+                                            <FormControl>
+                                                <Input type="password" placeholder="••••••••" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" className="w-full">
+                                    Бүртгүүлэх
+                                </Button>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
     )
 }

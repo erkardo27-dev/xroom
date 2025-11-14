@@ -114,13 +114,13 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                 </DialogTrigger>
             )}
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
                 {openDialog === 'login' && (
                     <>
                         <DialogHeader>
-                            <DialogTitle>Эзэмшигчийн хэсэг</DialogTitle>
+                            <DialogTitle>XRoom Tonight-д тавтай морил!</DialogTitle>
                             <DialogDescription>
-                                Та буудал ажиллуулдаг бөгөөд манай сайтад өрөө оруулах гэж байгаа бол бүртгүүлнэ үү.
+                                Өөрийн зочид буудлаа бүртгүүлж, өрөөгөө сүүлчийн минутын хямдралтай үнээр борлуулаарай.
                             </DialogDescription>
                         </DialogHeader>
                         <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
