@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 
 type RoomContextType = {
   rooms: Room[];
@@ -18,6 +18,7 @@ type RoomContextType = {
   getRoomStatusForDate: (instanceId: string, date: Date) => RoomStatus;
   setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => void;
   getRoomPriceForDate: (instanceId: string, date: Date) => number;
+  setRoomPriceForDate: (instanceId: string, date: Date, price: number) => void;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -37,7 +38,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             
             if (savedRooms && savedInstances) {
                 setRooms(JSON.parse(savedRooms));
-                setRoomInstances(JSON.parse(savedInstances));
+                setRoomInstances(JSON.parse(savedInstances).map((inst: RoomInstance) => ({ ...inst, overrides: inst.overrides || {} }))); // Ensure overrides is not undefined
             } else {
                 setRooms(initialRooms);
                 setRoomInstances(initialRoomInstances);
@@ -137,7 +138,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (dateKey === todayKey) {
         return instance.status;
     }
-
+    
+    // For future or past dates without specific overrides, derive from base status.
+    // If base is 'closed' or 'maintenance', it affects all dates unless overridden.
     return instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
 
   }, [roomInstances]);
@@ -149,8 +152,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (!room) return 0;
 
         const dateKey = format(date, 'yyyy-MM-dd');
-        // In a real app, you might have date-specific pricing. For now, we use the base price.
-        const price = instance.overrides?.[dateKey]?.price || room.price;
+        // Check for a date-specific price override first
+        const price = instance.overrides?.[dateKey]?.price ?? room.price;
         return price;
     }, [roomInstances, rooms]);
 
@@ -175,11 +178,23 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
           } else {
              const defaultStatusForFuture = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
 
-            if (status === defaultStatusForFuture) {
+             // Ensure the override for the date exists before modifying
+             if (!newInstance.overrides[dateKey]) {
+                const roomType = getRoomById(instance.roomTypeId);
+                newInstance.overrides[dateKey] = { status: defaultStatusForFuture, price: roomType?.price };
+             }
+
+            if (status === defaultStatusForFuture && newInstance.overrides[dateKey]?.price === undefined) {
+                // If status is default AND there is no price override, remove the whole override object for that date
                 delete newInstance.overrides[dateKey];
             } else {
-                const roomType = getRoomById(instance.roomTypeId);
-                newInstance.overrides[dateKey] = { status, bookingCode, price: roomType?.price };
+                // Otherwise, just update the status
+                newInstance.overrides[dateKey].status = status;
+                if(status === 'booked' && bookingCode) {
+                    newInstance.overrides[dateKey].bookingCode = bookingCode;
+                } else {
+                    delete newInstance.overrides[dateKey].bookingCode;
+                }
             }
           }
           return newInstance;
@@ -189,8 +204,51 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     );
   }, [getRoomById]);
 
+  const setRoomPriceForDate = useCallback((instanceId: string, date: Date, price: number) => {
+     const dateKey = format(date, 'yyyy-MM-dd');
+      setRoomInstances(prev =>
+        prev.map(instance => {
+            if (instance.instanceId === instanceId) {
+                const roomType = getRoomById(instance.roomTypeId);
+                if (!roomType) return instance;
+
+                const newInstance = { ...instance, overrides: { ...instance.overrides } };
+
+                // Get the current status for the day, or the default if not set
+                const currentStatus = getRoomStatusForDate(instanceId, date);
+                
+                // If the new price is the base price, we might be able to remove the price override
+                if (price === roomType.price) {
+                     // If an override exists for this date
+                    if (newInstance.overrides[dateKey]) {
+                        delete newInstance.overrides[dateKey].price;
+                        // If the status is also default, remove the entire date override
+                        const defaultStatus = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
+                        if (newInstance.overrides[dateKey].status === defaultStatus) {
+                            delete newInstance.overrides[dateKey];
+                        }
+                    }
+                } else { // New price is different from base, so we need an override
+                     if (!newInstance.overrides[dateKey]) {
+                        newInstance.overrides[dateKey] = { status: currentStatus, price: price };
+                    } else {
+                        newInstance.overrides[dateKey].price = price;
+                    }
+                }
+                 toast({
+                    title: "Үнэ шинэчлэгдлээ",
+                    description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`,
+                });
+
+                return newInstance;
+            }
+            return instance;
+        })
+      );
+  }, [getRoomById, getRoomStatusForDate]);
+
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate }}>
       {children}
     </RoomContext.Provider>
   );

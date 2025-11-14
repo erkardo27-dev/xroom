@@ -12,7 +12,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, MoreVertical, Power, PowerOff, Trash2, Wrench, Bed, Tag, UserCheck, KeyRound, LogOut } from 'lucide-react';
+import { Edit, Power, PowerOff, Trash2, Wrench, Bed, Tag, UserCheck, KeyRound, LogOut, Info, Pencil, Check } from 'lucide-react';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '../ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { Separator } from '../ui/separator';
 
 type RoomInstanceCardProps = {
   instance: RoomInstance;
@@ -108,12 +110,17 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
 
 
 export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selectedDate }: RoomInstanceCardProps) {
-  const { getRoomById, updateRoomInstance, setRoomStatusForDate } = useRoom();
+  const { getRoomById, updateRoomInstance, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate } = useRoom();
   const [isEditingNumber, setIsEditingNumber] = useState(false);
   const [roomNumber, setRoomNumber] = useState(instance.roomNumber);
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+
   const { toast } = useToast();
 
   const roomType = useMemo(() => getRoomById(instance.roomTypeId), [instance.roomTypeId, getRoomById]);
+  
+  const priceForDate = useMemo(() => getRoomPriceForDate(instance.instanceId, selectedDate), [getRoomPriceForDate, instance.instanceId, selectedDate]);
+  const [localPrice, setLocalPrice] = useState(priceForDate);
 
   if (!roomType) {
     return (
@@ -147,6 +154,17 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
     // Note: this only updates the base roomNumber, not a date-specific one.
     updateRoomInstance({ ...instance, roomNumber: roomNumber.trim() });
     setIsEditingNumber(false);
+  }
+  
+  const handlePriceSave = () => {
+      const newPrice = Number(localPrice);
+      if (isNaN(newPrice) || newPrice <= 0) {
+          toast({ variant: "destructive", title: "Үнэ буруу байна" });
+          setLocalPrice(priceForDate); // revert
+          return;
+      }
+      setRoomPriceForDate(instance.instanceId, selectedDate, newPrice);
+      setIsEditingPrice(false);
   }
 
   return (
@@ -199,16 +217,54 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
         </div>
       </CardHeader>
       <CardContent className='flex-grow p-4 pt-0'>
-        <div className="flex items-center">
-            <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
-            <span className="text-sm font-medium">{currentStatus.label}</span>
-        </div>
-        {instance.status === 'booked' && instance.bookingCode && (
-            <div className="mt-2 text-center bg-secondary/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground">Нэвтрэх код:</p>
-                <p className="text-3xl font-mono font-bold tracking-widest text-primary">{instance.bookingCode}</p>
-            </div>
-        )}
+         <Collapsible>
+            <CollapsibleTrigger asChild>
+              <button className='w-full text-left'>
+                <div className="flex items-center">
+                    <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
+                    <span className="text-sm font-medium">{currentStatus.label}</span>
+                </div>
+              </button>
+            </CollapsibleTrigger>
+             <CollapsibleContent className="space-y-3 pt-3">
+               <Separator />
+                <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Үнэ</span>
+                     {isEditingPrice ? (
+                       <div className="relative w-28">
+                         <Input 
+                            type="number"
+                            value={localPrice}
+                            onChange={(e) => setLocalPrice(Number(e.target.value))}
+                            onBlur={handlePriceSave}
+                            onKeyDown={(e) => e.key === 'Enter' && handlePriceSave()}
+                            autoFocus
+                            className="h-7 text-sm font-bold pr-7"
+                          />
+                          <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-0.5 right-0.5" onClick={handlePriceSave}>
+                              <Check className="h-4 w-4" />
+                          </Button>
+                       </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                             {priceForDate !== roomType.price && (
+                                <span className="text-xs text-muted-foreground line-through">{roomType.price.toLocaleString()}₮</span>
+                             )}
+                            <span className="font-semibold text-primary">{priceForDate.toLocaleString()}₮</span>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingPrice(true)}>
+                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                        </div>
+                    )}
+                </div>
+                 {instance.status === 'booked' && instance.bookingCode && (
+                   <div className="text-center bg-secondary/50 p-2 rounded-lg">
+                       <p className="text-xs text-muted-foreground">Нэвтрэх код:</p>
+                       <p className="text-2xl font-mono font-bold tracking-widest text-primary">{instance.bookingCode}</p>
+                   </div>
+               )}
+            </CollapsibleContent>
+        </Collapsible>
       </CardContent>
       <CardFooter className="p-2">
         <Button 
@@ -223,5 +279,3 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
     </Card>
   );
 }
-
-    
