@@ -55,7 +55,7 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
       icon: <PowerOff className="w-4 h-4 mr-2"/>,
       nextStatus: 'closed',
       disabled: false,
-      style: 'bg-green-500 hover:bg-green-600',
+      style: 'bg-gray-500 hover:bg-gray-600',
     }
   },
   booked: { 
@@ -64,7 +64,7 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
     borderColor: 'border-yellow-500/50', 
     icon: <Tag className="w-4 h-4 mr-2" />,
     action: {
-        text: 'Зочин ирсэн',
+        text: 'Зочин ирлээ',
         icon: <UserCheck className="w-4 h-4 mr-2"/>,
         nextStatus: 'occupied',
         disabled: false,
@@ -107,7 +107,7 @@ const statusConfig: { [key in RoomStatus]: StatusConfig } = {
         icon: <Power className="w-4 h-4 mr-2"/>,
         nextStatus: 'available',
         disabled: false,
-        style: 'bg-gray-500 hover:bg-gray-600',
+        style: 'bg-green-500 hover:bg-green-600',
     }
   },
 };
