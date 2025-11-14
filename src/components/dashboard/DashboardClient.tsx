@@ -55,11 +55,22 @@ export default function DashboardClient() {
     const instancesWithStatus = ownerRoomInstances
       .map(instance => {
           const statusForDate = getRoomStatusForDate(instance.instanceId, selectedDate);
+          const dateKey = format(selectedDate, 'yyyy-MM-dd');
+          
+          let bookingCodeForDate: string | undefined;
+          if (statusForDate === 'booked') {
+            const isToday = format(new Date(), 'yyyy-MM-dd') === dateKey;
+            if (isToday) {
+                bookingCodeForDate = instance.bookingCode;
+            } else {
+                bookingCodeForDate = instance.overrides?.[dateKey]?.bookingCode;
+            }
+          }
+
           return {
             ...instance,
             status: statusForDate,
-            // Also update booking code based on override status
-            bookingCode: statusForDate === 'booked' ? instance.overrides?.[format(selectedDate, 'yyyy-MM-dd')]?.bookingCode || instance.bookingCode : undefined,
+            bookingCode: bookingCodeForDate,
           };
       });
 
