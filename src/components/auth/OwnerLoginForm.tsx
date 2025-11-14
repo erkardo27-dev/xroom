@@ -30,9 +30,6 @@ const registerSchema = z.object({
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
   password: z.string().min(6, { message: "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой." }),
-  bankName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  accountHolderName: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -61,9 +58,6 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
             phoneNumber: "", 
             email: "", 
             password: "",
-            bankName: "",
-            accountHolderName: "",
-            accountNumber: "" 
         },
     });
 
@@ -76,9 +70,6 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                 hotelName: regValues.hotelName, 
                 location: regValues.location,
                 phoneNumber: regValues.phoneNumber,
-                bankName: regValues.bankName,
-                accountHolderName: regValues.accountHolderName,
-                accountNumber: regValues.accountNumber,
             });
         } else {
              // In a real app, you'd fetch this for a logging-in user
@@ -170,66 +161,18 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                         )}
                     />
 
-                    {isRegistering && (
-                         <>
-                            <Separator />
-                            <div className="space-y-4">
-                                <h4 className="font-medium">Дансны мэдээлэл</h4>
-                                 <FormField
-                                    control={form.control}
-                                    name="bankName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Банкны нэр</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="ХААН БАНК" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                 <FormField
-                                    control={form.control}
-                                    name="accountNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Дансны дугаар</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="50xxxxxxxx" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                 <FormField
-                                    control={form.control}
-                                    name="accountHolderName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Б.Бат" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </>
-                    )}
-
                     <Button type="submit" className="w-full">
                         {isRegistering ? 'Бүртгүүлэх' : 'Нэвтрэх'}
                     </Button>
                 </form>
             </Form>
              <div className="mt-4 text-center text-sm">
-                {isRegistering ? "Аль хэдийн бүртгүүлсэн бол" : "Шинэ буудал бүртгүүлэх бол"}{' '}
-                <Button variant="link" className="p-0 h-auto" onClick={() => {
+                {isRegistering ? "Аль хэдийн бүртгүүлсэн үү? " : "Бүртгэл байхгүй юу? "}
+                <Button variant="link" className="p-0 h-auto font-bold" onClick={() => {
                     setIsRegistering(!isRegistering);
                     form.reset();
                 }}>
-                    {isRegistering ? "энд дарж нэвтэрнэ үү." : "энд дарна уу."}
+                    {isRegistering ? "Нэвтрэх" : "Бүртгүүлэх"}
                 </Button>
             </div>
         </>
