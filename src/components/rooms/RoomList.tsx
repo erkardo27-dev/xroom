@@ -7,11 +7,12 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List } from 'lucide-react';
+import { AlertCircle, Zap, ArrowUpDown, MapPin, Star, DollarSign, List, Filter, SlidersHorizontal } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 
 type ViewMode = 'list' | 'map';
 
@@ -113,7 +114,11 @@ export default function RoomList() {
                       step={10}
                       value={priceRange}
                       onValueChange={setPriceRange}
-                    />
+                    >
+                      {priceRange.map((_, i) => (
+                        <SliderPrimitive.Thumb key={i} className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+                      ))}
+                    </Slider>
                 </div>
                  <div className="space-y-2">
                      <div className="flex justify-between items-center text-sm">
