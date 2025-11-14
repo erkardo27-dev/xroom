@@ -45,17 +45,24 @@ export default function RoomList() {
   const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());
 
-    return rooms.map(roomType => {
-      const availableInstances = roomInstances.filter(instance => 
-        instance.roomTypeId === roomType.id && 
-        getRoomStatusForDate(instance.instanceId, today) === 'available'
-      );
-      return {
+    const availableInstancesByRoomType = roomInstances.reduce((acc, instance) => {
+        const status = getRoomStatusForDate(instance.instanceId, today);
+        if (status === 'available') {
+            if (!acc[instance.roomTypeId]) {
+                acc[instance.roomTypeId] = [];
+            }
+            acc[instance.roomTypeId].push(instance);
+        }
+        return acc;
+    }, {} as Record<string, RoomInstance[]>);
+
+    return rooms
+      .map(roomType => ({
         ...roomType,
-        availableInstances: availableInstances
-      };
-    }).filter(roomType => roomType.availableInstances.length > 0);
-    
+        availableInstances: availableInstancesByRoomType[roomType.id] || [],
+      }))
+      .filter(roomType => roomType.availableInstances.length > 0);
+
   }, [rooms, roomInstances, getRoomStatusForDate]);
 
 
@@ -217,3 +224,4 @@ export default function RoomList() {
   );
 
     
+
