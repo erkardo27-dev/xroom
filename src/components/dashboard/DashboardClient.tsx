@@ -181,9 +181,9 @@ export default function DashboardClient() {
                         <RecommendationCard selectedDate={selectedDate} />
                     </PopoverContent>
                 </Popover>
+            </div>
 
-                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
-
+            <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
                     <ListFilter className="w-4 h-4 text-muted-foreground" />
                     <Select value={filterRoomType} onValueChange={setFilterRoomType}>
@@ -206,7 +206,7 @@ export default function DashboardClient() {
                     </Select>
                 </div>
                 
-                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
+                <div className="h-6 border-l border-border/50 hidden md:block"></div>
 
                 <div className="flex items-center gap-2">
                     <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
@@ -281,5 +281,3 @@ export default function DashboardClient() {
     </>
   );
 }
-
-    
