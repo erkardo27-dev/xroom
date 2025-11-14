@@ -30,15 +30,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
-  const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (toastInfo) {
-      toast(toastInfo);
-      setToastInfo(null);
-    }
-  }, [toastInfo, toast]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -175,30 +167,26 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       prev.map(instance => {
         if (instance.instanceId === instanceId) {
           const newInstance = { ...instance, overrides: {...instance.overrides} };
-          
           const isToday = dateKey === todayKey;
 
           if (isToday) {
             newInstance.status = status;
-            if(status !== 'booked') {
-                 delete newInstance.bookingCode;
-            } else if (bookingCode) {
+            if(status === 'booked' && bookingCode) {
                  newInstance.bookingCode = bookingCode;
+            } else {
+                 delete newInstance.bookingCode;
             }
           } else {
              const defaultStatusForFuture = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
 
-             // Ensure the override for the date exists before modifying
              if (!newInstance.overrides[dateKey]) {
                 const roomType = getRoomById(instance.roomTypeId);
                 newInstance.overrides[dateKey] = { status: defaultStatusForFuture, price: roomType?.price };
              }
 
             if (status === defaultStatusForFuture && newInstance.overrides[dateKey]?.price === undefined) {
-                // If status is default AND there is no price override, remove the whole override object for that date
                 delete newInstance.overrides[dateKey];
             } else {
-                // Otherwise, just update the status
                 newInstance.overrides[dateKey].status = status;
                 if(status === 'booked' && bookingCode) {
                     newInstance.overrides[dateKey].bookingCode = bookingCode;
@@ -223,29 +211,24 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 if (!roomType) return instance;
 
                 const newInstance = { ...instance, overrides: { ...instance.overrides } };
-
-                // Get the current status for the day, or the default if not set
                 const currentStatus = getRoomStatusForDate(instanceId, date);
                 
-                // If the new price is the base price, we might be able to remove the price override
                 if (price === roomType.price) {
-                     // If an override exists for this date
                     if (newInstance.overrides[dateKey]) {
                         delete newInstance.overrides[dateKey].price;
-                        // If the status is also default, remove the entire date override
                         const defaultStatus = instance.status === 'closed' || instance.status === 'maintenance' ? 'closed' : 'available';
                         if (newInstance.overrides[dateKey].status === defaultStatus) {
                             delete newInstance.overrides[dateKey];
                         }
                     }
-                } else { // New price is different from base, so we need an override
+                } else {
                      if (!newInstance.overrides[dateKey]) {
                         newInstance.overrides[dateKey] = { status: currentStatus, price: price };
                     } else {
                         newInstance.overrides[dateKey].price = price;
                     }
                 }
-                setToastInfo({
+                toast({
                   title: "Үнэ шинэчлэгдлээ",
                   description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
                 });
@@ -254,7 +237,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             return instance;
         })
       );
-  }, [getRoomById, getRoomStatusForDate]);
+  }, [getRoomById, getRoomStatusForDate, toast]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
