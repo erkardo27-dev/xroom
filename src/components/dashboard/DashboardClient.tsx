@@ -137,8 +137,12 @@ export default function DashboardClient() {
       <div>
          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            {/* Left side: Date & Recommendations */}
             <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
+                 <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -169,36 +173,32 @@ export default function DashboardClient() {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                
-                <Popover>
+                 <Popover>
                     <PopoverTrigger asChild>
                        <Button variant="outline" className="h-10 text-yellow-500 border-yellow-400/50 bg-yellow-400/10 hover:bg-yellow-400/20 hover:text-yellow-600">
                            <Lightbulb className="mr-2 h-4 w-4"/>
                            Ухаалаг Зөвлөмж
                        </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80" align="end">
+                    <PopoverContent className="w-80" align="start">
                         <RecommendationCard selectedDate={selectedDate} />
                     </PopoverContent>
                 </Popover>
-
             </div>
-        </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-end mb-8 gap-4">
+            {/* Right side: Filters & Sort */}
             <div className="flex flex-wrap items-center gap-2">
-                {/* Filters */}
                 <div className="flex items-center gap-2">
                     <ListFilter className="w-4 h-4 text-muted-foreground" />
                     <Select value={filterRoomType} onValueChange={setFilterRoomType}>
-                        <SelectTrigger className="h-8 w-32"><SelectValue placeholder="Төрөл" /></SelectTrigger>
+                        <SelectTrigger className="h-10 w-32"><SelectValue placeholder="Төрөл" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Бүх төрөл</SelectItem>
                             {ownerRoomTypes.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="h-8 w-32"><SelectValue placeholder="Төлөв" /></SelectTrigger>
+                        <SelectTrigger className="h-10 w-32"><SelectValue placeholder="Төлөв" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Бүх төлөв</SelectItem>
                             <SelectItem value="available">Сул</SelectItem>
@@ -212,11 +212,10 @@ export default function DashboardClient() {
                 
                 <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
 
-                {/* Sort */}
                 <div className="flex items-center gap-2">
                     <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
                     <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
-                        <SelectTrigger className="h-8 w-36"><SelectValue placeholder="Эрэмбэлэх" /></SelectTrigger>
+                        <SelectTrigger className="h-10 w-36"><SelectValue placeholder="Эрэмбэлэх" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="roomNumber">Өрөөний дугаар</SelectItem>
                             <SelectItem value="roomType">Өрөөний төрөл</SelectItem>
@@ -225,7 +224,7 @@ export default function DashboardClient() {
                     </Select>
                 </div>
             </div>
-          </div>
+        </div>
         
         <div>
             {filteredAndSortedInstances.length === 0 ? (
