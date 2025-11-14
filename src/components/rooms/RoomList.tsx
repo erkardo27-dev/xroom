@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { Room, SortOption } from '@/lib/data';
-import { rooms as allRooms, locations as allLocations } from '@/lib/data';
+import { locations as allLocations } from '@/lib/data';
 import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
@@ -15,6 +15,7 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Hero from '@/components/layout/Hero';
+import { useRoom } from '@/context/RoomContext';
 
 type ViewMode = 'list' | 'map';
 
@@ -28,9 +29,7 @@ const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
 export default function RoomList() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [error, setError] = useState<string | null>(null);
+  const { rooms, status, error } = useRoom();
   const [sortOption, setSortOption] = useState<SortOption>('distance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -40,36 +39,7 @@ export default function RoomList() {
   const [location, setLocation] = useState<string>('all');
 
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        if (typeof window !== 'undefined' && 'geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setRooms(allRooms);
-              setStatus('success');
-            },
-            (err) => {
-              setError(`Таны байршлыг олоход алдаа гарлаа: ${err.message}. Үндсэн үр дүнг харуулж байна.`);
-              setRooms(allRooms);
-              setStatus('success'); 
-            }
-          );
-        } else {
-            setError("Таны хөтөч байршил тодорхойлохыг дэмжихгүй байна. Үндсэн үр дүнг харуулж байна.");
-            setRooms(allRooms);
-            setStatus('success');
-        }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const filteredAndSortedRooms = useMemo(() => {
-    let activeFilters = 0;
-    if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) activeFilters++;
-    if (distanceLimit[0] < MAX_DISTANCE) activeFilters++;
-    if (location !== 'all') activeFilters++;
-
     const filtered = rooms.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
@@ -92,14 +62,6 @@ export default function RoomList() {
     return sorted;
   }, [rooms, sortOption, priceRange, distanceLimit, location]);
   
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) count++;
-    if (distanceLimit[0] < MAX_DISTANCE) count++;
-    if (location !== 'all') count++;
-    return count;
-  }, [priceRange, distanceLimit, location]);
-
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
       <Hero 
@@ -108,9 +70,9 @@ export default function RoomList() {
       />
       
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-8 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-center gap-x-8 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
               {/* Filters */}
-              <div className="lg:col-span-4">
+              <div className="lg:col-span-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="location-filter" className="font-semibold text-sm">Байршил</Label>

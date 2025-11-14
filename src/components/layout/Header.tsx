@@ -26,14 +26,21 @@ type DialogType = 'addRoom' | 'login' | null;
 
 export default function Header() {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const handleDialogOpen = (dialog: DialogType, open: boolean) => {
+
+  const handleOpenChange = (open: boolean) => {
+    setIsFormOpen(open);
     if (!open) {
       setOpenDialog(null);
-    } else {
-      setOpenDialog(dialog);
     }
   };
+
+  const handleDialogTrigger = (dialog: DialogType) => {
+    setOpenDialog(dialog);
+    setIsFormOpen(true);
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -42,7 +49,7 @@ export default function Header() {
           <Logo className="h-8 w-auto text-primary" />
         </Link>
 
-        <Dialog onOpenChange={(open) => handleDialogOpen(open ? openDialog : null, open)}>
+        <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline">
@@ -51,13 +58,13 @@ export default function Header() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DialogTrigger asChild onClick={() => setOpenDialog('addRoom')}>
+                    <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
                         <DropdownMenuItem>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Өрөө оруулах
                         </DropdownMenuItem>
                     </DialogTrigger>
-                    <DialogTrigger asChild onClick={() => setOpenDialog('login')}>
+                    <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
                         <DropdownMenuItem>
                             <LogIn className="mr-2 h-4 w-4" />
                             Нэвтрэх
@@ -75,7 +82,7 @@ export default function Header() {
                                 Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.
                             </DialogDescription>
                         </DialogHeader>
-                        <AddRoomForm />
+                        <AddRoomForm onFormSubmit={() => handleOpenChange(false)}/>
                     </>
                 )}
                 {openDialog === 'login' && (
