@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Lightbulb } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 const chartConfig = {
   occupancy: {
@@ -62,7 +62,11 @@ const generateForecastData = () => {
 
 export default function OccupancyForecastChart() {
 
-  const chartData = useMemo(() => generateForecastData(), []);
+  const [chartData, setChartData] = useState<{date: string, occupancy: number}[]>([]);
+
+  useEffect(() => {
+    setChartData(generateForecastData());
+  }, [])
   
   const averageOccupancy = useMemo(() => {
     if (chartData.length === 0) return 0;
@@ -117,7 +121,7 @@ export default function OccupancyForecastChart() {
             <ChartTooltip
               cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1.5, strokeDasharray: "3 3" }}
               content={<ChartTooltipContent 
-                formatter={(value) => `${value}%`}
+                formatter={(value) => [`${value}%`, "Ачаалал"]}
                 indicator="dot"
               />}
             />
@@ -127,13 +131,9 @@ export default function OccupancyForecastChart() {
               fill="url(#colorOccupancy)"
               stroke="var(--color-occupancy)"
               strokeWidth={2.5}
-              dot={{
-                r: 4,
-                strokeWidth: 0,
-                fill: 'var(--color-occupancy)',
-              }}
+              dot={false}
               activeDot={{
-                r: 6,
+                r: 5,
                 strokeWidth: 2,
                 stroke: 'hsl(var(--background))',
                 fill: 'var(--color-occupancy)'
