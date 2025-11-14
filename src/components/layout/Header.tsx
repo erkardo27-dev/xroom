@@ -109,7 +109,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                 <DialogTrigger asChild>
                     <Button variant="outline" onClick={() => handleDialogTrigger('login')}>
                         <LogIn className="mr-2 h-4 w-4" />
-                        Эзэмшигч нэвтрэх
+                        Өрөө нэмэх
                     </Button>
                 </DialogTrigger>
             )}
