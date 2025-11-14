@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -66,6 +66,10 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
         <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
                 <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                        <LayoutGrid className="mr-2 h-4 w-4" />
+                        Миний өрөөнүүд
+                    </Button>
                     <Button variant="outline" onClick={() => router.push('/dashboard/stats')}>
                         <BarChart2 className="mr-2 h-4 w-4" />
                         Статистик
