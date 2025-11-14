@@ -136,6 +136,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
   }
   
   const currentStatus = statusConfig[instance.status];
+  const isPriceOverridden = priceForDate !== roomType.price;
 
   const handleActionClick = () => {
     const nextStatus = currentStatus.action.nextStatus;
@@ -237,10 +238,15 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
               </div>
           ) : (
               <div className="flex items-center gap-2">
-                  {priceForDate !== roomType.price && (
+                  {isPriceOverridden && (
                       <span className="text-xs text-muted-foreground line-through">{roomType.price.toLocaleString()}₮</span>
                   )}
-                  <span className="font-semibold text-primary">{priceForDate.toLocaleString()}₮</span>
+                  <span className={cn(
+                      "font-semibold",
+                      isPriceOverridden ? "text-orange-500" : "text-primary"
+                  )}>
+                      {priceForDate.toLocaleString()}₮
+                  </span>
                   <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingPrice(true)}>
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
