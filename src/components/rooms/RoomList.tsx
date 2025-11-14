@@ -45,23 +45,32 @@ export default function RoomList() {
   const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());
 
-    const availableInstancesByRoomType = roomInstances.reduce((acc, instance) => {
-        const status = getRoomStatusForDate(instance.instanceId, today);
-        if (status === 'available') {
-            if (!acc[instance.roomTypeId]) {
-                acc[instance.roomTypeId] = [];
-            }
-            acc[instance.roomTypeId].push(instance);
-        }
-        return acc;
-    }, {} as Record<string, RoomInstance[]>);
+    // 1. Find all room types that have at least one 'available' instance for today.
+    const availableRoomTypeIds = new Set<string>();
+    roomInstances.forEach(instance => {
+      // Use the dedicated function which checks overrides as well
+      if (getRoomStatusForDate(instance.instanceId, today) === 'available') {
+        availableRoomTypeIds.add(instance.roomTypeId);
+      }
+    });
 
-    return rooms
-      .map(roomType => ({
+    // 2. For those room types, gather all their available instances.
+    const result = Array.from(availableRoomTypeIds).map(roomTypeId => {
+      const roomType = rooms.find(r => r.id === roomTypeId);
+      if (!roomType) return null;
+
+      const availableInstances = roomInstances.filter(instance => 
+        instance.roomTypeId === roomTypeId && 
+        getRoomStatusForDate(instance.instanceId, today) === 'available'
+      );
+      
+      return {
         ...roomType,
-        availableInstances: availableInstancesByRoomType[roomType.id] || [],
-      }))
-      .filter(roomType => roomType.availableInstances.length > 0);
+        availableInstances,
+      };
+    }).filter((r): r is Room & { availableInstances: RoomInstance[] } => r !== null);
+    
+    return result;
 
   }, [rooms, roomInstances, getRoomStatusForDate]);
 
@@ -224,5 +233,6 @@ export default function RoomList() {
   );
 
     
+
 
 

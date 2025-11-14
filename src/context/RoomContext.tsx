@@ -139,19 +139,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (!instance) return 'closed'; 
 
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-    const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
     
+    // 1. Check for a specific override for that date
     if (instance.overrides && instance.overrides[dateKey]) {
       return instance.overrides[dateKey].status;
     }
     
-    if (dateKey === todayKey) {
-        return instance.status;
-    }
-    
-    // For future or past dates without specific overrides, derive from base status.
-    // If base is 'closed' or 'maintenance', it affects all dates unless overridden.
-    return (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > todayKey ? 'closed' : 'available';
+    // 2. If no override, return the base status
+    return instance.status;
 
   }, [roomInstances]);
 
@@ -170,49 +165,49 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const setRoomStatusForDate = useCallback((instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => {
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
     const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
+    const isToday = dateKey === todayKey;
 
     setRoomInstances(prev =>
       prev.map(instance => {
         if (instance.instanceId === instanceId) {
           const newInstance = { ...instance, overrides: {...instance.overrides} };
-          const isToday = dateKey === todayKey;
 
+          // If the change is for today, update the base status directly
           if (isToday) {
-            // If it's for today, update the base status
             newInstance.status = status;
             if(status === 'booked' && bookingCode) {
                  newInstance.bookingCode = bookingCode;
-            } else {
+            } else if (status === 'available') {
                  delete newInstance.bookingCode;
             }
-            // Also clean up today's override if it becomes redundant
+             // Clean up today's override if it becomes redundant, but keep price
             if (newInstance.overrides[dateKey]) {
-                const roomType = getRoomById(instance.roomTypeId);
-                const isPriceOverridden = newInstance.overrides[dateKey].price !== undefined && newInstance.overrides[dateKey].price !== roomType?.price;
-                if (!isPriceOverridden) {
+                delete newInstance.overrides[dateKey].status;
+                delete newInstance.overrides[dateKey].bookingCode;
+                 if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
                     delete newInstance.overrides[dateKey];
-                } else {
-                    delete newInstance.overrides[dateKey].status;
-                    delete newInstance.overrides[dateKey].bookingCode;
                 }
             }
           } else {
-             // For future or past dates, use overrides
-             const defaultStatusForFuture = (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > todayKey ? 'closed' : 'available';
-
+             // For future or past dates, always use overrides
              if (!newInstance.overrides[dateKey]) {
-                newInstance.overrides[dateKey] = { status: defaultStatusForFuture };
+                newInstance.overrides[dateKey] = { status: status };
+             } else {
+                newInstance.overrides[dateKey].status = status;
              }
 
-            if (status === defaultStatusForFuture && newInstance.overrides[dateKey]?.price === undefined) {
-                delete newInstance.overrides[dateKey];
+            if(status === 'booked' && bookingCode) {
+                newInstance.overrides[dateKey].bookingCode = bookingCode;
             } else {
-                newInstance.overrides[dateKey].status = status;
-                if(status === 'booked' && bookingCode) {
-                    newInstance.overrides[dateKey].bookingCode = bookingCode;
-                } else {
-                    delete newInstance.overrides[dateKey].bookingCode;
-                }
+                delete newInstance.overrides[dateKey].bookingCode;
+            }
+
+            // Clean up the override if it matches the default state
+            const isDefaultStatus = newInstance.status === 'available' && status === 'available';
+            const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined && newInstance.overrides[dateKey]?.bookingCode === undefined;
+
+            if (isDefaultStatus && hasNoOtherOverrides) {
+                 delete newInstance.overrides[dateKey];
             }
           }
           return newInstance;
@@ -220,7 +215,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return instance;
       })
     );
-  }, [getRoomById]);
+  }, []);
 
   const setRoomPriceForDate = useCallback((instanceId: string, date: Date, price: number) => {
      const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
@@ -236,8 +231,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 if (price === roomType.price) {
                     if (newInstance.overrides[dateKey]) {
                         delete newInstance.overrides[dateKey].price;
-                        const defaultStatus = (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > format(new Date(), 'yyyy-MM-dd') ? 'closed' : 'available';
-                        if (newInstance.overrides[dateKey].status === defaultStatus) {
+                        if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
                             delete newInstance.overrides[dateKey];
                         }
                     }
@@ -266,6 +260,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const anyInstance = roomInstances.find(i => i.roomTypeId === roomTypeId);
     if (!anyInstance) return roomType.price;
 
+    // This is important: get price from an instance, which respects overrides
     return getRoomPriceForDate(anyInstance.instanceId, date);
   }, [rooms, roomInstances, getRoomPriceForDate]);
 
@@ -288,9 +283,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 const currentStatus = getRoomStatusForDate(inst.instanceId, date);
 
                 if (price === undefined || price === roomType.price) {
-                    if (updatedInstance.overrides[dateKey]) {
+                     if (updatedInstance.overrides[dateKey]) {
                         delete updatedInstance.overrides[dateKey].price;
-                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 1 && updatedInstance.overrides[dateKey].status === ((inst.status === 'closed' || inst.status === 'maintenance') && dateKey > format(new Date(), 'yyyy-MM-dd') ? 'closed' : 'available')) {
+                        // If no other overrides exist for this date, remove the date key entirely
+                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 0) {
                            delete updatedInstance.overrides[dateKey];
                         }
                     }
