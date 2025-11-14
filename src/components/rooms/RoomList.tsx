@@ -119,21 +119,7 @@ export default function RoomList() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
               {/* Filters */}
               <div className="lg:col-span-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="location-filter" className="font-semibold text-sm">Байршил</Label>
-                        <Select value={location} onValueChange={setLocation}>
-                          <SelectTrigger id="location-filter" className="w-full">
-                            <SelectValue placeholder="Байршил сонгох" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Бүгд</SelectItem>
-                            {allLocations.map((loc) => (
-                              <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="space-y-2">
                           <div className="flex justify-between items-center text-sm">
                               <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
@@ -242,3 +228,5 @@ export default function RoomList() {
       )}
     </div>
   );
+
+    
