@@ -15,23 +15,23 @@ export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
         src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
         alt="Night city view from a hotel room"
         fill
-        className="object-cover"
+        className="object-cover opacity-80"
         priority
         data-ai-hint="hotel room"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20" />
       <div className="relative z-10 text-white w-full px-4">
-        <p className="text-sm font-semibold text-white/90 uppercase tracking-wider flex items-center justify-center gap-2">
+        <p className="text-sm font-semibold text-white/90 uppercase tracking-wider flex items-center justify-center gap-2 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
           <Zap className="w-4 h-4 text-yellow-300" />
           Сүүлчийн минутын хямдрал
         </p>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mt-2 !leading-tight text-shadow-lg">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mt-2 !leading-tight [text-shadow:0_2px_5px_rgb(0_0_0_/_0.5)]">
           Энэ шөнийн онцгой буудлууд
         </h1>
         <div className='mt-8'>
             <HeroSearch onSearch={onSearch} />
         </div>
-         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80">
+         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
           {status === 'loading'
             ? "Шилдэг саналуудыг хайж байна..."
             : filteredCount > 0
