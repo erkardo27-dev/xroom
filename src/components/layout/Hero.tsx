@@ -1,14 +1,16 @@
 import { Zap } from 'lucide-react';
 import Image from 'next/image';
+import { HeroSearch } from './HeroSearch';
 
 type HeroProps = {
     status: 'loading' | 'success' | 'error';
     filteredCount: number;
+    onSearch: (term: string) => void;
 }
 
-export default function Hero({ status, filteredCount }: HeroProps) {
+export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
   return (
-    <div className="relative rounded-xl overflow-hidden mb-8 h-80 flex items-center justify-center text-center p-4">
+    <div className="relative rounded-xl overflow-hidden mb-8 h-[400px] md:h-[450px] flex items-center justify-center text-center p-4">
       <Image
         src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
         alt="Night city view from a hotel room"
@@ -18,7 +20,7 @@ export default function Hero({ status, filteredCount }: HeroProps) {
         data-ai-hint="hotel room"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
-      <div className="relative z-10 text-white">
+      <div className="relative z-10 text-white w-full px-4">
         <p className="text-sm font-semibold text-white/90 uppercase tracking-wider flex items-center justify-center gap-2">
           <Zap className="w-4 h-4 text-yellow-300" />
           Сүүлчийн минутын хямдрал
@@ -33,6 +35,9 @@ export default function Hero({ status, filteredCount }: HeroProps) {
               ? `${filteredCount} өрөө олдлоо. Доорх шүүлтүүрээр хайлтаа нарийвчлаарай.`
               : "Таны хайлтад тохирох өрөө олдсонгүй."}
         </p>
+        <div className='mt-8'>
+            <HeroSearch onSearch={onSearch} />
+        </div>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -37,6 +38,7 @@ export default function RoomList() {
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
   const [location, setLocation] = useState<string>('all');
+  const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
 
 
   const availableRoomInstances = useMemo(() => 
@@ -71,7 +73,19 @@ export default function RoomList() {
 
 
   const filteredAndSortedRooms = useMemo(() => {
-    const filtered = availableRoomsByType.filter(room => 
+    let filtered = availableRoomsByType;
+
+    // Hero search filter
+    if (heroSearchTerm) {
+        const lowercasedTerm = heroSearchTerm.toLowerCase();
+        filtered = filtered.filter(room => 
+            room.hotelName.toLowerCase().includes(lowercasedTerm) ||
+            room.location.toLowerCase().includes(lowercasedTerm)
+        );
+    }
+      
+    // Other filters
+    filtered = filtered.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
@@ -91,13 +105,14 @@ export default function RoomList() {
         break;
     }
     return sorted;
-  }, [availableRoomsByType, sortOption, priceRange, distanceLimit, location]);
+  }, [availableRoomsByType, sortOption, priceRange, distanceLimit, location, heroSearchTerm]);
   
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
       <Hero 
           status={status}
           filteredCount={filteredAndSortedRooms.length}
+          onSearch={setHeroSearchTerm}
       />
       
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-8 p-4">
