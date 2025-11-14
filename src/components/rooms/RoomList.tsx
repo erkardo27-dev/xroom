@@ -37,7 +37,6 @@ export default function RoomList() {
   // Filter state
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
-  const [minRating, setMinRating] = useState<number[]>([1]);
   const [location, setLocation] = useState<string>('all');
 
 
@@ -69,13 +68,12 @@ export default function RoomList() {
     let activeFilters = 0;
     if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) activeFilters++;
     if (distanceLimit[0] < MAX_DISTANCE) activeFilters++;
-    if (minRating[0] > 1) activeFilters++;
+    if (location !== 'all') activeFilters++;
 
     const filtered = rooms.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
-        room.rating >= minRating[0] &&
         (location === 'all' || room.location === location)
     );
 
@@ -92,16 +90,15 @@ export default function RoomList() {
         break;
     }
     return sorted;
-  }, [rooms, sortOption, priceRange, distanceLimit, minRating, location]);
+  }, [rooms, sortOption, priceRange, distanceLimit, location]);
   
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (priceRange[0] > 0 || priceRange[1] < MAX_PRICE) count++;
     if (distanceLimit[0] < MAX_DISTANCE) count++;
-    if (minRating[0] > 1) count++;
     if (location !== 'all') count++;
     return count;
-  }, [priceRange, distanceLimit, minRating, location]);
+  }, [priceRange, distanceLimit, location]);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -114,7 +111,7 @@ export default function RoomList() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-center gap-x-8 gap-y-4">
               {/* Filters */}
               <div className="lg:col-span-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="location-filter" className="font-semibold text-sm">Байршил</Label>
                         <Select value={location} onValueChange={setLocation}>
@@ -159,20 +156,6 @@ export default function RoomList() {
                             step={1}
                             value={distanceLimit}
                             onValueChange={setDistanceLimit}
-                          />
-                      </div>
-                       <div className="space-y-2">
-                          <div className="flex justify-between items-center text-sm">
-                              <Label htmlFor="min-rating" className="font-semibold">Үнэлгээ</Label>
-                              <span className="font-medium text-primary">{minRating[0].toFixed(1)}+ од</span>
-                          </div>
-                           <Slider
-                            id="min-rating"
-                            min={1}
-                            max={5}
-                            step={0.1}
-                            value={minRating}
-                            onValueChange={setMinRating}
                           />
                       </div>
                   </div>
