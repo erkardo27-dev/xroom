@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,7 +126,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border hover:border-primary/20 hover:shadow-primary/10">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border-transparent hover:border-primary/20 hover:shadow-primary/10">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
@@ -149,12 +149,12 @@ export function RoomCard({ room }: { room: Room }) {
           
         </Carousel>
          {discount > 0 && (
-            <Badge 
-              variant="destructive"
-              className="absolute top-3 right-3 text-base font-bold px-3 py-1 shadow-lg z-10"
+            <div 
+              className="absolute top-3 left-3 bg-black/70 text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg z-10"
             >
-              -{discount}%
-            </Badge>
+              <Zap className="w-4 h-4 text-yellow-300" />
+              <span className="font-bold text-sm">-{discount}%</span>
+            </div>
           )}
         </div>
 
@@ -315,7 +315,3 @@ export function RoomCard({ room }: { room: Room }) {
     </>
   );
 }
-
-    
-
-    
