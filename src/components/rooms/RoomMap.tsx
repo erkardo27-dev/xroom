@@ -42,16 +42,17 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
   );
   
   const image = selectedRoom ? PlaceHolderImages.find(img => img.id === selectedRoom.imageIds[0]) : null;
+  const mapImage = PlaceHolderImages.find(img => img.id === 'ulaanbaatar-map');
 
   return (
     <div className="relative w-full h-[600px] md:h-[700px] lg:h-[800px] bg-secondary rounded-2xl overflow-hidden border-4 border-background shadow-inner">
-      <Image
-        src="https://images.unsplash.com/photo-1599567437813-75b2713636e2?q=80&w=2070&auto=format&fit=crop"
-        alt="Хотын газрын зураг"
+      {mapImage && <Image
+        src={mapImage.imageUrl}
+        alt={mapImage.description}
         fill
         className="object-cover opacity-30 saturate-50"
-        data-ai-hint="city map"
-      />
+        data-ai-hint={mapImage.imageHint}
+      />}
       {mappedRooms.map(room => (
         <button
           key={room.id}
@@ -76,7 +77,7 @@ export function RoomMap({ rooms }: { rooms: Room[] }) {
                             className="object-cover rounded-l-lg"
                         />
                     </div>
-                    <div className="p-3 flex flex-col flex-1">
+                    <div className="p-4 flex flex-col flex-1">
                         <h4 className="font-bold leading-tight">{selectedRoom.roomName}</h4>
                         <p className="text-sm text-muted-foreground">{selectedRoom.hotelName}</p>
                         <div className="flex items-center text-sm text-muted-foreground mt-1 gap-2">

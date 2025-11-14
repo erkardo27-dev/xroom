@@ -39,7 +39,7 @@
     {
       "id": "hotel-7",
       "description": "Зочид буудлын өрөөний тохилог угаалгын өрөө.",
-      "imageUrl": "https://images.unsplash.com/photo-1638498172081-7f6b1fb5a3bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHwlRDAlQjElRDElODMlRDElODMlRDAlQjQlRDAlQkIlRDElOEIlRDAlQkQlMjAlRDElODMlRDAlQjMlRDAlQjAlRDAlQjAlRDAlQkIlRDAlQjMlRDElOEIlRDAlQkQlMjAlRDMlQTklRDElODAlRDMlQTklRDMlQTl8ZW58MHx8fHwxNzYzMDQ0MzE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1638498172081-7f6b1fb5a3bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHwlRDAlQjElRDElODMlRDElODMlRDAlQjQlRDAlQkIlRDElOEIlRDAlQjQlMjAlRDElODMlRDAlQjMlRDAlQjAlRDAlQjAlRDAlQkIlRDAlQjMlRDElOEIlRDAlQjQlMjAlRDMlQTklRDElODAlRDMlQTklRDMlQTl8ZW58MHx8fHwxNzYzMDQ0MzE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "буудлын угаалгын өрөө"
     },
     {
@@ -71,6 +71,12 @@
       "description": "Зочид буудлын баар эсвэл лаунж.",
       "imageUrl": "https://picsum.photos/seed/h12/800/600",
       "imageHint": "буудлын баар"
+    },
+    {
+      "id": "ulaanbaatar-map",
+      "description": "Улаанбаатар хотын газрын зургийн агаарын харагдац.",
+      "imageUrl": "https://images.unsplash.com/photo-1599567437813-75b2713636e2?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "хотын газрын зураг"
     }
   ]
 }
