@@ -31,6 +31,7 @@ const amenityOptions: { id: Amenity, label: string }[] = [
 const formSchema = z.object({
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
+  originalPrice: z.coerce.number().optional().nullable(),
   totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
   imageIds: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one item.",
@@ -38,6 +39,9 @@ const formSchema = z.object({
   amenities: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one item.",
   }),
+}).refine(data => !data.originalPrice || data.originalPrice > data.price, {
+    message: "Хямдрахаас өмнөх үнэ одоогийн үнээс их байх ёстой.",
+    path: ["originalPrice"],
 });
 
 type RoomFormProps = {
@@ -57,6 +61,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
         defaultValues: {
             roomName: "",
             price: 0,
+            originalPrice: undefined,
             totalQuantity: 1,
             imageIds: [],
             amenities: [],
@@ -68,12 +73,14 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             form.reset({
                 ...roomToEdit,
                 price: roomToEdit.price || 0,
+                originalPrice: roomToEdit.originalPrice || undefined,
                 totalQuantity: roomToEdit.totalQuantity || 1,
             });
         } else {
             form.reset({
                 roomName: "",
                 price: 0,
+                originalPrice: undefined,
                 totalQuantity: 1,
                 imageIds: [],
                 amenities: [],
@@ -93,6 +100,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
 
         const roomDataPayload = {
             ...values,
+            originalPrice: values.originalPrice || undefined,
             amenities: values.amenities as Amenity[],
             ownerId: userEmail,
             hotelName: hotelInfo.hotelName,
@@ -142,6 +150,22 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                             <FormControl>
                                 <Input type="number" placeholder="ж.нь: 150000" {...field} />
                             </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="originalPrice"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Хямдрахаас өмнөх үнэ (₮)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="ж.нь: 200000" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormDescription>
+                                Хэрэв хямдрал зарлах бол энд хуучин үнийг оруулна.
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

@@ -99,7 +99,18 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteRoomInstance = (instanceId: string) => {
+    const instanceToDelete = roomInstances.find(i => i.instanceId === instanceId);
+    if (!instanceToDelete) return;
+
+    const roomType = rooms.find(r => r.id === instanceToDelete.roomTypeId);
+    
     setRoomInstances(prev => prev.filter(instance => instance.instanceId !== instanceId));
+    
+    // Also decrement totalQuantity on the room type
+    if (roomType) {
+        updateRoom({ ...roomType, totalQuantity: roomType.totalQuantity - 1 });
+    }
+
     toast({
         title: "Өрөө устгагдлаа",
         description: "Сонгосон өрөө амжилттай устгагдлаа.",
