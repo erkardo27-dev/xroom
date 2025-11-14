@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoom } from "@/context/RoomContext";
-import { Room, RoomInstance } from "@/lib/data";
+import { Room, RoomInstance, RoomStatus } from "@/lib/data";
 import { Skeleton } from "../ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ListFilter, ArrowUpDown } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
@@ -16,15 +17,25 @@ import { format, addDays, isToday, startOfDay } from 'date-fns';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
+
+type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
   const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, roomInstances, status: roomStatus, deleteRoom, getRoomStatusForDate } = useRoom();
+  const { rooms, roomInstances, status: roomStatus, deleteRoom, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<Room | null>(null);
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<Room | null>(null);
+
+  // Filtering and Sorting State
+  const [sortOption, setSortOption] = useState<SortOption>('roomNumber');
+  const [filterRoomType, setFilterRoomType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
 
   useEffect(() => {
     if (!isAuthLoading && !isLoggedIn) {
@@ -32,17 +43,47 @@ export default function DashboardClient() {
     }
   }, [isLoggedIn, isAuthLoading, router]);
 
-  const ownerRoomInstances = useMemo(() => {
-    if (!userEmail) return [];
-    const instances = roomInstances.filter(instance => instance.ownerId === userEmail);
-    
-    // Augment instances with status for the selected date
-    return instances.map(instance => ({
-      ...instance,
-      status: getRoomStatusForDate(instance.instanceId, selectedDate),
-    }));
+  const ownerRoomTypes = useMemo(() => {
+      return rooms.filter(r => r.ownerId === userEmail);
+  }, [rooms, userEmail]);
 
-  }, [roomInstances, userEmail, selectedDate, getRoomStatusForDate]);
+  const filteredAndSortedInstances = useMemo(() => {
+    if (!userEmail) return [];
+    
+    // 1. Get all instances for the owner and augment with status for the selected date
+    const instancesWithStatus = roomInstances
+      .filter(instance => instance.ownerId === userEmail)
+      .map(instance => ({
+        ...instance,
+        status: getRoomStatusForDate(instance.instanceId, selectedDate),
+      }));
+
+    // 2. Filter instances
+    const filtered = instancesWithStatus.filter(instance => {
+      const roomTypeMatch = filterRoomType === 'all' || instance.roomTypeId === filterRoomType;
+      const statusMatch = filterStatus === 'all' || instance.status === filterStatus;
+      return roomTypeMatch && statusMatch;
+    });
+
+    // 3. Sort instances
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'roomType':
+          const roomA = getRoomById(a.roomTypeId);
+          const roomB = getRoomById(b.roomTypeId);
+          return (roomA?.roomName || '').localeCompare(roomB?.roomName || '');
+        case 'status':
+           const statusOrder: Record<RoomStatus, number> = { 'booked': 1, 'available': 2, 'maintenance': 3, 'closed': 4 };
+           return statusOrder[a.status] - statusOrder[b.status];
+        case 'roomNumber':
+        default:
+          return a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true });
+      }
+    });
+
+    return sorted;
+
+  }, [roomInstances, userEmail, selectedDate, getRoomStatusForDate, filterRoomType, filterStatus, sortOption, getRoomById]);
 
   const isLoading = isAuthLoading || roomStatus === 'loading';
 
@@ -75,9 +116,9 @@ export default function DashboardClient() {
   return (
     <>
       <div>
-          <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-            <h1 className="text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-            <div className="flex items-center gap-2 p-2 rounded-lg border bg-card">
+          <div className="flex flex-wrap justify-between items-start mb-4 gap-4">
+            <h1 className="text-3xl font-bold tracking-tight self-end">Миний өрөөнүүд</h1>
+            <div className="flex items-center gap-2 p-2 rounded-lg border bg-card self-end">
               <Button variant="outline" size="icon" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -108,18 +149,57 @@ export default function DashboardClient() {
               </Button>
             </div>
           </div>
+          
+          <div className="flex flex-wrap gap-4 items-end mb-8 p-4 border rounded-lg bg-card">
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                 <div className="space-y-1.5">
+                    <Label className="font-semibold flex items-center gap-2"><ListFilter className="w-4 h-4"/>Шүүх</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Select value={filterRoomType} onValueChange={setFilterRoomType}>
+                            <SelectTrigger><SelectValue placeholder="Төрөл" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Бүх төрөл</SelectItem>
+                                {ownerRoomTypes.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                            <SelectTrigger><SelectValue placeholder="Төлөв" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Бүх төлөв</SelectItem>
+                                <SelectItem value="available">Сул</SelectItem>
+                                <SelectItem value="booked">Захиалгатай</SelectItem>
+                                <SelectItem value="maintenance">Засвартай</SelectItem>
+                                <SelectItem value="closed">Хаалттай</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                 <div className="space-y-1.5">
+                    <Label className="font-semibold flex items-center gap-2"><ArrowUpDown className="w-4 h-4"/>Эрэмбэлэх</Label>
+                     <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
+                        <SelectTrigger><SelectValue placeholder="Эрэмбэлэх" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="roomNumber">Өрөөний дугаар</SelectItem>
+                            <SelectItem value="roomType">Өрөөний төрөл</SelectItem>
+                            <SelectItem value="status">Төлөв</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+              </div>
+          </div>
 
-          {ownerRoomInstances.length === 0 ? (
+
+          {filteredAndSortedInstances.length === 0 ? (
               <Alert>
                   <Info className="h-4 w-4" />
-                  <AlertTitle>Өрөө оруулаагүй байна</AlertTitle>
+                  <AlertTitle>Өрөө олдсонгүй</AlertTitle>
                   <AlertDescription>
-                      Та одоогоор ямар ч өрөө оруулаагүй байна. "Шинэ өрөөний төрөл" товчийг дарж өрөөгөө нэмнэ үү.
+                      Таны сонгосон шүүлтүүрт тохирох өрөө олдсонгүй. Эсвэл та одоогоор ямар ч өрөө оруулаагүй байна.
                   </AlertDescription>
               </Alert>
           ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {ownerRoomInstances.map(instance => (
+                  {filteredAndSortedInstances.map(instance => (
                       <RoomInstanceCard 
                         key={instance.instanceId} 
                         instance={instance} 
@@ -166,3 +246,5 @@ export default function DashboardClient() {
     </>
   );
 }
+
+    
