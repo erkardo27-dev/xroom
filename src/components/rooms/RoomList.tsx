@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -17,6 +18,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Hero from '@/components/layout/Hero';
 import { useRoom } from '@/context/RoomContext';
+import { startOfDay } from 'date-fns';
 
 type ViewMode = 'list' | 'map';
 
@@ -30,7 +32,7 @@ const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
 export default function RoomList() {
-  const { rooms, roomInstances, status, error } = useRoom();
+  const { rooms, roomInstances, status, error, getRoomStatusForDate } = useRoom();
   const [sortOption, setSortOption] = useState<SortOption>('distance');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -40,36 +42,21 @@ export default function RoomList() {
   const [location, setLocation] = useState<string>('all');
   const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
 
-
-  const availableRoomInstances = useMemo(() => 
-    roomInstances.filter(inst => inst.status === 'available'), 
-    [roomInstances]
-  );
-  
   const availableRoomsByType = useMemo(() => {
-    const roomTypeMap = new Map<string, Room>();
-    const availableInstancesMap = new Map<string, RoomInstance[]>();
+    const today = startOfDay(new Date());
 
-    availableRoomInstances.forEach(instance => {
-        if (!roomTypeMap.has(instance.roomTypeId)) {
-            const roomType = rooms.find(r => r.id === instance.roomTypeId);
-            if (roomType) {
-                roomTypeMap.set(instance.roomTypeId, roomType);
-            }
-        }
-        
-        if (!availableInstancesMap.has(instance.roomTypeId)) {
-            availableInstancesMap.set(instance.roomTypeId, []);
-        }
-        availableInstancesMap.get(instance.roomTypeId)!.push(instance);
-    });
-
-    return Array.from(roomTypeMap.values()).map(room => ({
-        ...room,
-        availableInstances: availableInstancesMap.get(room.id) || []
-    }));
-
-  }, [availableRoomInstances, rooms]);
+    return rooms.map(roomType => {
+      const availableInstances = roomInstances.filter(instance => 
+        instance.roomTypeId === roomType.id && 
+        getRoomStatusForDate(instance.instanceId, today) === 'available'
+      );
+      return {
+        ...roomType,
+        availableInstances: availableInstances
+      };
+    }).filter(roomType => roomType.availableInstances.length > 0);
+    
+  }, [rooms, roomInstances, getRoomStatusForDate]);
 
 
   const filteredAndSortedRooms = useMemo(() => {
