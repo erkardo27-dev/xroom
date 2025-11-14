@@ -96,44 +96,57 @@ export default function PricingClient() {
   const handleAiPriceSuggest = async () => {
     setIsAiLoading(true);
     setAiRecommendation(null);
-    try {
-        const input: PricingRecommendationInput = {
-            roomTypes: ownerRoomTypes.map(r => ({
-                id: r.id,
-                roomName: r.roomName,
-                hotelName: r.hotelName,
-                price: r.price,
-                location: r.location,
-                amenities: r.amenities,
-                rating: r.rating,
-            })),
-            dateRange: {
-                startDate: format(dateColumns[0], 'yyyy-MM-dd'),
-                endDate: format(dateColumns[dateColumns.length - 1], 'yyyy-MM-dd'),
+
+    // MOCK IMPLEMENTATION
+    setTimeout(() => {
+        if (ownerRoomTypes.length === 0) {
+             toast({
+                title: "Өрөө олдсонгүй",
+                description: "AI зөвлөмж гаргахын тулд танд дор хаяж нэг өрөөний төрөл байх шаардлагатай.",
+            });
+            setIsAiLoading(false);
+            return;
+        }
+
+        const recommendations: Record<string, number> = {};
+        const firstRoomType = ownerRoomTypes[0];
+
+        dateColumns.forEach(date => {
+            const day = getDay(date); // Sunday: 0, Monday: 1, ..., Saturday: 6
+            const dateStr = format(date, 'yyyy-MM-dd');
+            const key = `${firstRoomType.id}_${dateStr}`;
+            let newPrice: number | null = null;
+            
+            // Friday or Saturday: Increase by 15%
+            if (day === 5 || day === 6) {
+                newPrice = Math.round((firstRoomType.price * 1.15) / 1000) * 1000;
             }
+            // Monday: Decrease by 10%
+            else if (day === 1) {
+                 newPrice = Math.round((firstRoomType.price * 0.9) / 1000) * 1000;
+            }
+
+            if (newPrice && newPrice !== firstRoomType.price) {
+                recommendations[key] = newPrice;
+            }
+        });
+        
+        const mockRecommendation: PricingRecommendation = {
+            summary: "Амралтын өдрүүдэд эрэлт ихсэх тул үнийг нэмж, ажлын өдрүүдэд хямдруулав.",
+            recommendations: recommendations
         };
 
-        const recommendation = await getPricingRecommendation(input);
-
-        if (Object.keys(recommendation.recommendations).length === 0) {
-           toast({
+        if (Object.keys(mockRecommendation.recommendations).length === 0) {
+            toast({
                 title: "Өөрчлөлт санал болгосонгүй",
                 description: "AI одоогийн үнийг хамгийн оновчтой гэж үзэж байна.",
             });
         } else {
-            setAiRecommendation(recommendation);
+            setAiRecommendation(mockRecommendation);
         }
-
-    } catch(e) {
-        console.error(e);
-        toast({
-            variant: "destructive",
-            title: "AI зөвлөмж амжилтгүй боллоо",
-            description: "Дахин оролдоно уу.",
-        });
-    } finally {
         setIsAiLoading(false);
-    }
+
+    }, 1500);
   }
   
   const handleAcceptAiRecommendation = () => {
@@ -310,5 +323,3 @@ export default function PricingClient() {
     </Card>
   );
 }
-
-    
