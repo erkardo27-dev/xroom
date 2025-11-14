@@ -7,7 +7,7 @@ import { useRoom } from "@/context/RoomContext";
 import { Room, RoomInstance, RoomStatus } from "@/lib/data";
 import { Skeleton } from "../ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ListFilter, ArrowUpDown } from "lucide-react";
+import { Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ListFilter, ArrowUpDown, Lightbulb } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
@@ -179,9 +179,9 @@ export default function DashboardClient() {
             </div>
           </div>
         
-          <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-             <div className="lg:col-span-1">
-                 <div className="flex items-center gap-1 p-2 border rounded-lg bg-background shadow-sm">
+         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -190,8 +190,8 @@ export default function DashboardClient() {
                         <Button
                            variant={"outline"}
                            className={cn(
-                                "w-full flex-1 h-8 justify-start text-left font-normal text-sm",
-                                !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                "w-36 flex-1 h-8 justify-start text-left font-normal text-sm",
+                               !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                            )}
                         >
                             <CalendarIcon className={cn("mr-2 h-4 w-4")} />
@@ -212,34 +212,45 @@ export default function DashboardClient() {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="mt-4">
-                  <RecommendationCard selectedDate={selectedDate} />
+                
+                <Popover>
+                    <PopoverTrigger asChild>
+                       <Button variant="outline" className="h-10 text-yellow-500 border-yellow-400/50 bg-yellow-400/10 hover:bg-yellow-400/20 hover:text-yellow-600">
+                           <Lightbulb className="mr-2 h-4 w-4"/>
+                           Ухаалаг Зөвлөмж
+                       </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" align="start">
+                        <RecommendationCard selectedDate={selectedDate} />
+                    </PopoverContent>
+                </Popover>
+
+            </div>
+        </div>
+
+        <div>
+            {filteredAndSortedInstances.length === 0 ? (
+                <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Өрөө олдсонгүй</AlertTitle>
+                    <AlertDescription>
+                        Таны сонгосон шүүлтүүрт тохирох өрөө олдсонгүй. Эсвэл та одоогоор ямар ч өрөө оруулаагүй байна.
+                    </AlertDescription>
+                </Alert>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {filteredAndSortedInstances.map(instance => (
+                        <RoomInstanceCard 
+                          key={instance.instanceId} 
+                          instance={instance} 
+                          onEditType={(roomType) => setRoomTypeToEdit(roomType)}
+                          onDeleteInstance={(instance) => setInstanceToDelete(instance)}
+                          selectedDate={selectedDate}
+                        />
+                    ))}
                 </div>
-             </div>
-             <div className="lg:col-span-2">
-              {filteredAndSortedInstances.length === 0 ? (
-                  <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Өрөө олдсонгүй</AlertTitle>
-                      <AlertDescription>
-                          Таны сонгосон шүүлтүүрт тохирох өрөө олдсонгүй. Эсвэл та одоогоор ямар ч өрөө оруулаагүй байна.
-                      </AlertDescription>
-                  </Alert>
-              ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {filteredAndSortedInstances.map(instance => (
-                          <RoomInstanceCard 
-                            key={instance.instanceId} 
-                            instance={instance} 
-                            onEditType={(roomType) => setRoomTypeToEdit(roomType)}
-                            onDeleteInstance={(instance) => setInstanceToDelete(instance)}
-                            selectedDate={selectedDate}
-                          />
-                      ))}
-                  </div>
-              )}
-             </div>
-          </div>
+            )}
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -276,3 +287,5 @@ export default function DashboardClient() {
     </>
   );
 }
+
+    

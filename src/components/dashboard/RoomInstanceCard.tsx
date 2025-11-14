@@ -151,7 +151,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
 
   return (
     <Card className={cn("flex flex-col justify-between border-2", currentStatus.borderColor)}>
-      <CardHeader>
+      <CardHeader className="p-4">
         <div className="flex justify-between items-start">
             <div className='flex-1'>
                 {isEditingNumber ? (
@@ -168,13 +168,13 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
                         {instance.roomNumber === "..." ? "Дугаар оноох" : `${instance.roomNumber} тоот`}
                     </CardTitle>
                 )}
-                <CardDescription>{roomType.roomName}</CardDescription>
+                <CardDescription className="text-xs">{roomType.roomName}</CardDescription>
             </div>
-            <div className='flex items-center gap-1'>
+            <div className='flex items-center gap-0'>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => onEditType(roomType)}>
+                             <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => onEditType(roomType)}>
                                 <Edit className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
@@ -186,7 +186,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
                  <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onDeleteInstance(instance)}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive" onClick={() => onDeleteInstance(instance)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
@@ -198,7 +198,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
             </div>
         </div>
       </CardHeader>
-      <CardContent className='flex-grow'>
+      <CardContent className='flex-grow p-4 pt-0'>
         <div className="flex items-center">
             <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
             <span className="text-sm font-medium">{currentStatus.label}</span>
@@ -210,7 +210,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
             </div>
         )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-2">
         <Button 
             onClick={handleActionClick} 
             className={cn("w-full hover:brightness-110", currentStatus.color)} 
@@ -223,3 +223,5 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
     </Card>
   );
 }
+
+    
