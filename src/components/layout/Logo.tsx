@@ -2,11 +2,11 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 280 100"
+      viewBox="0 0 230 100"
       className="text-primary"
       {...props}
     >
-      <g transform="translate(10, 10) scale(1.2)">
+      <g transform="translate(10, 10)">
         <rect
           x="0"
           y="0"
@@ -25,12 +25,12 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
           transform="translate(25 0) rotate(-25 10 40)"
         />
         <text
-          x="75"
+          x="65"
           y="62"
           fontSize="50"
-          letterSpacing="2"
           fontWeight="bold"
           fill="currentColor"
+          letterSpacing="2"
         >
           ROOM
         </text>
