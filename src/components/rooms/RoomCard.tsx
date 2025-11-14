@@ -126,7 +126,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border-transparent hover:border-primary/20 hover:shadow-primary/10">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
@@ -149,12 +149,13 @@ export function RoomCard({ room }: { room: Room }) {
           
         </Carousel>
          {discount > 0 && (
-            <div 
-              className="absolute top-3 left-3 bg-black/70 text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg z-10"
+            <Badge 
+              variant="destructive"
+              className="absolute top-3 right-3 text-sm font-bold shadow-lg"
             >
-              <Zap className="w-4 h-4 text-yellow-300" />
-              <span className="font-bold text-sm">-{discount}%</span>
-            </div>
+              <Zap className="w-4 h-4 mr-1.5" />
+              {discount}% Хямдрал
+            </Badge>
           )}
         </div>
 
@@ -192,8 +193,6 @@ export function RoomCard({ room }: { room: Room }) {
                 </TooltipProvider>
              ))}
           </div>
-
-          <div className="flex-grow" />
 
           <div className="flex justify-between items-end mt-6 pt-4 border-t">
             <div>
