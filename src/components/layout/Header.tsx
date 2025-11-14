@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2 } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -69,6 +69,10 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                     <Button variant="outline" onClick={() => router.push('/dashboard/stats')}>
                         <BarChart2 className="mr-2 h-4 w-4" />
                         Статистик
+                    </Button>
+                     <Button variant="outline" onClick={() => router.push('/dashboard/pricing')}>
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Үнийн удирдлага
                     </Button>
                      <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('addRoom')}>
