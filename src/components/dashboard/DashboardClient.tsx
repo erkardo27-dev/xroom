@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { cn } from "@/lib/utils";
+import { RecommendationCard } from "./RecommendationCard";
 
 type SortOption = 'roomNumber' | 'roomType' | 'status';
 
@@ -135,40 +136,7 @@ export default function DashboardClient() {
     <>
       <div>
            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-            <div className="flex items-center gap-4">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-                 <div className="flex items-center gap-1 p-1 border rounded-lg bg-background shadow-sm">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button
-                           variant={"outline"}
-                           className={cn(
-                                "w-[120px] h-8 justify-start text-left font-normal text-sm",
-                                !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                           )}
-                        >
-                            <CalendarIcon className={cn("mr-2 h-4 w-4", !isToday(selectedDate) && "text-destructive-foreground")} />
-                            {getDateLabel()}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            locale={mn}
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={(date) => handleDateChange(date)}
-                            initialFocus
-                        />
-                        </PopoverContent>
-                    </Popover>
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
             
             <div className="flex flex-wrap items-center gap-2">
                 {/* Filters */}
@@ -210,29 +178,68 @@ export default function DashboardClient() {
                 </div>
             </div>
           </div>
-
-
-          {filteredAndSortedInstances.length === 0 ? (
-              <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>Өрөө олдсонгүй</AlertTitle>
-                  <AlertDescription>
-                      Таны сонгосон шүүлтүүрт тохирох өрөө олдсонгүй. Эсвэл та одоогоор ямар ч өрөө оруулаагүй байна.
-                  </AlertDescription>
-              </Alert>
-          ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {filteredAndSortedInstances.map(instance => (
-                      <RoomInstanceCard 
-                        key={instance.instanceId} 
-                        instance={instance} 
-                        onEditType={(roomType) => setRoomTypeToEdit(roomType)}
-                        onDeleteInstance={(instance) => setInstanceToDelete(instance)}
-                        selectedDate={selectedDate}
-                      />
-                  ))}
-              </div>
-          )}
+        
+          <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+             <div className="lg:col-span-1">
+                 <div className="flex items-center gap-1 p-2 border rounded-lg bg-background shadow-sm">
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                           variant={"outline"}
+                           className={cn(
+                                "w-full flex-1 h-8 justify-start text-left font-normal text-sm",
+                                !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                           )}
+                        >
+                            <CalendarIcon className={cn("mr-2 h-4 w-4")} />
+                            {getDateLabel()}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            locale={mn}
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => handleDateChange(date)}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="mt-4">
+                  <RecommendationCard selectedDate={selectedDate} />
+                </div>
+             </div>
+             <div className="lg:col-span-2">
+              {filteredAndSortedInstances.length === 0 ? (
+                  <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Өрөө олдсонгүй</AlertTitle>
+                      <AlertDescription>
+                          Таны сонгосон шүүлтүүрт тохирох өрөө олдсонгүй. Эсвэл та одоогоор ямар ч өрөө оруулаагүй байна.
+                      </AlertDescription>
+                  </Alert>
+              ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {filteredAndSortedInstances.map(instance => (
+                          <RoomInstanceCard 
+                            key={instance.instanceId} 
+                            instance={instance} 
+                            onEditType={(roomType) => setRoomTypeToEdit(roomType)}
+                            onDeleteInstance={(instance) => setInstanceToDelete(instance)}
+                            selectedDate={selectedDate}
+                          />
+                      ))}
+                  </div>
+              )}
+             </div>
+          </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
