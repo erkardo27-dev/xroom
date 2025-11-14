@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +44,7 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
 };
 
-type BookingStep = 'selection' | 'confirmation' | 'booking' | 'success';
+type BookingStep = 'selection' | 'booking' | 'success';
 type PaymentMethod = 'qpay' | 'socialpay' | 'transfer';
 
 const QPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -78,7 +78,7 @@ export function RoomCard({ room }: { room: Room }) {
   const initialFocusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isBookingOpen && bookingStep === 'confirmation') {
+    if (isBookingOpen && bookingStep === 'selection') {
       setTimeout(() => {
         initialFocusRef.current?.focus();
       }, 100);
@@ -122,17 +122,17 @@ export function RoomCard({ room }: { room: Room }) {
     label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
   })), [room.amenities]);
   
-  const isConfirmationDisabled = checkinCode.length !== 4 || !termsAccepted;
+  const isConfirmationDisabled = !paymentMethod || checkinCode.length !== 4 || !termsAccepted;
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border hover:shadow-primary/20">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border hover:shadow-primary/10">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index}>
-                <div className="relative h-48 w-full">
+                <div className="relative h-56 w-full">
                   <Image
                     src={image.imageUrl}
                     alt={image.description}
@@ -149,7 +149,7 @@ export function RoomCard({ room }: { room: Room }) {
           
         </Carousel>
          {discount > 0 && (
-             <Badge className="absolute top-3 right-3 bg-red-600 text-white border-2 border-background/50 text-sm font-bold shadow-lg z-10">
+             <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-2 border-background/50 text-sm font-bold shadow-lg z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
@@ -178,7 +178,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <TooltipProvider key={a.key}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center justify-center w-8 h-8 bg-secondary rounded-lg">
+                             <div className="flex items-center justify-center w-8 h-8 bg-secondary/70 rounded-lg">
                                 {a.icon}
                             </div>
                         </TooltipTrigger>
@@ -199,7 +199,7 @@ export function RoomCard({ room }: { room: Room }) {
               )}
               <p className="text-2xl font-bold text-primary">${room.price}</p>
             </div>
-            <Button onClick={handleBookNow} variant="default" className="font-bold shadow-md">
+            <Button onClick={handleBookNow} className="font-bold shadow-md shadow-primary/30">
               Захиалах
             </Button>
           </div>
@@ -211,65 +211,50 @@ export function RoomCard({ room }: { room: Room }) {
         {bookingStep === 'selection' && (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>Захиалга хийх</AlertDialogTitle>
+                <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
                 <AlertDialogDescription>
                    Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <div className="py-4 space-y-4">
-                <Label className="font-semibold">Төлбөрийн арга сонгох</Label>
-                <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-1 gap-3">
-                  <div>
-                    <RadioGroupItem value="qpay" id="qpay" className="sr-only peer" />
-                    <Label htmlFor="qpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                      <QPayIcon className="h-6 w-6 text-blue-600"/>
-                      <div>
-                        <span className="font-semibold">QPAY</span>
-                        <p className="text-sm text-muted-foreground">QPay-ээр шууд төлөх</p>
-                      </div>
-                    </Label>
-                  </div>
-                   <div>
-                    <RadioGroupItem value="socialpay" id="socialpay" className="sr-only peer" />
-                    <Label htmlFor="socialpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                      <SocialPayIcon className="h-6 w-6 text-purple-600" />
-                      <div>
-                        <span className="font-semibold">SocialPay</span>
-                         <p className="text-sm text-muted-foreground">SocialPay-ээр шууд төлөх</p>
-                      </div>
-                    </Label>
-                  </div>
-                   <div>
-                    <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
-                    <Label htmlFor="transfer" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                      <TransferIcon className="h-6 w-6 text-gray-600"/>
-                      <div>
-                        <span className="font-semibold">Дансаар</span>
-                         <p className="text-sm text-muted-foreground">Дансанд мөнгө шилжүүлэх</p>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={() => setBookingStep('confirmation')} disabled={!paymentMethod}>
-                  Дараах
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </>
-        )}
-        {bookingStep === 'confirmation' && (
-             <>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
-                <AlertDialogDescription>
-                   Өрөөгөө хүлээн авахдаа ашиглах 4 оронтой нэвтрэх кодоо үүсгэнэ үү.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
               <div className="py-4 space-y-6">
-                  <div className="space-y-2 text-center">
-                    <Label htmlFor="checkin-code" className="text-sm font-medium">
+                <div>
+                    <Label className="font-semibold text-base">Төлбөрийн арга</Label>
+                    <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-1 gap-3 mt-2">
+                        <div>
+                            <RadioGroupItem value="qpay" id="qpay" className="sr-only peer" />
+                            <Label htmlFor="qpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                            <QPayIcon className="h-6 w-6 text-blue-600"/>
+                            <div>
+                                <span className="font-semibold">QPAY</span>
+                                <p className="text-sm text-muted-foreground">QPay-ээр шууд төлөх</p>
+                            </div>
+                            </Label>
+                        </div>
+                        <div>
+                            <RadioGroupItem value="socialpay" id="socialpay" className="sr-only peer" />
+                            <Label htmlFor="socialpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                            <SocialPayIcon className="h-6 w-6 text-purple-600" />
+                            <div>
+                                <span className="font-semibold">SocialPay</span>
+                                <p className="text-sm text-muted-foreground">SocialPay-ээр шууд төлөх</p>
+                            </div>
+                            </Label>
+                        </div>
+                        <div>
+                            <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
+                            <Label htmlFor="transfer" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                            <TransferIcon className="h-6 w-6 text-gray-600"/>
+                            <div>
+                                <span className="font-semibold">Дансаар</span>
+                                <p className="text-sm text-muted-foreground">Дансанд мөнгө шилжүүлэх</p>
+                            </div>
+                            </Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="checkin-code" className="font-semibold text-base">
                         Нэвтрэх код
                     </Label>
                     <Input
@@ -282,7 +267,10 @@ export function RoomCard({ room }: { room: Room }) {
                         onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
                         className="text-center text-3xl tracking-[0.5em] font-mono h-14"
                     />
-                     <p className="text-xs text-muted-foreground pt-1">Энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглана.</p>
+                     <div className='flex items-center gap-2 text-xs text-muted-foreground pt-1'>
+                        <HelpCircle className="w-3 h-3"/>
+                        <span>Энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглана.</span>
+                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
@@ -295,7 +283,7 @@ export function RoomCard({ room }: { room: Room }) {
                   </div>
               </div>
               <AlertDialogFooter>
-                 <Button variant="outline" onClick={() => setBookingStep('selection')}>Буцах</Button>
+                 <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
                   Захиалга баталгаажуулах
                 </AlertDialogAction>
