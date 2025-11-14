@@ -9,7 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { Room } from '@/lib/data';
-import { z } from 'genkit/zod';
+import { z } from 'zod';
 
 const RoomTypeSchema = z.object({
   id: z.string(),

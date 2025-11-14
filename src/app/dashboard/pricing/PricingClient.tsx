@@ -82,14 +82,46 @@ export default function PricingClient() {
   const handleAiPriceSuggest = async () => {
     setIsAiLoading(true);
     try {
-        const recommendation = await getPricingRecommendation({
-            roomTypes: ownerRoomTypes,
-            dateRange: {
-                startDate: format(dateColumns[0], 'yyyy-MM-dd'),
-                endDate: format(dateColumns[dateColumns.length-1], 'yyyy-MM-dd'),
-            }
+        // MOCK AI IMPLEMENTATION
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+
+        const mockRecommendations: Record<string, number> = {};
+        ownerRoomTypes.forEach(room => {
+            dateColumns.forEach(date => {
+                // ~30% chance to recommend a change
+                if (Math.random() < 0.3) {
+                    const currentPrice = getPriceForRoomTypeOnDate(room.id, date);
+                    // Change by -20% to +20%
+                    const changeFactor = 1 + (Math.random() - 0.5) * 0.4; 
+                    const newPrice = Math.round((currentPrice * changeFactor) / 1000) * 1000;
+                    const key = `${room.id}_${format(date, 'yyyy-MM-dd')}`;
+                    mockRecommendations[key] = newPrice;
+                }
+            });
         });
-        setAiRecommendation(recommendation);
+
+        const recommendation: PricingRecommendation = {
+            summary: "Ачаалал, улирлын байдлыг харгалзан дараах үнийн саналыг шинэчиллээ.",
+            recommendations: mockRecommendations,
+        };
+
+        // const recommendation = await getPricingRecommendation({
+        //     roomTypes: ownerRoomTypes,
+        //     dateRange: {
+        //         startDate: format(dateColumns[0], 'yyyy-MM-dd'),
+        //         endDate: format(dateColumns[dateColumns.length-1], 'yyyy-MM-dd'),
+        //     }
+        // });
+
+        if (Object.keys(recommendation.recommendations).length === 0) {
+           toast({
+                title: "Өөрчлөлт санал болгосонгүй",
+                description: "AI одоогийн үнийг хамгийн оновчтой гэж үзэж байна.",
+            });
+        } else {
+            setAiRecommendation(recommendation);
+        }
+
     } catch(e) {
         console.error(e);
         toast({
@@ -248,3 +280,5 @@ export default function PricingClient() {
     </>
   );
 }
+
+    
