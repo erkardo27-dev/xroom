@@ -126,7 +126,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border hover:shadow-primary/20">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
