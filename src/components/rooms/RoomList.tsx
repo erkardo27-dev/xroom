@@ -115,11 +115,11 @@ export default function RoomList() {
           onSearch={setHeroSearchTerm}
       />
       
-       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-8 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
+       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
               {/* Filters */}
               <div className="lg:col-span-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="location-filter" className="font-semibold text-sm">Байршил</Label>
                         <Select value={location} onValueChange={setLocation}>
