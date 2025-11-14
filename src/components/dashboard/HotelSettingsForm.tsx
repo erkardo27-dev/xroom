@@ -18,11 +18,15 @@ import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { locations } from "@/lib/data";
 import { useEffect } from "react";
+import { Separator } from "../ui/separator";
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  accountHolderName: z.string().optional(),
 });
 
 type HotelSettingsFormProps = {
@@ -39,6 +43,9 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
             phoneNumber: hotelInfo?.phoneNumber || "",
+            bankName: hotelInfo?.bankName || "",
+            accountNumber: hotelInfo?.accountNumber || "",
+            accountHolderName: hotelInfo?.accountHolderName || "",
         },
     });
     
@@ -55,7 +62,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <FormField
                     control={form.control}
                     name="hotelName"
@@ -75,7 +82,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Байршил</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Буудлын байршил сонгоно уу" />
@@ -105,6 +112,54 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                         </FormItem>
                     )}
                 />
+                <Separator className="my-6" />
+                <div>
+                    <h3 className="text-lg font-medium">Төлбөрийн данс</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Зочны төлсөн төлбөр энэ данс руу автоматаар шилжинэ.
+                    </p>
+                </div>
+                 <FormField
+                    control={form.control}
+                    name="bankName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Банкны нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="ХААН БАНК" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="accountNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Дансны дугаар</FormLabel>
+                            <FormControl>
+                                <Input placeholder="50xxxxxxxx" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="accountHolderName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Б.БАТ" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+
                 <Button type="submit" className="w-full">
                     Хадгалах
                 </Button>

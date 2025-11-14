@@ -8,6 +8,9 @@ type HotelInfo = {
     hotelName: string;
     location: string;
     phoneNumber: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountHolderName?: string;
 };
 
 type AuthContextType = {

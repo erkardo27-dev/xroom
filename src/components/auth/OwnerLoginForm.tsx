@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { locations } from "@/lib/data";
 import { useState } from "react";
+import { Separator } from "../ui/separator";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
@@ -29,6 +30,9 @@ const registerSchema = z.object({
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
   password: z.string().min(6, { message: "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой." }),
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  accountHolderName: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -51,7 +55,16 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
 
     const registerForm = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
-        defaultValues: { hotelName: "", location: undefined, phoneNumber: "", email: "", password: "" },
+        defaultValues: { 
+            hotelName: "", 
+            location: undefined, 
+            phoneNumber: "", 
+            email: "", 
+            password: "",
+            bankName: "",
+            accountHolderName: "",
+            accountNumber: "" 
+        },
     });
 
     const form = isRegistering ? registerForm : loginForm;
@@ -63,6 +76,9 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                 hotelName: regValues.hotelName, 
                 location: regValues.location,
                 phoneNumber: regValues.phoneNumber,
+                bankName: regValues.bankName,
+                accountHolderName: regValues.accountHolderName,
+                accountNumber: regValues.accountNumber,
             });
         } else {
              // In a real app, you'd fetch this for a logging-in user
@@ -76,7 +92,7 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
     return (
         <>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                     {isRegistering && (
                         <>
                              <FormField
@@ -153,6 +169,55 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                             </FormItem>
                         )}
                     />
+
+                    {isRegistering && (
+                         <>
+                            <Separator />
+                            <div className="space-y-4">
+                                <h4 className="font-medium">Дансны мэдээлэл</h4>
+                                 <FormField
+                                    control={form.control}
+                                    name="bankName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Банкны нэр</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="ХААН БАНК" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name="accountNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Дансны дугаар</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="50xxxxxxxx" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name="accountHolderName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Б.Бат" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </>
+                    )}
+
                     <Button type="submit" className="w-full">
                         {isRegistering ? 'Бүртгүүлэх' : 'Нэвтрэх'}
                     </Button>
