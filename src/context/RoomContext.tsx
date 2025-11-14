@@ -19,6 +19,8 @@ type RoomContextType = {
   setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => void;
   getRoomPriceForDate: (instanceId: string, date: Date) => number;
   setRoomPriceForDate: (instanceId: string, date: Date, price: number) => void;
+  getPriceForRoomTypeOnDate: (roomTypeId: string, date: Date) => number;
+  setPriceForRoomTypeOnDate: (roomTypeId: string, date: Date, price: number | undefined) => void;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -254,8 +256,63 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       );
   }, [getRoomById, getRoomStatusForDate]);
 
+  const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
+    const roomType = rooms.find(r => r.id === roomTypeId);
+    if (!roomType) return 0;
+    
+    const anyInstance = roomInstances.find(i => i.roomTypeId === roomTypeId);
+    if (!anyInstance) return roomType.price;
+
+    return getRoomPriceForDate(anyInstance.instanceId, date);
+  }, [rooms, roomInstances, getRoomPriceForDate]);
+
+
+  const setPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date, price: number | undefined) => {
+    const roomType = getRoomById(roomTypeId);
+    if (!roomType) return;
+    
+    const finalPrice = price === undefined ? roomType.price : price;
+
+    const instancesToUpdate = roomInstances.filter(i => i.roomTypeId === roomTypeId);
+    
+    setRoomInstances(prev => {
+        const newInstances = [...prev];
+        instancesToUpdate.forEach(inst => {
+            const index = newInstances.findIndex(i => i.instanceId === inst.instanceId);
+            if (index !== -1) {
+                const updatedInstance = { ...newInstances[index], overrides: { ...newInstances[index].overrides } };
+                const dateKey = format(date, 'yyyy-MM-dd');
+                const currentStatus = getRoomStatusForDate(inst.instanceId, date);
+
+                if (price === undefined || price === roomType.price) {
+                    if (updatedInstance.overrides[dateKey]) {
+                        delete updatedInstance.overrides[dateKey].price;
+                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 1 && updatedInstance.overrides[dateKey].status === (inst.status === 'closed' || inst.status === 'maintenance' ? 'closed' : 'available')) {
+                           delete updatedInstance.overrides[dateKey];
+                        }
+                    }
+                } else {
+                    if (!updatedInstance.overrides[dateKey]) {
+                        updatedInstance.overrides[dateKey] = { status: currentStatus };
+                    }
+                    updatedInstance.overrides[dateKey].price = price;
+                }
+                newInstances[index] = updatedInstance;
+            }
+        });
+        return newInstances;
+    });
+
+    toast({
+        title: "Үнэ шинэчлэгдлээ",
+        description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
+    });
+
+  }, [getRoomById, roomInstances, getRoomStatusForDate, toast]);
+
+
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate }}>
       {children}
     </RoomContext.Provider>
   );
