@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Tooltip,
   TooltipContent,
@@ -43,19 +44,41 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
 };
 
-type BookingStep = 'payment' | 'booking' | 'success';
+type BookingStep = 'selection' | 'confirmation' | 'booking' | 'success';
+type PaymentMethod = 'qpay' | 'socialpay' | 'transfer';
+
+const QPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-12h4v2h-4v-2zm0 4h4v2h-4v-2zm-2 2h8v2h-8v-2z" fill="currentColor"/>
+    </svg>
+);
+
+const SocialPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" />
+        <path d="M15.5 12c0-1.93-1.57-3.5-3.5-3.5S8.5 10.07 8.5 12s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5zm-3.5 2c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="currentColor" />
+    </svg>
+);
+
+const TransferIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M17 10H3v2h14v-2zm2-4H3v2h16V6zm-4 8H3v2h12v-2zM3 18v-2h18v2H3z" fill="currentColor"/>
+    </svg>
+);
+
 
 export function RoomCard({ room }: { room: Room }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [bookingStep, setBookingStep] = useState<BookingStep>('payment');
+  const [bookingStep, setBookingStep] = useState<BookingStep>('selection');
   const [confirmationId, setConfirmationId] = useState('');
-  const [paymentCode, setPaymentCode] = useState('');
+  const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+
   const initialFocusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isBookingOpen && bookingStep === 'payment') {
+    if (isBookingOpen && bookingStep === 'confirmation') {
       setTimeout(() => {
         initialFocusRef.current?.focus();
       }, 100);
@@ -73,7 +96,7 @@ export function RoomCard({ room }: { room: Room }) {
     setIsBookingOpen(true);
   };
   
-  const handleConfirmPayment = () => {
+  const handleConfirmBooking = () => {
     setBookingStep('booking');
     // Simulate API call for booking
     setTimeout(() => {
@@ -85,10 +108,11 @@ export function RoomCard({ room }: { room: Room }) {
   const closeAndResetDialog = () => {
     setIsBookingOpen(false);
     setTimeout(() => {
-        setBookingStep('payment');
+        setBookingStep('selection');
         setConfirmationId('');
-        setPaymentCode('');
+        setCheckinCode('');
         setTermsAccepted(false);
+        setPaymentMethod(null);
     }, 300); // allow dialog to close before resetting
   }
 
@@ -98,11 +122,11 @@ export function RoomCard({ room }: { room: Room }) {
     label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
   })), [room.amenities]);
   
-  const isPaymentButtonDisabled = paymentCode.length !== 4 || !termsAccepted;
+  const isConfirmationDisabled = checkinCode.length !== 4 || !termsAccepted;
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 flex flex-col bg-card border rounded-2xl">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
@@ -125,7 +149,7 @@ export function RoomCard({ room }: { room: Room }) {
           
         </Carousel>
          {discount > 0 && (
-             <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-2 border-background/50 text-sm font-bold shadow-lg z-10">
+             <Badge className="absolute top-3 right-3 bg-red-600 text-white border-2 border-background/50 text-sm font-bold shadow-lg z-10">
               {discount}% ХЯМДРАЛ
             </Badge>
           )}
@@ -184,29 +208,81 @@ export function RoomCard({ room }: { room: Room }) {
 
       <AlertDialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
         <AlertDialogContent>
-        {bookingStep === 'payment' && (
+        {bookingStep === 'selection' && (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>Төлбөр гүйцэтгэх</AlertDialogTitle>
+                <AlertDialogTitle>Захиалга хийх</AlertDialogTitle>
                 <AlertDialogDescription>
                    Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">${room.price}</span> үнээр захиалах гэж байна.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <div className="py-4 space-y-4">
+                <Label className="font-semibold">Төлбөрийн арга сонгох</Label>
+                <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-1 gap-3">
+                  <div>
+                    <RadioGroupItem value="qpay" id="qpay" className="sr-only peer" />
+                    <Label htmlFor="qpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <QPayIcon className="h-6 w-6 text-blue-600"/>
+                      <div>
+                        <span className="font-semibold">QPAY</span>
+                        <p className="text-sm text-muted-foreground">QPay-ээр шууд төлөх</p>
+                      </div>
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="socialpay" id="socialpay" className="sr-only peer" />
+                    <Label htmlFor="socialpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <SocialPayIcon className="h-6 w-6 text-purple-600" />
+                      <div>
+                        <span className="font-semibold">SocialPay</span>
+                         <p className="text-sm text-muted-foreground">SocialPay-ээр шууд төлөх</p>
+                      </div>
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
+                    <Label htmlFor="transfer" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <TransferIcon className="h-6 w-6 text-gray-600"/>
+                      <div>
+                        <span className="font-semibold">Дансаар</span>
+                         <p className="text-sm text-muted-foreground">Дансанд мөнгө шилжүүлэх</p>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
+                <AlertDialogAction onClick={() => setBookingStep('confirmation')} disabled={!paymentMethod}>
+                  Дараах
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+        )}
+        {bookingStep === 'confirmation' && (
+             <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
+                <AlertDialogDescription>
+                   Өрөөгөө хүлээн авахдаа ашиглах 4 оронтой нэвтрэх кодоо үүсгэнэ үү.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
               <div className="py-4 space-y-6">
                   <div className="space-y-2 text-center">
-                    <Label htmlFor="payment-code" className="text-sm font-medium text-muted-foreground">
-                        Гүйлгээний утга дээрх 4 оронтой кодыг оруулна уу
+                    <Label htmlFor="checkin-code" className="text-sm font-medium">
+                        Нэвтрэх код
                     </Label>
                     <Input
-                        id="payment-code"
+                        id="checkin-code"
                         ref={initialFocusRef}
                         type="password"
                         placeholder="••••"
                         maxLength={4}
-                        value={paymentCode}
-                        onChange={(e) => setPaymentCode(e.target.value.replace(/[^0-9]/g, ''))}
+                        value={checkinCode}
+                        onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
                         className="text-center text-3xl tracking-[0.5em] font-mono h-14"
                     />
+                     <p className="text-xs text-muted-foreground pt-1">Энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглана.</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
@@ -219,9 +295,9 @@ export function RoomCard({ room }: { room: Room }) {
                   </div>
               </div>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmPayment} disabled={isPaymentButtonDisabled}>
-                  Төлбөрийг баталгаажуулах
+                 <Button variant="outline" onClick={() => setBookingStep('selection')}>Буцах</Button>
+                <AlertDialogAction onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
+                  Захиалга баталгаажуулах
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
@@ -239,6 +315,7 @@ export function RoomCard({ room }: { room: Room }) {
                 <h2 className="text-2xl font-bold">Захиалга баталгаажлаа!</h2>
                 <p className="text-muted-foreground"><span className="font-semibold text-foreground">{room.hotelName}</span>-д таны өрөө баталгаажлаа. <br/> Таны захиалгын дугаар:</p>
                 <p className="text-xl font-bold text-primary tracking-widest bg-secondary px-4 py-2 rounded-md">{confirmationId}</p>
+                <p className="text-muted-foreground mt-2">Таны нэвтрэх код: <span className="font-bold text-foreground">{checkinCode}</span></p>
                 <Button onClick={closeAndResetDialog} className="mt-4 w-full">Дуусгах</Button>
             </div>
         )}
