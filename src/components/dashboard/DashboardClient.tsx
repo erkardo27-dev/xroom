@@ -17,6 +17,7 @@ import { format, addDays, isToday, startOfDay, isTomorrow } from 'date-fns';
 import { mn } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 import { cn } from "@/lib/utils";
@@ -144,7 +145,7 @@ export default function DashboardClient() {
                                 !isToday(selectedDate) && "text-destructive border-destructive"
                             )}
                         >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className={cn("mr-2 h-4 w-4", !isToday(selectedDate) && "text-destructive")} />
                             {getDateLabel()}
                         </Button>
                         </PopoverTrigger>
