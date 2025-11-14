@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid, Menu } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetClose
+} from "@/components/ui/sheet"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -65,7 +74,8 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
 
         <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
-                <div className="flex items-center gap-2">
+                <>
+                <div className="hidden sm:flex items-center gap-2">
                     <Button variant="outline" onClick={() => router.push('/dashboard')}>
                         <LayoutGrid className="mr-2 h-4 w-4" />
                         Миний өрөөнүүд
@@ -117,6 +127,67 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
+                <div className="sm:hidden">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>{hotelInfo?.hotelName}</SheetTitle>
+                                <SheetDescription>{userEmail}</SheetDescription>
+                            </SheetHeader>
+                            <div className="flex flex-col gap-3 py-6">
+                                <SheetClose asChild>
+                                    <Button variant="outline" className="justify-start" onClick={() => router.push('/dashboard')}>
+                                        <LayoutGrid className="mr-2 h-4 w-4" />
+                                        Миний өрөөнүүд
+                                    </Button>
+                                </SheetClose>
+                                <SheetClose asChild>
+                                    <Button variant="outline" className="justify-start" onClick={() => router.push('/dashboard/stats')}>
+                                        <BarChart2 className="mr-2 h-4 w-4" />
+                                        Статистик
+                                    </Button>
+                                </SheetClose>
+                                <SheetClose asChild>
+                                    <Button variant="outline" className="justify-start" onClick={() => router.push('/dashboard/pricing')}>
+                                        <DollarSign className="mr-2 h-4 w-4" />
+                                        Үнийн удирдлага
+                                    </Button>
+                                </SheetClose>
+
+                                 <DropdownMenuSeparator />
+                                <SheetClose asChild>
+                                    <DialogTrigger asChild>
+                                         <Button className="justify-start" onClick={() => handleDialogTrigger('addRoom')}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            Шинэ өрөөний төрөл
+                                        </Button>
+                                    </DialogTrigger>
+                                </SheetClose>
+                                <SheetClose asChild>
+                                     <DialogTrigger asChild>
+                                        <Button variant="outline" className="justify-start" onClick={() => handleDialogTrigger('settings')}>
+                                            <Settings className="mr-2 h-4 w-4" />
+                                            Тохиргоо
+                                        </Button>
+                                    </DialogTrigger>
+                                </SheetClose>
+                                 <DropdownMenuSeparator />
+                                 <SheetClose asChild>
+                                    <Button variant="destructive" className="justify-start" onClick={handleLogout}>
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Гарах
+                                    </Button>
+                                </SheetClose>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+                </>
             ) : (
                  <DialogTrigger asChild>
                     <Button onClick={() => handleDialogTrigger('login')}>
