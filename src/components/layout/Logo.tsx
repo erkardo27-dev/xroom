@@ -2,23 +2,32 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 320 100"
+      viewBox="0 0 280 100"
       className="text-primary"
       {...props}
     >
-      <defs>
-        <path id="parallelogram" d="M0 0 H50 L70 100 H20 Z" />
-      </defs>
-
-      <g transform="translate(5, -12) scale(1.1)">
-        <g transform="translate(10, 10)">
-            <use href="#parallelogram" fill="currentColor" opacity="0.7" transform="skewX(-20)"/>
-            <use href="#parallelogram" fill="currentColor" transform="skewX(20) scale(-1, 1) translate(-70, 0)"/>
-        </g>
+      <g transform="translate(10, 10) scale(1.2)">
+        <rect
+          x="0"
+          y="0"
+          width="20"
+          height="80"
+          fill="currentColor"
+          opacity="0.7"
+          transform="translate(25 0) rotate(25 10 40)"
+        />
+        <rect
+          x="0"
+          y="0"
+          width="20"
+          height="80"
+          fill="currentColor"
+          transform="translate(25 0) rotate(-25 10 40)"
+        />
         <text
-          x="100"
-          y="72"
-          fontSize="60"
+          x="75"
+          y="62"
+          fontSize="50"
           letterSpacing="2"
           fontWeight="bold"
           fill="currentColor"
