@@ -23,6 +23,7 @@ import {
 import { Edit, MoreVertical, Power, PowerOff, Trash2, Wrench, Bed, Tag } from 'lucide-react';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 type RoomInstanceCardProps = {
   instance: RoomInstance;
@@ -30,11 +31,11 @@ type RoomInstanceCardProps = {
   onDeleteType: (roomType: Room) => void;
 };
 
-const statusConfig: { [key in RoomStatus]: { label: string; color: string; icon: React.ReactNode } } = {
-  available: { label: 'Сул', color: 'bg-green-500', icon: <Bed className="w-4 h-4 mr-2" /> },
-  booked: { label: 'Захиалгатай', color: 'bg-yellow-500', icon: <Tag className="w-4 h-4 mr-2" /> },
-  maintenance: { label: 'Засвартай', color: 'bg-orange-500', icon: <Wrench className="w-4 h-4 mr-2" /> },
-  closed: { label: 'Хаалттай', color: 'bg-gray-500', icon: <PowerOff className="w-4 h-4 mr-2" /> },
+const statusConfig: { [key in RoomStatus]: { label: string; color: string; borderColor: string; icon: React.ReactNode } } = {
+  available: { label: 'Сул', color: 'bg-green-500', borderColor: 'border-green-500/50', icon: <Bed className="w-4 h-4 mr-2" /> },
+  booked: { label: 'Захиалгатай', color: 'bg-yellow-500', borderColor: 'border-yellow-500/50', icon: <Tag className="w-4 h-4 mr-2" /> },
+  maintenance: { label: 'Засвартай', color: 'bg-orange-500', borderColor: 'border-orange-500/50', icon: <Wrench className="w-4 h-4 mr-2" /> },
+  closed: { label: 'Хаалттай', color: 'bg-gray-500', borderColor: 'border-gray-500/50', icon: <PowerOff className="w-4 h-4 mr-2" /> },
 };
 
 
@@ -80,7 +81,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomIns
   }
 
   return (
-    <Card className="flex flex-col justify-between">
+    <Card className={cn("flex flex-col justify-between border-2", currentStatus.borderColor)}>
       <CardHeader>
         <div className="flex justify-between items-start">
             {isEditingNumber ? (
@@ -119,7 +120,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomIns
       </CardHeader>
       <CardContent className='flex-grow'>
         <div className="flex items-center">
-            <span className={`h-2.5 w-2.5 rounded-full mr-2 ${currentStatus.color}`}></span>
+            <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
             <span className="text-sm font-medium">{currentStatus.label}</span>
         </div>
         {instance.status === 'booked' && instance.bookingCode && (
