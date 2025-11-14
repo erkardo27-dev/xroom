@@ -178,18 +178,30 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
           const isToday = dateKey === todayKey;
 
           if (isToday) {
+            // If it's for today, update the base status
             newInstance.status = status;
             if(status === 'booked' && bookingCode) {
                  newInstance.bookingCode = bookingCode;
             } else {
                  delete newInstance.bookingCode;
             }
+            // Also clean up today's override if it becomes redundant
+            if (newInstance.overrides[dateKey]) {
+                const roomType = getRoomById(instance.roomTypeId);
+                const isPriceOverridden = newInstance.overrides[dateKey].price !== undefined && newInstance.overrides[dateKey].price !== roomType?.price;
+                if (!isPriceOverridden) {
+                    delete newInstance.overrides[dateKey];
+                } else {
+                    delete newInstance.overrides[dateKey].status;
+                    delete newInstance.overrides[dateKey].bookingCode;
+                }
+            }
           } else {
+             // For future or past dates, use overrides
              const defaultStatusForFuture = (instance.status === 'closed' || instance.status === 'maintenance') && dateKey > todayKey ? 'closed' : 'available';
 
              if (!newInstance.overrides[dateKey]) {
-                const roomType = getRoomById(instance.roomTypeId);
-                newInstance.overrides[dateKey] = { status: defaultStatusForFuture, price: roomType?.price };
+                newInstance.overrides[dateKey] = { status: defaultStatusForFuture };
              }
 
             if (status === defaultStatusForFuture && newInstance.overrides[dateKey]?.price === undefined) {
