@@ -13,7 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
 import { RoomInstanceCard } from "./RoomInstanceCard";
-import { format, addDays, isToday, startOfDay } from 'date-fns';
+import { format, addDays, isToday, startOfDay, isTomorrow } from 'date-fns';
+import { mn } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -105,6 +106,12 @@ export default function DashboardClient() {
     }
   }
 
+  const getDateLabel = () => {
+    if (isToday(selectedDate)) return "Өнөөдөр";
+    if (isTomorrow(selectedDate)) return "Маргааш";
+    return format(selectedDate, 'MMM d', { locale: mn });
+  }
+
   if (isLoading || !isLoggedIn) {
     return (
         <div className="space-y-4">
@@ -122,11 +129,10 @@ export default function DashboardClient() {
     <>
       <div>
            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-            
-            <div className="flex flex-wrap items-center gap-2 p-1 border rounded-lg bg-secondary/30">
+            <div className="flex items-center gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
                 {/* Date Navigator */}
-                <div className="flex items-center gap-1">
+                 <div className="flex items-center gap-1 p-1 border rounded-lg bg-background shadow-sm">
                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -134,14 +140,15 @@ export default function DashboardClient() {
                         <PopoverTrigger asChild>
                         <Button
                             variant={"outline"}
-                            className="w-[140px] h-8 justify-start text-left font-normal text-sm"
+                            className="w-[120px] h-8 justify-start text-left font-normal text-sm"
                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {isToday(selectedDate) ? "Өнөөдөр" : format(selectedDate, 'MMM d')}
+                            {getDateLabel()}
                         </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                         <Calendar
+                            locale={mn}
                             mode="single"
                             selected={selectedDate}
                             onSelect={(date) => handleDateChange(date)}
@@ -153,9 +160,9 @@ export default function DashboardClient() {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                
-                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
-
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
                 {/* Filters */}
                 <div className="flex items-center gap-2">
                     <ListFilter className="w-4 h-4 text-muted-foreground" />
