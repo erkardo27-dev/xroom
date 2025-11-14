@@ -139,13 +139,13 @@ export default function DashboardClient() {
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
-                            variant={"outline"}
-                            className={cn(
+                           variant={!isToday(selectedDate) ? "destructive" : "outline"}
+                           className={cn(
                                 "w-[120px] h-8 justify-start text-left font-normal text-sm",
-                                !isToday(selectedDate) && "text-destructive border-destructive"
-                            )}
+                                !isToday(selectedDate) && "hover:bg-destructive/90 text-destructive-foreground"
+                           )}
                         >
-                            <CalendarIcon className={cn("mr-2 h-4 w-4", !isToday(selectedDate) && "text-destructive")} />
+                            <CalendarIcon className="mr-2 h-4 w-4" />
                             {getDateLabel()}
                         </Button>
                         </PopoverTrigger>
