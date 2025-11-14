@@ -1,9 +1,10 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, Percent, TrendingUp, Wallet } from "lucide-react"
+import { DollarSign, Percent, TrendingUp, Wallet, Activity, Target } from "lucide-react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
+import { Separator } from "../ui/separator"
 
 type StatCardProps = {
     title: string
@@ -29,7 +30,10 @@ type StatsProps = {
     stats: {
         todaysRevenue: number;
         monthRevenue: number;
-        occupancy: number;
+        occupancyToday: number;
+        adr: number;
+        revPar: number;
+        occupancyMonth: number;
         dailyRevenue: { date: string; revenue: number }[];
     }
 }
@@ -56,6 +60,27 @@ export default function DashboardStats({ stats }: StatsProps) {
     <div className="mb-8 space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard 
+                title="Сарын Дундаж Орлого (ADR)"
+                value={`${formatCurrency(stats.adr)}`}
+                description="Энэ сард нэг өрөөний дундаж орлого"
+                icon={Activity}
+            />
+             <StatCard 
+                title="Сарын Орлогот Өрөө (RevPAR)"
+                value={`${formatCurrency(stats.revPar)}`}
+                description="Нэг өрөө тутмаас олох боломжит орлого"
+                icon={Target}
+            />
+            <StatCard 
+                title="Сарын Ачаалал"
+                value={`${stats.occupancyMonth.toFixed(1)}%`}
+                description="Энэ сарын нийт өрөө ашиглалт"
+                icon={Percent}
+            />
+        </div>
+       <Separator />
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <StatCard 
                 title="Өнөөдрийн орлого"
                 value={`${stats.todaysRevenue.toLocaleString()} ₮`}
                 description="Зөвхөн баталгаажсан орлого"
@@ -69,7 +94,7 @@ export default function DashboardStats({ stats }: StatsProps) {
             />
             <StatCard 
                 title="Ачаалал (өнөөдөр)"
-                value={`${stats.occupancy.toFixed(1)}%`}
+                value={`${stats.occupancyToday.toFixed(1)}%`}
                 description="Захиалгатай / Байрлаж буй"
                 icon={Percent}
             />

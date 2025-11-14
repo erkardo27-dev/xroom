@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoom } from "@/context/RoomContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, startOfMonth, startOfDay, subDays, eachDayOfInterval } from 'date-fns';
+import { format, startOfMonth, startOfDay, subDays, eachDayOfInterval, getDate, getDaysInMonth } from 'date-fns';
 import DashboardStats from "@/components/dashboard/DashboardStats";
 
 export default function StatsClient() {
@@ -24,10 +24,12 @@ export default function StatsClient() {
   const stats = useMemo(() => {
     const today = startOfDay(new Date());
     const startOfCurrentMonth = startOfMonth(today);
+    const daysInMonthSoFar = getDate(today);
 
     let todaysRevenue = 0;
     let monthRevenue = 0;
     let occupiedToday = 0;
+    let monthlyOccupiedRoomDays = 0;
 
     const sevenDayInterval = { start: subDays(today, 6), end: today };
     const last7Days = eachDayOfInterval(sevenDayInterval);
@@ -61,13 +63,29 @@ export default function StatsClient() {
          if (status === 'occupied' || status === 'booked') {
              const price = getRoomPriceForDate(instance.instanceId, day);
              monthRevenue += price;
+             monthlyOccupiedRoomDays++;
          }
        })
     });
 
-    const occupancy = ownerRoomInstances.length > 0 ? (occupiedToday / ownerRoomInstances.length) * 100 : 0;
+    const totalRooms = ownerRoomInstances.length;
+    const occupancyToday = totalRooms > 0 ? (occupiedToday / totalRooms) * 100 : 0;
+    
+    // Advanced Metrics
+    const totalRoomDaysInMonthSoFar = totalRooms * daysInMonthSoFar;
+    const occupancyMonth = totalRoomDaysInMonthSoFar > 0 ? (monthlyOccupiedRoomDays / totalRoomDaysInMonthSoFar) * 100 : 0;
+    const adr = monthlyOccupiedRoomDays > 0 ? monthRevenue / monthlyOccupiedRoomDays : 0; // Average Daily Rate
+    const revPar = totalRoomDaysInMonthSoFar > 0 ? monthRevenue / totalRoomDaysInMonthSoFar : 0; // Revenue Per Available Room
 
-    return { todaysRevenue, monthRevenue, occupancy, dailyRevenue };
+    return { 
+        todaysRevenue, 
+        monthRevenue, 
+        occupancyToday, 
+        dailyRevenue,
+        adr,
+        revPar,
+        occupancyMonth
+    };
 
   }, [ownerRoomInstances, getRoomStatusForDate, getRoomPriceForDate]);
 
@@ -78,6 +96,9 @@ export default function StatsClient() {
     return (
         <div className="space-y-6">
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
