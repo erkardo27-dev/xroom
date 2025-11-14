@@ -28,7 +28,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
+  const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (toastInfo) {
+      toast(toastInfo);
+      setToastInfo(null);
+    }
+  }, [toastInfo, toast]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -235,11 +243,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                         newInstance.overrides[dateKey].price = price;
                     }
                 }
-                 toast({
-                    title: "Үнэ шинэчлэгдлээ",
-                    description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`,
+                setToastInfo({
+                  title: "Үнэ шинэчлэгдлээ",
+                  description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
                 });
-
                 return newInstance;
             }
             return instance;
