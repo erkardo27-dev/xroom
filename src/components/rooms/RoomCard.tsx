@@ -126,7 +126,7 @@ export function RoomCard({ room }: { room: Room }) {
 
   return (
     <>
-      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl flex flex-col bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10">
+      <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
@@ -148,18 +148,18 @@ export function RoomCard({ room }: { room: Room }) {
             <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
           
         </Carousel>
-         {discount > 0 && (
+          {discount > 0 && (
             <Badge 
               variant="destructive"
-              className="absolute top-3 left-3 text-sm font-bold shadow-lg"
+              className="absolute top-3 left-3 text-sm font-bold flex items-center gap-1 shadow-lg"
             >
-              <Zap className="w-4 h-4 mr-1.5" />
-              {discount}% Хямдрал
+              <Zap className="w-4 h-4" />
+              <span>{discount}% Хямдрал</span>
             </Badge>
           )}
         </div>
 
-        <CardContent className="p-4 flex flex-col">
+        <CardContent className="p-4">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
             <div className="flex items-center gap-1 text-sm">
