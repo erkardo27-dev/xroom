@@ -16,6 +16,7 @@ import { RoomInstanceCard } from "./RoomInstanceCard";
 import { format, addDays, isToday, startOfDay } from 'date-fns';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 
