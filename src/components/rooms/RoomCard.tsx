@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap } from 'lucide-react';
+import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +40,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
 import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
+import { Separator } from '../ui/separator';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
@@ -49,6 +50,7 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
 
 type BookingStep = 'selection' | 'booking' | 'success';
 type PaymentMethod = 'qpay' | 'socialpay' | 'transfer';
+const SERVICE_FEE = 5000;
 
 const QPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -88,6 +90,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
   const isSoldOut = availableInstances.length === 0;
+  const totalPrice = room.price + SERVICE_FEE;
 
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'selection') {
@@ -256,10 +259,42 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
                 <AlertDialogDescription>
-                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг <span className="font-semibold text-foreground">{room.price.toLocaleString()}₮</span> үнээр захиалах гэж байна.
+                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг захиалах гэж байна.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <div className="py-4 space-y-6">
+
+              <div className="py-2 space-y-4">
+                <div className='bg-muted/50 rounded-lg p-4 space-y-2'>
+                    <div className='flex justify-between text-sm'>
+                        <p>Өрөөний үнэ</p>
+                        <p className='font-medium'>{room.price.toLocaleString()}₮</p>
+                    </div>
+                    <div className='flex justify-between text-sm'>
+                        <p className='flex items-center gap-1.5'>
+                            Үйлчилгээний шимтгэл
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                    <p>Аппликейшнийн найдвартай, тасралтгүй <br/> ажиллагааг хангахад зориулагдана.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </p>
+                        <p className='font-medium'>{SERVICE_FEE.toLocaleString()}₮</p>
+                    </div>
+                    <Separator />
+                     <div className='flex justify-between text-base'>
+                        <p className='font-semibold'>Нийт дүн</p>
+                        <p className='font-bold text-primary'>{totalPrice.toLocaleString()}₮</p>
+                    </div>
+                </div>
+              </div>
+
+
+              <div className="space-y-6">
                 <div>
                     <Label className="font-semibold text-base">Төлбөрийн арга</Label>
                     <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-1 gap-3 mt-2">
@@ -328,7 +363,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               <AlertDialogFooter>
                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
-                  Захиалга баталгаажуулах
+                  Төлбөр төлөх ({totalPrice.toLocaleString()}₮)
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
