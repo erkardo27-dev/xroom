@@ -390,3 +390,4 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
+
