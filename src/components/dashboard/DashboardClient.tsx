@@ -121,69 +121,71 @@ export default function DashboardClient() {
   return (
     <>
       <div>
-           <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-            <div className="flex items-center gap-1.5 p-1.5 rounded-lg border bg-card">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-               <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className="w-[150px] h-8 justify-start text-left font-normal text-sm"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {isToday(selectedDate) ? "Өнөөдөр" : format(selectedDate, 'MMM d')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => handleDateChange(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-               <Button variant="outline" size="sm" className="h-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
-                Маргааш
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-4 items-end mb-8 p-3 border rounded-lg bg-secondary/30">
-              <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><ListFilter className="w-3.5 h-3.5"/>Шүүлтүүр</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                        <Select value={filterRoomType} onValueChange={setFilterRoomType}>
-                            <SelectTrigger className="h-9"><SelectValue placeholder="Төрөл" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Бүх төрөл</SelectItem>
-                                {ownerRoomTypes.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="h-9"><SelectValue placeholder="Төлөв" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Бүх төлөв</SelectItem>
-                                <SelectItem value="available">Сул</SelectItem>
-                                <SelectItem value="booked">Захиалгатай</SelectItem>
-                                <SelectItem value="occupied">Байрлаж байна</SelectItem>
-                                <SelectItem value="maintenance">Засвартай</SelectItem>
-                                <SelectItem value="closed">Хаалттай</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+            
+            <div className="flex flex-wrap items-center gap-2 p-1 border rounded-lg bg-secondary/30">
+                {/* Date Navigator */}
+                <div className="flex items-center gap-1">
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className="w-[140px] h-8 justify-start text-left font-normal text-sm"
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {isToday(selectedDate) ? "Өнөөдөр" : format(selectedDate, 'MMM d')}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => handleDateChange(date)}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
                 </div>
-                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5"/>Эрэмбэлэлт</Label>
-                     <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
-                        <SelectTrigger className="h-9"><SelectValue placeholder="Эрэмбэлэх" /></SelectTrigger>
+                
+                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
+
+                {/* Filters */}
+                <div className="flex items-center gap-2">
+                    <ListFilter className="w-4 h-4 text-muted-foreground" />
+                    <Select value={filterRoomType} onValueChange={setFilterRoomType}>
+                        <SelectTrigger className="h-8 w-32"><SelectValue placeholder="Төрөл" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Бүх төрөл</SelectItem>
+                            {ownerRoomTypes.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="h-8 w-32"><SelectValue placeholder="Төлөв" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Бүх төлөв</SelectItem>
+                            <SelectItem value="available">Сул</SelectItem>
+                            <SelectItem value="booked">Захиалгатай</SelectItem>
+                            <SelectItem value="occupied">Байрлаж байна</SelectItem>
+                            <SelectItem value="maintenance">Засвартай</SelectItem>
+                            <SelectItem value="closed">Хаалттай</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                <div className="h-6 border-l border-border/50 mx-2 hidden md:block"></div>
+
+                {/* Sort */}
+                <div className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                    <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
+                        <SelectTrigger className="h-8 w-36"><SelectValue placeholder="Эрэмбэлэх" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="roomNumber">Өрөөний дугаар</SelectItem>
                             <SelectItem value="roomType">Өрөөний төрөл</SelectItem>
@@ -191,7 +193,7 @@ export default function DashboardClient() {
                         </SelectContent>
                     </Select>
                 </div>
-              </div>
+            </div>
           </div>
 
 
