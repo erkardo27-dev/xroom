@@ -11,6 +11,7 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
           x="0"
           y="80"
           fontSize="90"
+          fontWeight="bold"
         >
           X
         </text>
@@ -19,6 +20,7 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
           y="70"
           fontSize="60"
           letterSpacing="2"
+          fontWeight="bold"
         >
           ROOM
         </text>
