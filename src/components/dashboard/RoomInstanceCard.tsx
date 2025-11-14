@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -12,18 +13,17 @@ import {
   CardDescription,
   CardFooter,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Edit, MoreVertical, Power, PowerOff, Trash2, Wrench, Bed, Tag } from 'lucide-react';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '../ui/tooltip';
 
 type RoomInstanceCardProps = {
   instance: RoomInstance;
@@ -84,39 +84,50 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteType }: RoomIns
     <Card className={cn("flex flex-col justify-between border-2", currentStatus.borderColor)}>
       <CardHeader>
         <div className="flex justify-between items-start">
-            {isEditingNumber ? (
-                 <Input 
-                    value={roomNumber}
-                    onChange={(e) => setRoomNumber(e.target.value)}
-                    onBlur={handleRoomNumberSave}
-                    onKeyDown={(e) => e.key === 'Enter' && handleRoomNumberSave()}
-                    autoFocus
-                    className="h-8 text-lg font-bold p-1 -m-1"
-                />
-            ) : (
-                <CardTitle className="text-lg cursor-pointer" onClick={() => setIsEditingNumber(true)}>
-                    {instance.roomNumber === "..." ? "Дугаар оноох" : `${instance.roomNumber} тоот`}
-                </CardTitle>
-            )}
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEditType(roomType)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Төрөл засах
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDeleteType(roomType)} className="text-destructive">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Төрөл устгах
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <div className='flex-1'>
+                {isEditingNumber ? (
+                    <Input 
+                        value={roomNumber}
+                        onChange={(e) => setRoomNumber(e.target.value)}
+                        onBlur={handleRoomNumberSave}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRoomNumberSave()}
+                        autoFocus
+                        className="h-8 text-lg font-bold p-1 -m-1"
+                    />
+                ) : (
+                    <CardTitle className="text-lg cursor-pointer" onClick={() => setIsEditingNumber(true)}>
+                        {instance.roomNumber === "..." ? "Дугаар оноох" : `${instance.roomNumber} тоот`}
+                    </CardTitle>
+                )}
+                <CardDescription>{roomType.roomName}</CardDescription>
+            </div>
+            <div className='flex items-center gap-1'>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => onEditType(roomType)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Өрөөний төрөл засах</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onDeleteType(roomType)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                             <p>Өрөөний төрөл устгах</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
         </div>
-        <CardDescription>{roomType.roomName}</CardDescription>
       </CardHeader>
       <CardContent className='flex-grow'>
         <div className="flex items-center">
