@@ -13,6 +13,10 @@ import { Button } from "@/components/ui/button";
 import { addDays, format } from "date-fns";
 import { mn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { BrainCircuit, Loader2 } from "lucide-react";
+import { getPricingRecommendation, PricingRecommendation } from "@/ai/flows/pricing-recommendation-flow";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function PricingClient() {
@@ -22,6 +26,10 @@ export default function PricingClient() {
 
   const [editingCell, setEditingCell] = useState<string | null>(null); // "roomTypeId-date"
   const [editingValue, setEditingValue] = useState<string>("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState<PricingRecommendation | null>(null);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isAuthLoading && !isLoggedIn) {
@@ -71,6 +79,45 @@ export default function PricingClient() {
     }
   }
 
+  const handleAiPriceSuggest = async () => {
+    setIsAiLoading(true);
+    try {
+        const recommendation = await getPricingRecommendation({
+            roomTypes: ownerRoomTypes,
+            dateRange: {
+                startDate: format(dateColumns[0], 'yyyy-MM-dd'),
+                endDate: format(dateColumns[dateColumns.length-1], 'yyyy-MM-dd'),
+            }
+        });
+        setAiRecommendation(recommendation);
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: "destructive",
+            title: "AI зөвлөмж амжилтгүй боллоо",
+            description: "Дахин оролдоно уу.",
+        });
+    } finally {
+        setIsAiLoading(false);
+    }
+  }
+  
+  const handleAcceptAiRecommendation = () => {
+    if (!aiRecommendation?.recommendations) return;
+
+    Object.entries(aiRecommendation.recommendations).forEach(([key, newPrice]) => {
+        const [roomTypeId, dateStr] = key.split('_');
+        setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), newPrice);
+    });
+
+    toast({
+        title: "Амжилттай",
+        description: "AI-ийн санал болгосон үнээр амжилттай шинэчиллээ.",
+    });
+
+    setAiRecommendation(null);
+  }
+
 
   const isLoading = isAuthLoading || roomStatus === 'loading';
 
@@ -88,6 +135,57 @@ export default function PricingClient() {
   }
 
   return (
+    <>
+    <div className="flex justify-end mb-4">
+        <AlertDialog open={!!aiRecommendation} onOpenChange={(open) => !open && setAiRecommendation(null)}>
+            <AlertDialogTrigger asChild>
+                <Button onClick={handleAiPriceSuggest} disabled={isAiLoading}>
+                    {isAiLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            AI үнэ боловсруулж байна...
+                        </>
+                    ) : (
+                        <>
+                            <BrainCircuit className="mr-2 h-4 w-4" />
+                            AI Үнийн Зөвлөмж
+                        </>
+                    )}
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>AI Үнийн Зөвлөмж</AlertDialogTitle>
+                <AlertDialogDescription>
+                    {aiRecommendation?.summary || "Хиймэл оюун ухаан нь эрэлт, улирал, онцгой өдрүүдийг харгалзан таны өрөөнүүдийн үнийг дараах байдлаар оновчлохыг санал болгож байна."}
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="max-h-60 overflow-y-auto text-sm space-y-2">
+                    {aiRecommendation?.recommendations && Object.entries(aiRecommendation.recommendations).map(([key, newPrice]) => {
+                        const [roomTypeId, dateStr] = key.split('_');
+                        const room = ownerRoomTypes.find(r => r.id === roomTypeId);
+                        if (!room) return null;
+                        const oldPrice = getPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr));
+                        return (
+                            <div key={key} className="flex justify-between items-center bg-muted/50 p-2 rounded-md">
+                                <div>
+                                    <p className="font-semibold">{room.roomName} - <span className="font-normal">{format(new Date(dateStr), 'M/dd')}</span></p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                     <span className="text-muted-foreground line-through">{oldPrice.toLocaleString()}₮</span>
+                                     <span className="font-bold text-primary">{newPrice.toLocaleString()}₮</span>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Цуцлах</AlertDialogCancel>
+                <AlertDialogAction onClick={handleAcceptAiRecommendation}>Зөвшөөрөх</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </div>
     <div className="border rounded-lg">
         <Table>
             <TableCaption>Энд дарж үнээ өөрчлөөрэй. Хоосон орхивол үндсэн үнээр тооцогдоно.</TableCaption>
@@ -147,5 +245,6 @@ export default function PricingClient() {
             </TableBody>
         </Table>
     </div>
-  )
+    </>
+  );
 }
