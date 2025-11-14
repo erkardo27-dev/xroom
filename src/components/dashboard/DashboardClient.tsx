@@ -135,9 +135,57 @@ export default function DashboardClient() {
   return (
     <>
       <div>
-           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Миний өрөөнүүд</h1>
-            
+            <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                           variant={"outline"}
+                           className={cn(
+                                "w-36 flex-1 h-8 justify-start text-left font-normal text-sm",
+                               !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                           )}
+                        >
+                            <CalendarIcon className={cn("mr-2 h-4 w-4")} />
+                            {getDateLabel()}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            locale={mn}
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => handleDateChange(date)}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+                
+                <Popover>
+                    <PopoverTrigger asChild>
+                       <Button variant="outline" className="h-10 text-yellow-500 border-yellow-400/50 bg-yellow-400/10 hover:bg-yellow-400/20 hover:text-yellow-600">
+                           <Lightbulb className="mr-2 h-4 w-4"/>
+                           Ухаалаг Зөвлөмж
+                       </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" align="end">
+                        <RecommendationCard selectedDate={selectedDate} />
+                    </PopoverContent>
+                </Popover>
+
+            </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end mb-8 gap-4">
             <div className="flex flex-wrap items-center gap-2">
                 {/* Filters */}
                 <div className="flex items-center gap-2">
@@ -179,55 +227,6 @@ export default function DashboardClient() {
             </div>
           </div>
         
-         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 p-1.5 border rounded-lg bg-background shadow-sm w-fit">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, -1))}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button
-                           variant={"outline"}
-                           className={cn(
-                                "w-36 flex-1 h-8 justify-start text-left font-normal text-sm",
-                               !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                           )}
-                        >
-                            <CalendarIcon className={cn("mr-2 h-4 w-4")} />
-                            {getDateLabel()}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            locale={mn}
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={(date) => handleDateChange(date)}
-                            initialFocus
-                        />
-                        </PopoverContent>
-                    </Popover>
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDateChange(addDays(selectedDate, 1))}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-                
-                <Popover>
-                    <PopoverTrigger asChild>
-                       <Button variant="outline" className="h-10 text-yellow-500 border-yellow-400/50 bg-yellow-400/10 hover:bg-yellow-400/20 hover:text-yellow-600">
-                           <Lightbulb className="mr-2 h-4 w-4"/>
-                           Ухаалаг Зөвлөмж
-                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80" align="start">
-                        <RecommendationCard selectedDate={selectedDate} />
-                    </PopoverContent>
-                </Popover>
-
-            </div>
-        </div>
-
         <div>
             {filteredAndSortedInstances.length === 0 ? (
                 <Alert>
@@ -287,5 +286,3 @@ export default function DashboardClient() {
     </>
   );
 }
-
-    
