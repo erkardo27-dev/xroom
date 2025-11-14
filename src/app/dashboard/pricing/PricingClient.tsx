@@ -14,7 +14,7 @@ import { addDays, format, getDay } from "date-fns";
 import { mn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { BrainCircuit, Loader2, RotateCcw, Sparkles } from "lucide-react";
-import { PricingRecommendation } from "@/ai/flows/pricing-recommendation-flow";
+import { getPricingRecommendation, PricingRecommendation, PricingRecommendationInput } from "@/ai/flows/pricing-recommendation-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -94,32 +94,25 @@ export default function PricingClient() {
 
   const handleAiPriceSuggest = async () => {
     setIsAiLoading(true);
-    setAiRecommendation(null); // Clear previous recommendations
+    setAiRecommendation(null);
     try {
-        // MOCK AI IMPLEMENTATION
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-
-        const mockRecommendations: Record<string, number> = {};
-        ownerRoomTypes.forEach(room => {
-            dateColumns.forEach(date => {
-                // ~30% chance to recommend a change
-                if (Math.random() < 0.3) {
-                    const currentPrice = getPriceForRoomTypeOnDate(room.id, date);
-                    // Change by -20% to +20%
-                    const changeFactor = 1 + (Math.random() - 0.5) * 0.4; 
-                    const newPrice = Math.round((currentPrice * changeFactor) / 1000) * 1000;
-                    if (newPrice !== currentPrice) {
-                        const key = `${room.id}_${format(date, 'yyyy-MM-dd')}`;
-                        mockRecommendations[key] = newPrice;
-                    }
-                }
-            });
-        });
-
-        const recommendation: PricingRecommendation = {
-            summary: "Ачаалал, улирлын байдлыг харгалзан амралтын өдрүүдэд үнийг нэмэгдүүлж, ажлын өдрүүдэд бага зэрэг хямдруулахыг санал болгож байна.",
-            recommendations: mockRecommendations,
+        const input: PricingRecommendationInput = {
+            roomTypes: ownerRoomTypes.map(r => ({
+                id: r.id,
+                roomName: r.roomName,
+                hotelName: r.hotelName,
+                price: r.price,
+                location: r.location,
+                amenities: r.amenities,
+                rating: r.rating,
+            })),
+            dateRange: {
+                startDate: format(dateColumns[0], 'yyyy-MM-dd'),
+                endDate: format(dateColumns[dateColumns.length - 1], 'yyyy-MM-dd'),
+            }
         };
+
+        const recommendation = await getPricingRecommendation(input);
 
         if (Object.keys(recommendation.recommendations).length === 0) {
            toast({
@@ -316,3 +309,5 @@ export default function PricingClient() {
     </Card>
   );
 }
+
+    
