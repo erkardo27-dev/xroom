@@ -16,9 +16,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
-import { Amenity, locations, Room } from "@/lib/data";
+import { Amenity, Room } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
@@ -30,11 +29,9 @@ const amenityOptions: { id: Amenity, label: string }[] = [
 ];
 
 const formSchema = z.object({
-  hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
   totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
-  location: z.string({ required_error: "Байршил сонгоно уу."}),
   imageIds: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one item.",
   }),
@@ -51,14 +48,13 @@ type RoomFormProps = {
 export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const { toast } = useToast();
     const { addRoom, updateRoom } = useRoom();
-    const { userEmail } = useAuth();
+    const { userEmail, hotelInfo } = useAuth();
     
     const isEditMode = !!roomToEdit;
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            hotelName: "",
             roomName: "",
             price: 0,
             totalQuantity: 1,
@@ -76,11 +72,9 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             });
         } else {
             form.reset({
-                hotelName: "",
                 roomName: "",
                 price: 0,
                 totalQuantity: 1,
-                location: undefined,
                 imageIds: [],
                 amenities: [],
             });
@@ -88,7 +82,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     }, [roomToEdit, isEditMode, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!userEmail) {
+        if (!userEmail || !hotelInfo) {
              toast({
                 variant: "destructive",
                 title: "Алдаа",
@@ -97,29 +91,31 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             return;
         }
 
+        const roomDataPayload = {
+            ...values,
+            amenities: values.amenities as Amenity[],
+            ownerId: userEmail,
+            hotelName: hotelInfo.hotelName,
+            location: hotelInfo.location,
+        };
+
         if (isEditMode && roomToEdit) {
              const updatedRoom: Room = {
                 ...roomToEdit,
-                ...values,
-                amenities: values.amenities as Amenity[],
+                ...roomDataPayload,
                 // When editing, if total quantity changes, we might need to adjust available quantity
                 availableQuantity: roomToEdit.availableQuantity + (values.totalQuantity - roomToEdit.totalQuantity),
             };
             updateRoom(updatedRoom);
              toast({
                 title: "Амжилттай заслаа!",
-                description: `${values.hotelName}-н ${values.roomName} өрөөний мэдээлэл шинэчлэгдлээ.`,
+                description: `${values.roomName} өрөөний мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
-            const newRoomData: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'> = {
-                ...values,
-                amenities: values.amenities as Amenity[],
-                ownerId: userEmail,
-            };
-            addRoom(newRoomData);
+            addRoom(roomDataPayload);
              toast({
                 title: "Өрөө бүртгэгдлээ!",
-                description: `${values.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
+                description: `${hotelInfo.hotelName}-д ${values.roomName} өрөөг ${values.price.toLocaleString()}₮ үнээр бүртгэв.`,
             });
         }
        
@@ -130,19 +126,6 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                <FormField
-                    control={form.control}
-                    name="hotelName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Зочид буудлын нэр</FormLabel>
-                            <FormControl>
-                                <Input placeholder="ж.нь: Их Оазис" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
                 <FormField
                     control={form.control}
                     name="roomName"
@@ -182,26 +165,6 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                 Энэ төрлийн нийт хэдэн өрөө байгаа вэ?
                             </FormDescription>
                             <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Байршил</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Өрөөний байршил сонгоно уу" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -305,7 +268,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                     )}
                 />
                 <Button type="submit" className="w-full">
-                    {isEditMode ? 'Мэдээлэл хадгалах' : 'Өрөөгөө шөнөөр бүртгүүлэх'}
+                    {isEditMode ? 'Мэдээлэл хадгалах' : 'Шинэ өрөө нэмэх'}
                 </Button>
             </form>
         </Form>

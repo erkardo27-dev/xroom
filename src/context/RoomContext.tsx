@@ -1,12 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Room, rooms as initialRooms } from "@/lib/data";
+import { Room, rooms as initialRooms, NewRoom } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
 type RoomContextType = {
   rooms: Room[];
-  addRoom: (room: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>) => void;
+  addRoom: (room: NewRoom) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoom: (roomId: string) => void;
   status: 'loading' | 'success' | 'error';
@@ -54,7 +54,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [rooms, status]);
 
-  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>) => {
+  const addRoom = (roomData: NewRoom) => {
     const newRoom: Room = {
       ...roomData,
       id: `room-${Date.now()}`,

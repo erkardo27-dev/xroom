@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, ChevronDown, LogOut } from 'lucide-react';
+import { PlusCircle, LogIn, ChevronDown, LogOut, Settings, Building } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
+    DropdownMenuLabel,
   } from "@/components/ui/dropdown-menu"
 import { OwnerLoginForm } from '@/components/auth/OwnerLoginForm';
 import { RoomForm } from '@/components/rooms/RoomForm';
@@ -25,12 +26,13 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
+import { HotelSettingsForm } from '../dashboard/HotelSettingsForm';
 
-type DialogType = 'addRoom' | 'login' | null;
+type DialogType = 'addRoom' | 'login' | 'settings' | null;
 
 export default function Header({ isDashboard = false }: { isDashboard?: boolean }) {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
-  const { isLoggedIn, userEmail, logout } = useAuth();
+  const { isLoggedIn, userEmail, hotelInfo, logout } = useAuth();
   const router = useRouter();
 
 
@@ -58,14 +60,14 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
         <Link href="/" className="flex items-center gap-3">
           <Logo className="h-8 w-auto text-primary" />
-           {isDashboard && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ Миний самбар</span>}
+           {isDashboard && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ {hotelInfo?.hotelName || "Миний самбар"}</span>}
         </Link>
 
         <Dialog open={!!openDialog} onOpenChange={handleOpenChange}>
             {isLoggedIn ? (
                 <div className="flex items-center gap-4">
-                     <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
-                        <Button>
+                     <DialogTrigger asChild>
+                        <Button onClick={() => handleDialogTrigger('addRoom')}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Шинэ өрөө
                         </Button>
@@ -78,14 +80,24 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                             <DropdownMenuItem onClick={() => router.push(isDashboard ? '/' : '/dashboard')}>
-                                {isDashboard ? 'Нүүр хуудас' : 'Миний самбар'}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                        <DropdownMenuContent align="end" className="w-56">
+                             <DropdownMenuLabel className='flex items-center gap-2'>
+                                <Building className="w-4 h-4" />
+                                <span className='font-bold'>{hotelInfo?.hotelName}</span>
+                            </DropdownMenuLabel>
                             <DropdownMenuItem disabled>
                                 {userEmail}
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuItem onClick={() => router.push(isDashboard ? '/' : '/dashboard')}>
+                                {isDashboard ? 'Нүүр хуудас' : 'Миний самбар'}
+                            </DropdownMenuItem>
+                             <DialogTrigger asChild>
+                                <DropdownMenuItem onClick={() => handleDialogTrigger('settings')}>
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Буудлын тохиргоо
+                                </DropdownMenuItem>
+                            </DialogTrigger>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout}>
                                 <LogOut className="mr-2 h-4 w-4" />
@@ -95,53 +107,46 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
                     </DropdownMenu>
                 </div>
             ) : (
-                 !isDashboard && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                Эзэмшигч
-                                <ChevronDown className="ml-2 h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DialogTrigger asChild onClick={() => handleDialogTrigger('addRoom')}>
-                                <DropdownMenuItem>
-                                    <PlusCircle className="mr-2 h-4 w-4" />
-                                    Өрөө оруулах (Нэвтрэх)
-                                </DropdownMenuItem>
-                            </DialogTrigger>
-                            <DialogTrigger asChild onClick={() => handleDialogTrigger('login')}>
-                                <DropdownMenuItem>
-                                    <LogIn className="mr-2 h-4 w-4" />
-                                    Нэвтрэх
-                                </DropdownMenuItem>
-                            </DialogTrigger>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                 )
+                <DialogTrigger asChild>
+                    <Button variant="outline" onClick={() => handleDialogTrigger('login')}>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Эзэмшигч нэвтрэх
+                    </Button>
+                </DialogTrigger>
             )}
 
             <DialogContent className="sm:max-w-[425px]">
-                {openDialog === 'addRoom' && (
-                    <>
-                         <DialogHeader>
-                            <DialogTitle>Өрөө оруулах</DialogTitle>
-                            <DialogDescription>
-                                {isLoggedIn ? 'Энэ шөнийн сул өрөөгөө бүртгүүлэхийн тулд доорх мэдээллийг бөглөнө үү.' : 'Өрөө оруулахын тулд эхлээд нэвтэрнэ үү.'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        {isLoggedIn ? <RoomForm onFormSubmit={() => handleOpenChange(false)}/> : <OwnerLoginForm onFormSubmit={() => { /* Handled by AuthContext */ }} />}
-                    </>
-                )}
                 {openDialog === 'login' && (
-                     <>
+                    <>
                         <DialogHeader>
-                            <DialogTitle>Эзэмшигч нэвтрэх</DialogTitle>
+                            <DialogTitle>Эзэмшигчийн хэсэг</DialogTitle>
                             <DialogDescription>
-                                Зочид буудлын удирдлагын самбартаа нэвтрэх.
+                                Бүртгэлтэй бол нэвтэрч, шинээр зочид буудлаа бүртгүүлнэ үү.
                             </DialogDescription>
                         </DialogHeader>
                         <OwnerLoginForm onFormSubmit={() => handleOpenChange(false)}/>
+                    </>
+                )}
+                 {openDialog === 'addRoom' && isLoggedIn && (
+                    <>
+                         <DialogHeader>
+                            <DialogTitle>Шинэ өрөө оруулах</DialogTitle>
+                            <DialogDescription>
+                                {hotelInfo?.hotelName}-д шинээр сул өрөө бүртгүүлэх.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <RoomForm onFormSubmit={() => handleOpenChange(false)}/>
+                    </>
+                )}
+                 {openDialog === 'settings' && isLoggedIn && (
+                    <>
+                         <DialogHeader>
+                            <DialogTitle>Зочид буудлын тохиргоо</DialogTitle>
+                            <DialogDescription>
+                                Та зочид буудлынхаа үндсэн мэдээллийг эндээс засаж болно.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <HotelSettingsForm onFormSubmit={() => handleOpenChange(false)}/>
                     </>
                 )}
             </DialogContent>

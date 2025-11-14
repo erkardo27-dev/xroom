@@ -120,3 +120,5 @@ export const rooms: Room[] = roomsData.map(room => {
         availableQuantity: totalQuantity,
     }
 });
+
+export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>

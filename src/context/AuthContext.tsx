@@ -4,12 +4,19 @@ import { useToast } from "@/hooks/use-toast";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
+type HotelInfo = {
+    hotelName: string;
+    location: string;
+};
+
 type AuthContextType = {
   isLoggedIn: boolean;
   userEmail: string | null;
+  hotelInfo: HotelInfo | null;
   isLoading: boolean;
-  login: (email: string) => Promise<void>;
+  login: (email: string, hotelInfo: HotelInfo) => Promise<void>;
   logout: () => Promise<void>;
+  updateHotelInfo: (hotelInfo: HotelInfo) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,16 +24,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    // Check for saved session on initial load
     try {
-        const savedUser = localStorage.getItem('userEmail');
+        const savedUser = localStorage.getItem('authUser');
         if (savedUser) {
-            setUserEmail(savedUser);
+            const { email, hotel } = JSON.parse(savedUser);
+            setUserEmail(email);
+            setHotelInfo(hotel);
             setIsLoggedIn(true);
         }
     } catch (error) {
@@ -35,22 +44,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string) => {
+  const login = async (email: string, hotel: HotelInfo) => {
     setIsLoggedIn(true);
     setUserEmail(email);
-    localStorage.setItem('userEmail', email);
+    setHotelInfo(hotel);
+    localStorage.setItem('authUser', JSON.stringify({ email, hotel }));
     toast({
         title: "Амжилттай нэвтэрлээ",
-        description: `${email} хаягаар нэвтэрлээ.`,
+        description: `${hotel.hotelName}-д тавтай морилно уу.`,
     });
     router.push('/dashboard');
     router.refresh();
+  };
+  
+  const updateHotelInfo = (newHotelInfo: HotelInfo) => {
+      if (isLoggedIn && userEmail) {
+          setHotelInfo(newHotelInfo);
+          localStorage.setItem('authUser', JSON.stringify({ email: userEmail, hotel: newHotelInfo }));
+           toast({
+                title: "Амжилттай",
+                description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
+            });
+      }
   };
 
   const logout = async () => {
     setIsLoggedIn(false);
     setUserEmail(null);
-    localStorage.removeItem('userEmail');
+    setHotelInfo(null);
+    localStorage.removeItem('authUser');
     toast({
         title: "Системээс гарлаа",
         description: "Та амжилттай системээс гарлаа.",
@@ -59,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, logout, isLoading, updateHotelInfo }}>
       {children}
     </AuthContext.Provider>
   );
