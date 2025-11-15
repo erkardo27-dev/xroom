@@ -168,13 +168,16 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
     
-    // 1. Check for a specific override for that date
     if (instance.overrides && instance.overrides[dateKey] && instance.overrides[dateKey].status) {
       return instance.overrides[dateKey].status;
     }
     
-    // 2. If no override, return the base status
-    return instance.status;
+    const isToday = format(new Date(), 'yyyy-MM-dd') === dateKey;
+    if (isToday) {
+        return instance.status;
+    }
+    
+    return 'available';
 
   }, [roomInstances]);
 
@@ -185,7 +188,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (!room) return 0;
 
         const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-        // Check for a date-specific price override first
         const price = instance.overrides?.[dateKey]?.price ?? room.price;
         return price;
     }, [roomInstances, rooms]);
@@ -200,7 +202,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (instance.instanceId === instanceId) {
           const newInstance = { ...instance, overrides: {...instance.overrides} };
 
-          // If the change is for today, update the base status directly
           if (isToday) {
             newInstance.status = status;
             if(status === 'booked' && bookingCode) {
@@ -208,31 +209,24 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             } else if (status === 'available') {
                  delete newInstance.bookingCode;
             }
-             // Clean up today's override if it becomes redundant, but keep price
             if (newInstance.overrides[dateKey]) {
-                delete newInstance.overrides[dateKey].status;
-                delete newInstance.overrides[dateKey].bookingCode;
-                 if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
-                    delete newInstance.overrides[dateKey];
-                }
+                newInstance.overrides[dateKey].status = status;
+                if (bookingCode) newInstance.overrides[dateKey].bookingCode = bookingCode;
             }
           } else {
-             // For future or past dates, always use overrides
              if (!newInstance.overrides[dateKey]) {
-                newInstance.overrides[dateKey] = { status: status };
-             } else {
-                newInstance.overrides[dateKey].status = status;
+                newInstance.overrides[dateKey] = {};
              }
+             newInstance.overrides[dateKey].status = status;
 
             if(status === 'booked' && bookingCode) {
                 newInstance.overrides[dateKey].bookingCode = bookingCode;
-            } else {
+            } else if (newInstance.overrides[dateKey]) {
                 delete newInstance.overrides[dateKey].bookingCode;
             }
 
-            // Clean up the override if it matches the default state
-            const isDefaultStatus = newInstance.status === 'available' && status === 'available';
-            const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined && newInstance.overrides[dateKey]?.bookingCode === undefined;
+            const isDefaultStatus = status === 'available';
+            const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined;
 
             if (isDefaultStatus && hasNoOtherOverrides) {
                  delete newInstance.overrides[dateKey];
@@ -254,21 +248,18 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 if (!roomType) return instance;
 
                 const newInstance = { ...instance, overrides: { ...instance.overrides } };
-                const currentStatus = getRoomStatusForDate(instanceId, date);
                 
+                if (!newInstance.overrides[dateKey]) {
+                    newInstance.overrides[dateKey] = {};
+                }
+
                 if (price === roomType.price) {
-                    if (newInstance.overrides[dateKey]) {
-                        delete newInstance.overrides[dateKey].price;
-                        if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
-                            delete newInstance.overrides[dateKey];
-                        }
+                    delete newInstance.overrides[dateKey].price;
+                    if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
+                        delete newInstance.overrides[dateKey];
                     }
                 } else {
-                     if (!newInstance.overrides[dateKey]) {
-                        newInstance.overrides[dateKey] = { status: currentStatus, price: price };
-                    } else {
-                        newInstance.overrides[dateKey].price = price;
-                    }
+                    newInstance.overrides[dateKey].price = price;
                 }
                  setToastInfo({
                   title: "Үнэ шинэчлэгдлээ",
@@ -279,7 +270,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             return instance;
         })
       );
-  }, [getRoomById, getRoomStatusForDate]);
+  }, [getRoomById]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
@@ -288,7 +279,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const anyInstance = roomInstances.find(i => i.roomTypeId === roomTypeId);
     if (!anyInstance) return roomType.price;
 
-    // This is important: get price from an instance, which respects overrides
     return getRoomPriceForDate(anyInstance.instanceId, date);
   }, [rooms, roomInstances, getRoomPriceForDate]);
 
@@ -308,22 +298,21 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             if (index !== -1) {
                 const updatedInstance = { ...newInstances[index], overrides: { ...newInstances[index].overrides } };
                 const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-                const currentStatus = getRoomStatusForDate(inst.instanceId, date);
 
+                if (!updatedInstance.overrides[dateKey]) {
+                    updatedInstance.overrides[dateKey] = {};
+                }
+                
                 if (price === undefined || price === roomType.price) {
-                     if (updatedInstance.overrides[dateKey]) {
-                        delete updatedInstance.overrides[dateKey].price;
-                        // If no other overrides exist for this date, remove the date key entirely
-                        if (Object.keys(updatedInstance.overrides[dateKey]).length === 0) {
-                           delete updatedInstance.overrides[dateKey];
-                        }
-                    }
+                    delete updatedInstance.overrides[dateKey].price;
                 } else {
-                    if (!updatedInstance.overrides[dateKey]) {
-                        updatedInstance.overrides[dateKey] = { status: currentStatus };
-                    }
                     updatedInstance.overrides[dateKey].price = price;
                 }
+
+                if (Object.keys(updatedInstance.overrides[dateKey]).length === 0) {
+                    delete updatedInstance.overrides[dateKey];
+                }
+                
                 newInstances[index] = updatedInstance;
             }
         });
@@ -335,7 +324,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
     });
 
-  }, [getRoomById, roomInstances, getRoomStatusForDate]);
+  }, [getRoomById, roomInstances]);
 
 
   return (

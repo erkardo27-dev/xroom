@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -26,7 +27,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/colla
 import { Separator } from '../ui/separator';
 
 type RoomInstanceCardProps = {
-  instance: RoomInstance;
+  instance: RoomInstance & { status: RoomStatus; bookingCode?: string }; // Augmented instance
   onEditType: (roomType: Room) => void;
   onDeleteInstance: (instance: RoomInstance) => void;
   selectedDate: Date;

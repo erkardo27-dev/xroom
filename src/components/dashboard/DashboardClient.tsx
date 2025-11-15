@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -12,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { RoomForm } from "../rooms/RoomForm";
 import { RoomInstanceCard } from "./RoomInstanceCard";
-import { format, addDays, isToday } from 'date-fns';
+import { format, addDays, isToday, startOfDay } from 'date-fns';
 import { mn } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -51,11 +52,10 @@ export default function DashboardClient() {
   const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userEmail), [roomInstances, userEmail]);
 
   const filteredAndSortedInstances = useMemo(() => {
-    // 1. Get all instances for the owner and augment with status for the selected date
     const instancesWithStatus = ownerRoomInstances
       .map(instance => {
           const statusForDate = getRoomStatusForDate(instance.instanceId, selectedDate);
-          const dateKey = format(selectedDate, 'yyyy-MM-dd');
+          const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
           
           let bookingCodeForDate: string | undefined;
           if (statusForDate === 'booked') {
@@ -74,15 +74,12 @@ export default function DashboardClient() {
           };
       });
 
-    // 2. Filter instances
     const filtered = instancesWithStatus.filter(instance => {
-      const roomType = getRoomById(instance.roomTypeId);
       const roomTypeMatch = filterRoomType === 'all' || instance.roomTypeId === filterRoomType;
       const statusMatch = filterStatus === 'all' || instance.status === filterStatus;
       return roomTypeMatch && statusMatch;
     });
 
-    // 3. Sort instances
     const sorted = [...filtered].sort((a, b) => {
       switch (sortOption) {
         case 'roomType':
@@ -160,7 +157,7 @@ export default function DashboardClient() {
                            variant={"outline"}
                            className={cn(
                                 "w-36 flex-1 h-8 justify-start text-left font-normal text-sm",
-                               !isToday(selectedDate) && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                               !isToday(selectedDate) && "text-destructive focus:text-destructive"
                            )}
                         >
                             <CalendarIcon className={cn("mr-2 h-4 w-4")} />
@@ -245,7 +242,7 @@ export default function DashboardClient() {
                     {filteredAndSortedInstances.map(instance => (
                         <RoomInstanceCard 
                           key={instance.instanceId} 
-                          instance={instance} 
+                          instance={instance}
                           onEditType={(roomType) => setRoomTypeToEdit(roomType)}
                           onDeleteInstance={(instance) => setInstanceToDelete(instance)}
                           selectedDate={selectedDate}
