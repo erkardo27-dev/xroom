@@ -23,7 +23,6 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '../ui/tooltip';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Separator } from '../ui/separator';
 
 type RoomInstanceCardProps = {
@@ -168,7 +167,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
       setIsEditingPrice(false);
   }
 
-  const isCollapsible = instance.status === 'booked' && instance.bookingCode;
+  const isBooked = instance.status === 'booked' && instance.bookingCode;
 
   return (
     <Card className={cn("flex flex-col justify-between border-2", currentStatus.borderColor)}>
@@ -220,59 +219,54 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
         </div>
       </CardHeader>
       <CardContent className='flex-grow p-4 pt-0 flex flex-col justify-end space-y-3'>
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-muted-foreground">Үнэ</span>
-            {isEditingPrice ? (
-              <div className="relative w-28">
-                <Input 
-                  type="number"
-                  value={localPrice}
-                  onChange={(e) => setLocalPrice(Number(e.target.value))}
-                  onBlur={handlePriceSave}
-                  onKeyDown={(e) => e.key === 'Enter' && handlePriceSave()}
-                  autoFocus
-                  className="h-7 text-sm font-bold pr-7"
-                />
-                <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-0.5 right-0.5" onClick={handlePriceSave}>
-                    <Check className="h-4 w-4" />
-                </Button>
-              </div>
-          ) : (
-              <div className="flex items-center gap-2">
-                  {isPriceOverridden && (
-                      <span className="text-xs text-muted-foreground line-through">{roomType.price.toLocaleString()}₮</span>
-                  )}
-                  <span className={cn(
-                      "font-semibold",
-                      isPriceOverridden ? "text-orange-500" : "text-primary"
-                  )}>
-                      {priceForDate.toLocaleString()}₮
-                  </span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingPrice(true)}>
-                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
-              </div>
-          )}
-        </div>
+        {isBooked ? (
+            <div className='text-center'>
+                 <p className="text-xs text-muted-foreground">Нэвтрэх код:</p>
+                 <p className="text-3xl font-mono font-bold tracking-widest text-primary bg-secondary/50 p-2 rounded-lg">{instance.bookingCode}</p>
+            </div>
+        ) : (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Үнэ</span>
+                {isEditingPrice ? (
+                  <div className="relative w-28">
+                    <Input 
+                      type="number"
+                      value={localPrice}
+                      onChange={(e) => setLocalPrice(Number(e.target.value))}
+                      onBlur={handlePriceSave}
+                      onKeyDown={(e) => e.key === 'Enter' && handlePriceSave()}
+                      autoFocus
+                      className="h-7 text-sm font-bold pr-7"
+                    />
+                    <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-0.5 right-0.5" onClick={handlePriceSave}>
+                        <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+              ) : (
+                  <div className="flex items-center gap-2">
+                      {isPriceOverridden && (
+                          <span className="text-xs text-muted-foreground line-through">{roomType.price.toLocaleString()}₮</span>
+                      )}
+                      <span className={cn(
+                          "font-semibold",
+                          isPriceOverridden ? "text-orange-500" : "text-primary"
+                      )}>
+                          {priceForDate.toLocaleString()}₮
+                      </span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingPrice(true)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                  </div>
+              )}
+            </div>
+        )}
         
         <Separator />
         
-         <Collapsible>
-            <CollapsibleTrigger asChild className={cn(isCollapsible && 'cursor-pointer')}>
-              <div className="flex items-center">
-                  <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
-                  <span className="text-sm font-medium">{currentStatus.label}</span>
-              </div>
-            </CollapsibleTrigger>
-             {isCollapsible && (
-               <CollapsibleContent className="space-y-3 pt-3">
-                 <div className="text-center bg-secondary/50 p-2 rounded-lg">
-                     <p className="text-xs text-muted-foreground">Нэвтрэх код:</p>
-                     <p className="text-2xl font-mono font-bold tracking-widest text-primary">{instance.bookingCode}</p>
-                 </div>
-               </CollapsibleContent>
-             )}
-        </Collapsible>
+        <div className="flex items-center">
+            <span className={cn("h-2.5 w-2.5 rounded-full mr-2", currentStatus.color)}></span>
+            <span className="text-sm font-medium">{currentStatus.label}</span>
+        </div>
       </CardContent>
       <CardFooter className="p-2">
         <Button 
