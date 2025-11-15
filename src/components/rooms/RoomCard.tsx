@@ -133,9 +133,9 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     if (isSoldOut) return;
 
     setBookingStep('booking');
-    const instanceToBook = availableInstances[0];
     
     setTimeout(() => {
+        const instanceToBook = availableInstances[0];
         setRoomStatusForDate(
             instanceToBook.instanceId,
             startOfDay(new Date()),
@@ -380,9 +380,9 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               </div>
               <AlertDialogFooter>
                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
+                <Button onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
                   Төлбөр төлөх ({totalPrice.toLocaleString()}₮)
-                </AlertDialogAction>
+                </Button>
               </AlertDialogFooter>
             </>
         )}
