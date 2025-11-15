@@ -221,9 +221,9 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         <CardContent className="p-4 flex flex-col flex-1">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
-            <div className="flex items-center gap-1 text-sm">
-              <Heart className="w-4 h-4 text-destructive fill-destructive" />
-              <span className="font-semibold text-foreground/90 pt-px">{room.likes || 0}</span>
+            <div className="text-sm">
+                <span className="text-muted-foreground">Таалагдсан: </span>
+                <span className="font-semibold text-foreground/90">{room.likes || 0}</span>
             </div>
           </div>
 
@@ -387,17 +387,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             </>
         )}
         {bookingStep === 'booking' && (
-            <>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Таны өрөөг баталгаажуулж байна...</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Энэ нь түр зуур үргэлжилнэ.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="flex flex-col items-center justify-center p-8 gap-4">
-                    <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                </div>
-            </>
+             <AlertDialogHeader>
+                <AlertDialogTitle>Таны өрөөг баталгаажуулж байна...</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Энэ нь түр зуур үргэлжилнэ.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            
         )}
         {bookingStep === 'success' && (
              <>
@@ -446,3 +442,5 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
+
+    
