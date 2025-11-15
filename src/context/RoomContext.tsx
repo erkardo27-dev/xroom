@@ -169,7 +169,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
     
     // 1. Check for a specific override for that date
-    if (instance.overrides && instance.overrides[dateKey]) {
+    if (instance.overrides && instance.overrides[dateKey] && instance.overrides[dateKey].status) {
       return instance.overrides[dateKey].status;
     }
     
