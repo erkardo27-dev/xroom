@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -397,12 +398,43 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             </div>
         )}
         {bookingStep === 'success' && (
-             <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
-                <CheckCircle className="w-16 h-16 text-green-500" />
+             <div className="flex flex-col text-center p-8 gap-4">
+                <div className='flex justify-center'>
+                    <CheckCircle className="w-16 h-16 text-green-500" />
+                </div>
                 <h2 className="text-2xl font-bold">Захиалга баталгаажлаа!</h2>
-                <p className="text-muted-foreground"><span className="font-semibold text-foreground">{room.hotelName}</span>-д таны өрөө баталгаажлаа. <br/> Таны захиалгын дугаар:</p>
-                <p className="text-xl font-bold text-primary tracking-widest bg-secondary px-4 py-2 rounded-md">{confirmationId}</p>
-                <p className="text-muted-foreground mt-2">Таны нэвтрэх код: <span className="font-bold text-foreground">{checkinCode}</span></p>
+                <div className="text-sm text-muted-foreground text-left bg-secondary/50 p-4 rounded-lg space-y-3">
+                    <div className='flex justify-between items-start'>
+                        <div>
+                            <p className='font-semibold text-foreground'>{room.hotelName}</p>
+                            <p className='flex items-center gap-2'><MapPin className='w-3.5 h-3.5' />{room.location}</p>
+                        </div>
+                        <div className='text-right'>
+                            <p className='font-semibold text-foreground'>Захиалгын дугаар</p>
+                            <p className="font-bold text-primary tracking-widest text-lg">{confirmationId}</p>
+                        </div>
+                    </div>
+                     <Separator/>
+                     <div>
+                        <p className='font-semibold text-foreground'>Таны нэвтрэх код</p>
+                        <p className="font-bold text-primary tracking-widest text-2xl">{checkinCode}</p>
+                        <p className='text-xs'>Та энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглах тул мартаж болохгүйг анхаарна уу.</p>
+                     </div>
+                      <Separator/>
+                      <div>
+                        <p className='font-semibold text-foreground'>Холбоо барих</p>
+                        <p className='flex items-center gap-2'><Phone className='w-3.5 h-3.5' /> {room.phoneNumber}</p>
+                     </div>
+                </div>
+
+                <Alert variant="destructive" className='mt-4 text-left bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800/30'>
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                    <AlertTitle className='text-yellow-700 dark:text-yellow-400 font-bold'>Чухал санамж</AlertTitle>
+                    <AlertDescription className='text-yellow-600 dark:text-yellow-500'>
+                        Энэ цонхыг хаасны дараа захиалгын дугаар болон нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
+                    </AlertDescription>
+                </Alert>
+
                 <Button onClick={closeAndResetDialog} className="mt-4 w-full">Дуусгах</Button>
             </div>
         )}

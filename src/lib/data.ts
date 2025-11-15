@@ -42,6 +42,7 @@ export type Room = {
   imageIds: string[];
   location: Location;
   ownerId: string;
+  phoneNumber: string;
   totalQuantity: number;
   rating: number; 
   distance: number;
@@ -67,7 +68,7 @@ export type RoomInstance = {
 };
 
 
-const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes'>[] = [
+const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber'>[] = [
     {
       id: 'room-type-1',
       roomName: 'Стандарт Кинг Өрөө',
@@ -102,6 +103,7 @@ const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' |
 export const initialRooms: Room[] = initialRoomTypesData.map(rt => ({
     ...rt,
     ownerId: "owner@example.com", // Assign a default owner for initial data
+    phoneNumber: "99118811",
     distance: +(Math.random() * 10 + 0.5).toFixed(1),
     rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
     totalQuantity: Math.floor(Math.random() * 5) + 2, // 2 to 6 rooms

@@ -99,6 +99,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             ownerId: userEmail,
             hotelName: hotelInfo.hotelName,
             location: hotelInfo.location,
+            phoneNumber: hotelInfo.phoneNumber,
         };
 
         if (isEditMode && roomToEdit) {
@@ -112,7 +113,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 description: `${values.roomName} өрөөний төрлийн мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
-            addRoom(roomDataPayload);
+            addRoom(roomDataPayload as Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>);
         }
        
         form.reset();

@@ -177,6 +177,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return instance.status;
     }
     
+    // If no override, and not today, it defaults to the instance's base status unless that is also a temporary state.
+    // Let's assume non-overridden future dates are available.
     return 'available';
 
   }, [roomInstances]);
@@ -209,29 +211,27 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             } else if (status === 'available') {
                  delete newInstance.bookingCode;
             }
-            if (newInstance.overrides[dateKey]) {
-                newInstance.overrides[dateKey].status = status;
-                if (bookingCode) newInstance.overrides[dateKey].bookingCode = bookingCode;
-            }
-          } else {
-             if (!newInstance.overrides[dateKey]) {
-                newInstance.overrides[dateKey] = {};
-             }
-             newInstance.overrides[dateKey].status = status;
-
-            if(status === 'booked' && bookingCode) {
-                newInstance.overrides[dateKey].bookingCode = bookingCode;
-            } else if (newInstance.overrides[dateKey]) {
-                delete newInstance.overrides[dateKey].bookingCode;
-            }
-
-            const isDefaultStatus = status === 'available';
-            const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined;
-
-            if (isDefaultStatus && hasNoOtherOverrides) {
-                 delete newInstance.overrides[dateKey];
-            }
+          } 
+          
+          // Always create or update the override for any date change
+          if (!newInstance.overrides[dateKey]) {
+            newInstance.overrides[dateKey] = {};
           }
+          newInstance.overrides[dateKey].status = status;
+
+          if(status === 'booked' && bookingCode) {
+              newInstance.overrides[dateKey].bookingCode = bookingCode;
+          } else if (newInstance.overrides[dateKey]) {
+              delete newInstance.overrides[dateKey].bookingCode;
+          }
+
+          // Cleanup override if it just contains the default status
+          const isDefaultStatus = status === 'available'; 
+          const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined;
+          if (isDefaultStatus && hasNoOtherOverrides && !isToday) { // don't clean up today's override if it's just 'available' as it might be an intentional change from 'booked'
+                delete newInstance.overrides[dateKey];
+          }
+
           return newInstance;
         }
         return instance;
