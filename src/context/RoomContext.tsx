@@ -97,7 +97,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         
         setRooms(prevRooms => prevRooms.map(room => {
             if (room.id === roomId) {
-                return { ...room, likes: isLiked ? room.likes - 1 : room.likes + 1 };
+                return { ...room, likes: isLiked ? (room.likes || 0) - 1 : (room.likes || 0) + 1 };
             }
             return room;
         }));
