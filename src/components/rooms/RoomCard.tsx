@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,12 +85,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   
-  const { setRoomStatusForDate } = useRoom();
+  const { setRoomStatusForDate, toggleLike, likedRooms } = useRoom();
   const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
   const isSoldOut = availableInstances.length === 0;
   const totalPrice = room.price + SERVICE_FEE;
+  const isLiked = likedRooms.includes(room.id);
 
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'selection') {
@@ -159,6 +160,11 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   })), [room.amenities]);
   
   const isConfirmationDisabled = !paymentMethod || checkinCode.length !== 4 || !termsAccepted;
+  
+  const handleLikeClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      toggleLike(room.id);
+  }
 
   return (
     <>
@@ -198,14 +204,22 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               Дууссан
             </Badge>
           )}
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            className="absolute top-2 right-2 h-9 w-9 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-sm"
+            onClick={handleLikeClick}
+          >
+              <Heart className={cn("h-5 w-5", isLiked && "fill-red-500 text-red-500")}/>
+          </Button>
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
             <div className="flex items-center gap-1 text-sm">
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="font-semibold text-foreground/90 pt-px">{room.rating.toFixed(1)}</span>
+              <Heart className="w-4 h-4 text-destructive fill-destructive" />
+              <span className="font-semibold text-foreground/90 pt-px">{room.likes}</span>
             </div>
           </div>
 
@@ -390,4 +404,3 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
-

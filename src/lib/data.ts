@@ -21,6 +21,7 @@ export type Room = {
   totalQuantity: number;
   rating: number; 
   distance: number;
+  likes: number;
 };
 
 // Represents an individual, physical room
@@ -42,7 +43,7 @@ export type RoomInstance = {
 };
 
 
-const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId'>[] = [
+const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes'>[] = [
     {
       id: 'room-type-1',
       roomName: 'Стандарт Кинг Өрөө',
@@ -80,6 +81,7 @@ export const initialRooms: Room[] = initialRoomTypesData.map(rt => ({
     distance: +(Math.random() * 10 + 0.5).toFixed(1),
     rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
     totalQuantity: Math.floor(Math.random() * 5) + 2, // 2 to 6 rooms
+    likes: Math.floor(Math.random() * 200) + 20, // 20 to 220 likes
 }));
 
 export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomType => {
@@ -94,4 +96,4 @@ export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomTyp
 });
 
 
-export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity'>
+export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity' | 'likes'>

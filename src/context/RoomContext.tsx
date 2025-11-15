@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
@@ -5,10 +6,12 @@ import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } fr
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay } from 'date-fns';
 
+const LIKED_ROOMS_STORAGE_KEY = 'likedRooms';
+
 type RoomContextType = {
   rooms: Room[];
   roomInstances: RoomInstance[];
-  addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => void;
+  addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoomInstance: (instanceId: string) => void;
   updateRoomInstance: (updatedInstance: RoomInstance) => void;
@@ -21,6 +24,8 @@ type RoomContextType = {
   setRoomPriceForDate: (instanceId: string, date: Date, price: number) => void;
   getPriceForRoomTypeOnDate: (roomTypeId: string, date: Date) => number;
   setPriceForRoomTypeOnDate: (roomTypeId: string, date: Date, price: number | undefined) => void;
+  toggleLike: (roomId: string) => void;
+  likedRooms: string[];
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -31,6 +36,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [toastInfo, setToastInfo] = useState<{ title: string, description: string } | null>(null);
+  const [likedRooms, setLikedRooms] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,6 +44,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         try {
             const savedRooms = localStorage.getItem('rooms');
             const savedInstances = localStorage.getItem('roomInstances');
+            const savedLikedRooms = localStorage.getItem(LIKED_ROOMS_STORAGE_KEY);
             
             if (savedRooms && savedInstances) {
                 setRooms(JSON.parse(savedRooms));
@@ -45,6 +52,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             } else {
                 setRooms(initialRooms);
                 setRoomInstances(initialRoomInstances);
+            }
+             if (savedLikedRooms) {
+                setLikedRooms(JSON.parse(savedLikedRooms));
             }
             setStatus('success');
         } catch (e) {
@@ -63,11 +73,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         try {
             localStorage.setItem('rooms', JSON.stringify(rooms));
             localStorage.setItem('roomInstances', JSON.stringify(roomInstances));
+            localStorage.setItem(LIKED_ROOMS_STORAGE_KEY, JSON.stringify(likedRooms));
         } catch (e) {
             console.error("Failed to save data to localStorage", e);
         }
     }
-  }, [rooms, roomInstances, status]);
+  }, [rooms, roomInstances, likedRooms, status]);
 
   useEffect(() => {
     if (toastInfo) {
@@ -76,12 +87,29 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [toastInfo, toast]);
 
-  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance'>) => {
+    const toggleLike = (roomId: string) => {
+        const isLiked = likedRooms.includes(roomId);
+        const newLikedRooms = isLiked 
+            ? likedRooms.filter(id => id !== roomId)
+            : [...likedRooms, roomId];
+        
+        setLikedRooms(newLikedRooms);
+        
+        setRooms(prevRooms => prevRooms.map(room => {
+            if (room.id === roomId) {
+                return { ...room, likes: isLiked ? room.likes - 1 : room.likes + 1 };
+            }
+            return room;
+        }));
+    };
+
+  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => {
     const newRoomType: Room = {
       ...roomData,
       id: `room-type-${Date.now()}`,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
       distance: +(Math.random() * 10 + 0.5).toFixed(1),
+      likes: 0,
     };
     
     const newInstances: RoomInstance[] = Array.from({ length: newRoomType.totalQuantity }).map((_, i) => ({
@@ -311,7 +339,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, toggleLike, likedRooms }}>
       {children}
     </RoomContext.Provider>
   );
