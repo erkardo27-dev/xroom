@@ -1,6 +1,17 @@
 import { PlaceHolderImages } from './placeholder-images';
 
-export type Amenity = 'wifi' | 'parking' | 'restaurant';
+export type Amenity = 
+  | 'wifi' 
+  | 'parking' 
+  | 'restaurant'
+  | 'unifi'
+  | 'breakfast'
+  | 'bathtub'
+  | 'fitness'
+  | 'laundry'
+  | 'karaoke'
+  | 'massage';
+
 export type SortOption = 'distance' | 'price' | 'likes';
 export const locations = ['Хотын төв', 'Зайсан', 'Яармаг', 'Сансар', '1-р хороолол', 'Хороолол'] as const;
 export type Location = typeof locations[number];
@@ -50,7 +61,7 @@ const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' |
       hotelName: 'Их Оазис',
       price: 400000,
       originalPrice: 610000,
-      amenities: ['wifi', 'parking', 'restaurant'],
+      amenities: ['wifi', 'parking', 'restaurant', 'breakfast', 'fitness'],
       imageIds: ['hotel-1', 'hotel-7', 'hotel-8'],
       location: 'Хотын төв',
     },
@@ -59,7 +70,7 @@ const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' |
       roomName: 'Делюкс Люкс',
       hotelName: 'Хотын Төв',
       price: 320000,
-      amenities: ['wifi', 'restaurant'],
+      amenities: ['wifi', 'restaurant', 'unifi', 'bathtub'],
       imageIds: ['hotel-2', 'hotel-9', 'hotel-1'],
       location: 'Хотын төв',
     },
@@ -69,7 +80,7 @@ const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' |
       hotelName: 'Голын Эрэг Амралт',
       price: 510000,
       originalPrice: 680000,
-      amenities: ['wifi', 'parking'],
+      amenities: ['wifi', 'parking', 'breakfast', 'massage'],
       imageIds: ['hotel-3', 'hotel-10', 'hotel-2'],
       location: 'Зайсан',
     },

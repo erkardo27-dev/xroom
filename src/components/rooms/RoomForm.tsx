@@ -22,11 +22,19 @@ import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 
-const amenityOptions: { id: Amenity, label: string }[] = [
+const amenityOptions: { id: Amenity; label: string }[] = [
     { id: 'wifi', label: 'Wi-Fi' },
+    { id: 'unifi', label: 'Юнивишн' },
+    { id: 'breakfast', label: 'Өглөөний цай' },
+    { id: 'bathtub', label: 'Ванн' },
     { id: 'parking', label: 'Машины зогсоол' },
     { id: 'restaurant', label: 'Ресторан' },
+    { id: 'fitness', label: 'Фитнесс' },
+    { id: 'laundry', label: 'Угаалга' },
+    { id: 'karaoke', label: 'Караоке' },
+    { id: 'massage', label: 'Массаж' },
 ];
+
 
 const formSchema = z.object({
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
@@ -248,39 +256,41 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                 Хамгийн багадаа нэг үйлчилгээ сонгоно уу.
                             </FormDescription>
                         </div>
-                        {amenityOptions.map((item) => (
-                            <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="amenities"
-                            render={({ field }) => {
-                                return (
-                                <FormItem
-                                    key={item.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...(field.value || []), item.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                (value) => value !== item.id
+                        <div className="grid grid-cols-2 gap-2">
+                            {amenityOptions.map((item) => (
+                                <FormField
+                                key={item.id}
+                                control={form.control}
+                                name="amenities"
+                                render={({ field }) => {
+                                    return (
+                                    <FormItem
+                                        key={item.id}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                        <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(item.id)}
+                                            onCheckedChange={(checked) => {
+                                            return checked
+                                                ? field.onChange([...(field.value || []), item.id])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                    (value) => value !== item.id
+                                                    )
                                                 )
-                                            )
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">
-                                    {item.label}
-                                    </FormLabel>
-                                </FormItem>
-                                )
-                            }}
-                            />
-                        ))}
+                                            }}
+                                        />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                        {item.label}
+                                        </FormLabel>
+                                    </FormItem>
+                                    )
+                                }}
+                                />
+                            ))}
+                        </div>
                         <FormMessage />
                         </FormItem>
                     )}

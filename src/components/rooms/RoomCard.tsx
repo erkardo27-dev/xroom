@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +46,13 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
     parking: <ParkingSquare className="w-4 h-4" />,
     restaurant: <UtensilsCrossed className="w-4 h-4" />,
+    unifi: <Tv2 className="w-4 h-4" />,
+    breakfast: <Coffee className="w-4 h-4" />,
+    bathtub: <Bath className="w-4 h-4" />,
+    fitness: <Dumbbell className="w-4 h-4" />,
+    laundry: <WashingMachine className="w-4 h-4" />,
+    karaoke: <Mic className="w-4 h-4" />,
+    massage: <Hand className="w-4 h-4" />,
 };
 
 type BookingStep = 'selection' | 'booking' | 'success';
@@ -219,7 +226,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
             <div className="flex items-center gap-1 text-sm">
               <Heart className="w-4 h-4 text-destructive fill-destructive" />
-              <span className="font-semibold text-foreground/90 pt-px">{room.likes}</span>
+              <span className="font-semibold text-foreground/90 pt-px">{room.likes || 0}</span>
             </div>
           </div>
 
@@ -235,7 +242,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 
           <div className="flex-grow" />
 
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-2 mt-4 flex-wrap">
             {amenities.map(a => (
                 <TooltipProvider key={a.key}>
                     <Tooltip>
