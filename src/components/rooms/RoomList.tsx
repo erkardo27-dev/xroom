@@ -9,7 +9,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, List, MapPin, DollarSign, Star, Heart } from 'lucide-react';
+import { AlertCircle, List, MapPin, DollarSign, Heart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,6 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
     { value: 'likes', label: 'Таалагдсан', icon: Heart },
     { value: 'distance', label: 'Ойрхон', icon: MapPin },
     { value: 'price', label: 'Хямд', icon: DollarSign },
-    { value: 'rating', label: 'Үнэлгээ', icon: Star },
 ];
 
 const MAX_PRICE = 1000000;
@@ -103,9 +102,6 @@ export default function RoomList() {
         break;
       case 'price':
         sorted.sort((a, b) => a.price - b.price);
-        break;
-      case 'rating':
-        sorted.sort((a, b) => b.rating - a.rating);
         break;
       case 'likes':
         sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
@@ -237,6 +233,7 @@ export default function RoomList() {
   );
 
     
+
 
 
 

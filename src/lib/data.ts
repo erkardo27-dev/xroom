@@ -1,7 +1,7 @@
 import { PlaceHolderImages } from './placeholder-images';
 
 export type Amenity = 'wifi' | 'parking' | 'restaurant';
-export type SortOption = 'distance' | 'price' | 'rating' | 'likes';
+export type SortOption = 'distance' | 'price' | 'likes';
 export const locations = ['Хотын төв', 'Зайсан', 'Яармаг', 'Сансар', '1-р хороолол', 'Хороолол'] as const;
 export type Location = typeof locations[number];
 
