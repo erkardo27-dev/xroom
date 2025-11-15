@@ -12,6 +12,19 @@ export type Amenity =
   | 'karaoke'
   | 'massage';
 
+export const amenityOptions: { id: Amenity; label: string }[] = [
+    { id: 'wifi', label: 'Wi-Fi' },
+    { id: 'unifi', label: 'Юнивишн' },
+    { id: 'breakfast', label: 'Өглөөний цай' },
+    { id: 'bathtub', label: 'Ванн' },
+    { id: 'parking', label: 'Машины зогсоол' },
+    { id: 'restaurant', label: 'Ресторан' },
+    { id: 'fitness', label: 'Фитнесс' },
+    { id: 'laundry', label: 'Угаалга' },
+    { id: 'karaoke', label: 'Караоке' },
+    { id: 'massage', label: 'Массаж' },
+];
+
 export type SortOption = 'distance' | 'price' | 'likes';
 export const locations = ['Хотын төв', 'Зайсан', 'Яармаг', 'Сансар', '1-р хороолол', 'Хороолол'] as const;
 export type Location = typeof locations[number];

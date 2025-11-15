@@ -62,7 +62,7 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
 
     async function onLoginSubmit(values: LoginFormValues) {
         // In a real app, you'd fetch this for a logging-in user
-        const hotelInfo = { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811"};
+        const hotelInfo = { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811", amenities: ['wifi', 'parking']};
         await login(values.email, hotelInfo);
         onFormSubmit();
     }
@@ -72,6 +72,7 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
             hotelName: values.hotelName, 
             location: values.location,
             phoneNumber: values.phoneNumber,
+            amenities: [], // Start with no amenities for new registration
         });
         onFormSubmit();
     }

@@ -16,14 +16,16 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { locations } from "@/lib/data";
+import { Amenity, amenityOptions, locations } from "@/lib/data";
 import { useEffect } from "react";
 import { Separator } from "../ui/separator";
+import { Checkbox } from "../ui/checkbox";
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
+  amenities: z.array(z.string()).optional(),
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
@@ -43,6 +45,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
             phoneNumber: hotelInfo?.phoneNumber || "",
+            amenities: hotelInfo?.amenities || [],
             bankName: hotelInfo?.bankName || "",
             accountNumber: hotelInfo?.accountNumber || "",
             accountHolderName: hotelInfo?.accountHolderName || "",
@@ -51,12 +54,15 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
     
     useEffect(() => {
         if (hotelInfo) {
-            form.reset(hotelInfo);
+            form.reset({
+                ...hotelInfo,
+                amenities: hotelInfo.amenities || [],
+            });
         }
     }, [hotelInfo, form])
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        updateHotelInfo(values);
+        updateHotelInfo(values as any);
         onFormSubmit();
     }
 
@@ -109,6 +115,56 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                 Шинэ захиалга орж ирэх үед энэ дугаарт мэдэгдэл илгээнэ.
                             </FormDescription>
                             <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="amenities"
+                    render={() => (
+                        <FormItem>
+                        <div className="mb-4">
+                            <FormLabel className="text-base">Нийтлэг үйлчилгээ</FormLabel>
+                             <FormDescription>
+                                Танай буудалд байдаг нийтлэг үйлчилгээнүүдийг сонгоно уу.
+                            </FormDescription>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            {amenityOptions.map((item) => (
+                                <FormField
+                                key={item.id}
+                                control={form.control}
+                                name="amenities"
+                                render={({ field }) => {
+                                    return (
+                                    <FormItem
+                                        key={item.id}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                        <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(item.id)}
+                                            onCheckedChange={(checked) => {
+                                            return checked
+                                                ? field.onChange([...(field.value || []), item.id])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                    (value) => value !== item.id
+                                                    )
+                                                )
+                                            }}
+                                        />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                        {item.label}
+                                        </FormLabel>
+                                    </FormItem>
+                                    )
+                                }}
+                                />
+                            ))}
+                        </div>
+                        <FormMessage />
                         </FormItem>
                     )}
                 />

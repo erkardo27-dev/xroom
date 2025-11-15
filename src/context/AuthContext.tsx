@@ -1,5 +1,6 @@
 "use client";
 
+import { Amenity } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from 'next/navigation';
@@ -8,6 +9,7 @@ type HotelInfo = {
     hotelName: string;
     location: string;
     phoneNumber: string;
+    amenities?: Amenity[];
     bankName?: string;
     accountNumber?: string;
     accountHolderName?: string;

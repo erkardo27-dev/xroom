@@ -16,25 +16,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
-import { Amenity, Room } from "@/lib/data";
+import { Amenity, Room, amenityOptions } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
-
-const amenityOptions: { id: Amenity; label: string }[] = [
-    { id: 'wifi', label: 'Wi-Fi' },
-    { id: 'unifi', label: 'Юнивишн' },
-    { id: 'breakfast', label: 'Өглөөний цай' },
-    { id: 'bathtub', label: 'Ванн' },
-    { id: 'parking', label: 'Машины зогсоол' },
-    { id: 'restaurant', label: 'Ресторан' },
-    { id: 'fitness', label: 'Фитнесс' },
-    { id: 'laundry', label: 'Угаалга' },
-    { id: 'karaoke', label: 'Караоке' },
-    { id: 'massage', label: 'Массаж' },
-];
-
 
 const formSchema = z.object({
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
@@ -72,7 +58,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             originalPrice: undefined,
             totalQuantity: 1,
             imageIds: [],
-            amenities: [],
+            amenities: hotelInfo?.amenities || [],
         },
     });
     
@@ -91,10 +77,10 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 originalPrice: undefined,
                 totalQuantity: 1,
                 imageIds: [],
-                amenities: [],
+                amenities: hotelInfo?.amenities || [],
             });
         }
-    }, [roomToEdit, isEditMode, form]);
+    }, [roomToEdit, isEditMode, form, hotelInfo]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         if (!userEmail || !hotelInfo) {
@@ -253,7 +239,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         <div className="mb-4">
                             <FormLabel className="text-base">Нэмэлт үйлчилгээ</FormLabel>
                              <FormDescription>
-                                Хамгийн багадаа нэг үйлчилгээ сонгоно уу.
+                                Энэ өрөөнд байх үйлчилгээнүүдийг сонгоно уу.
                             </FormDescription>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
