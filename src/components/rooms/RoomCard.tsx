@@ -88,7 +88,6 @@ type RoomCardProps = {
 export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingStep, setBookingStep] = useState<BookingStep>('selection');
-  const [confirmationId, setConfirmationId] = useState('');
   const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
@@ -134,19 +133,16 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     if (isSoldOut) return;
 
     setBookingStep('booking');
-    const instanceToBook = availableInstances[0]; // Book the first available instance
+    const instanceToBook = availableInstances[0];
     
-    // Simulate API call for booking
     setTimeout(() => {
-        const generatedBookingCode = Math.random().toString().substring(2, 6);
         setRoomStatusForDate(
             instanceToBook.instanceId,
-            startOfDay(new Date()), // Booking for today
+            startOfDay(new Date()),
             'booked',
             checkinCode
         );
 
-        setConfirmationId(`XR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`);
         setBookingStep('success');
     }, 1500);
   };
@@ -155,11 +151,10 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     setIsBookingOpen(false);
     setTimeout(() => {
         setBookingStep('selection');
-        setConfirmationId('');
         setCheckinCode('');
         setTermsAccepted(false);
         setPaymentMethod(null);
-    }, 300); // allow dialog to close before resetting
+    }, 300);
   }
 
   const amenities = useMemo(() => room.amenities.map(amenity => ({
@@ -275,7 +270,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         </CardContent>
       </Card>
 
-      <AlertDialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+      <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
         <AlertDialogContent>
         {bookingStep === 'selection' && (
             <>
@@ -409,7 +404,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Захиалга баталгаажлаа!</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Таны захиалгын дугаар: {confirmationId}. 
+                        Та доорх мэдээллийг ашиглан буудалд нэвтэрнэ үү.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="flex flex-col text-center py-4 gap-4">
@@ -418,10 +413,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                             <div>
                                 <p className='font-semibold text-foreground'>{room.hotelName}</p>
                                 <p className='flex items-center gap-2'><MapPin className='w-3.5 h-3.5' />{room.location}</p>
-                            </div>
-                            <div className='text-right'>
-                                <p className='font-semibold text-foreground'>Захиалгын дугаар</p>
-                                <p className="font-bold text-primary tracking-widest text-lg">{confirmationId}</p>
                             </div>
                         </div>
                         <Separator/>
@@ -441,7 +432,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                         <AlertTriangle className="h-4 w-4 text-yellow-500" />
                         <AlertTitle className='text-yellow-700 dark:text-yellow-400 font-bold'>Чухал санамж</AlertTitle>
                         <AlertDescription className='text-yellow-600 dark:text-yellow-500'>
-                            Энэ цонхыг хаасны дараа захиалгын дугаар болон нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
+                            Энэ цонхыг хаасны дараа нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
                         </AlertDescription>
                     </Alert>
                 </div>
