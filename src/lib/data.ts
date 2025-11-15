@@ -123,3 +123,4 @@ export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomTyp
 
 
 export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity' | 'likes'>
+

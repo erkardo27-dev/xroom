@@ -177,9 +177,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return instance.status;
     }
     
-    // If no override, and not today, it defaults to the instance's base status unless that is also a temporary state.
-    // Let's assume non-overridden future dates are available.
-    return 'available';
+    return instance.status === 'booked' || instance.status === 'occupied' ? 'available' : instance.status;
 
   }, [roomInstances]);
 
@@ -204,32 +202,22 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (instance.instanceId === instanceId) {
           const newInstance = { ...instance, overrides: {...instance.overrides} };
 
-          if (isToday) {
-            newInstance.status = status;
-            if(status === 'booked' && bookingCode) {
-                 newInstance.bookingCode = bookingCode;
-            } else if (status === 'available') {
-                 delete newInstance.bookingCode;
-            }
-          } 
-          
-          // Always create or update the override for any date change
           if (!newInstance.overrides[dateKey]) {
             newInstance.overrides[dateKey] = {};
           }
+          
           newInstance.overrides[dateKey].status = status;
-
-          if(status === 'booked' && bookingCode) {
-              newInstance.overrides[dateKey].bookingCode = bookingCode;
-          } else if (newInstance.overrides[dateKey]) {
-              delete newInstance.overrides[dateKey].bookingCode;
+          if (bookingCode) {
+            newInstance.overrides[dateKey].bookingCode = bookingCode;
           }
 
-          // Cleanup override if it just contains the default status
-          const isDefaultStatus = status === 'available'; 
-          const hasNoOtherOverrides = newInstance.overrides[dateKey]?.price === undefined;
-          if (isDefaultStatus && hasNoOtherOverrides && !isToday) { // don't clean up today's override if it's just 'available' as it might be an intentional change from 'booked'
-                delete newInstance.overrides[dateKey];
+          if (isToday) {
+            newInstance.status = status;
+            if (bookingCode) {
+                newInstance.bookingCode = bookingCode;
+            } else if (status === 'available') {
+                delete newInstance.bookingCode;
+            }
           }
 
           return newInstance;
@@ -270,7 +258,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             return instance;
         })
       );
-  }, [getRoomById]);
+  }, [getRoomById, setToastInfo]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
@@ -324,7 +312,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
     });
 
-  }, [getRoomById, roomInstances]);
+  }, [getRoomById, roomInstances, setToastInfo]);
 
 
   return (

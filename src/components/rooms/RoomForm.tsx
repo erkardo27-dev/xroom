@@ -83,11 +83,11 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     }, [roomToEdit, isEditMode, form, hotelInfo]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!userEmail || !hotelInfo) {
+        if (!userEmail || !hotelInfo || !hotelInfo.phoneNumber) {
              toast({
                 variant: "destructive",
                 title: "Алдаа",
-                description: "Нэвтэрч орж байж өрөөний төрөл нэмэх/засах боломжтой.",
+                description: "Нэвтэрч орж, буудлын тохиргоог бүрэн хийсний дараа өрөө нэмэх/засах боломжтой.",
             });
             return;
         }
