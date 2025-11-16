@@ -120,13 +120,11 @@ export default function RoomList() {
       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
             
-            {/* Deals and Sliders */}
             <div className="flex items-center gap-4 lg:col-span-2">
-                {/* Hot Deals */}
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
-                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive">
+                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive w-40">
                               <Flame className="mr-2 h-4 w-4 shrink-0" />
                               <span className='font-bold'>Зад Хямдрал</span>
                               <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
@@ -160,7 +158,6 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                {/* Sliders */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
@@ -175,9 +172,8 @@ export default function RoomList() {
                           value={priceRange}
                           onValueChange={setPriceRange}
                         >
-                          {priceRange.map((_, i) => (
-                            <SliderPrimitive.Thumb key={i} className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-                          ))}
+                          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+                          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
                         </Slider>
                     </div>
                      <div className="space-y-2">
@@ -198,7 +194,6 @@ export default function RoomList() {
                 </div>
             </div>
 
-            {/* Sort and View */}
             <div className="flex items-center justify-end gap-2">
                 <ToggleGroup
                     type="single"
