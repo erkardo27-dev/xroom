@@ -10,8 +10,9 @@ import { locations } from "@/lib/data";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverAnchor,
 } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 type HeroSearchProps = {
   onSearch: (term: string) => void;
@@ -49,19 +50,37 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
     setIsPopoverOpen(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (!isPopoverOpen) {
+      setIsPopoverOpen(true);
+    }
+  }
+
+  const handleInputFocus = () => {
+    if (!isPopoverOpen) {
+        setIsPopoverOpen(true);
+    }
+  }
+
   return (
     <div className="relative w-full max-w-2xl mx-auto">
-       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverAnchor asChild>
             <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="text"
                     placeholder="Зочид буудлын нэр, байршлаар хайх..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={() => setIsPopoverOpen(true)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleSearch();
+                        }
+                    }}
                     className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base"
                 />
                 <Button 
@@ -71,24 +90,29 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
                     Хайх
                 </Button>
             </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-2 mt-2" align="start">
-          <div className="flex flex-col space-y-1">
-            {filteredSuggestions.length > 0 ? (
-                filteredSuggestions.slice(0, 7).map((suggestion) => (
-                    <Button
-                        key={suggestion}
-                        variant="ghost"
-                        className="justify-start"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                        {suggestion}
-                    </Button>
-                ))
-            ) : (
-                <p className="p-2 text-center text-sm text-muted-foreground">Илэрц олдсонгүй</p>
-            )}
-          </div>
+        </PopoverAnchor>
+        <PopoverContent 
+            className="w-[--radix-popover-trigger-width] p-0 mt-2" 
+            align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()} // Prevent content from stealing focus
+        >
+          <Command>
+            <CommandList>
+                {filteredSuggestions.length > 0 ? (
+                    filteredSuggestions.slice(0, 7).map((suggestion) => (
+                         <CommandItem
+                            key={suggestion}
+                            onSelect={() => handleSuggestionClick(suggestion)}
+                            value={suggestion}
+                         >
+                            {suggestion}
+                        </CommandItem>
+                    ))
+                ) : (
+                    <CommandEmpty>Илэрц олдсонгүй</CommandEmpty>
+                )}
+            </CommandList>
+          </Command>
         </PopoverContent>
       </Popover>
     </div>
