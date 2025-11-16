@@ -28,7 +28,7 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
       <div className="relative z-10 text-white w-full px-4">
         
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl !leading-tight [text-shadow:0_1px_2px_rgb(0_0_0_/_0.3)]">
-          XRoom-оор захиалах нь хялбар, хурдан, халдашгүй
+          XRoom-р захиалах нь хялбар, хурдан, халдашгүй
         </h1>
 
         <div className={'mt-8'}>
