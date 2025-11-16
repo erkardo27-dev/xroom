@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -191,8 +192,8 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
             ) : (
                  <DialogTrigger asChild>
                     <Button onClick={() => handleDialogTrigger('login')}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Өрөө нэмэх
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Буудлаа бүртгүүлэх
                     </Button>
                 </DialogTrigger>
             )}
