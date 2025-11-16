@@ -42,7 +42,7 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
           {status === 'loading'
             ? "Шилдэг саналуудыг хайж байна..."
             : filteredCount > 0
-              ? `${filteredCount} өрөө олдлоо. Доорх шүүлтүүрээр хайлтаа нарийвчлаарай.`
+              ? `${filteredCount} өрөө олдлоо.`
               : "Таны хайлтад тохирох өрөө олдсонгүй."}
         </p>
       </div>
