@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverAnchor,
 } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandItem, CommandList } from "@/components/ui/command";
 
 type HeroSearchProps = {
   onSearch: (term: string) => void;
@@ -41,7 +41,8 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
     setIsPopoverOpen(false);
   };
   
-  const handleInputChange = (value: string) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     setSearchTerm(value);
     if (!isPopoverOpen && value) {
         setIsPopoverOpen(true);
@@ -59,12 +60,7 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
                     type="text"
                     placeholder="Зочид буудлын нэр, байршлаар хайх..."
                     value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        if (!isPopoverOpen) {
-                            setIsPopoverOpen(true);
-                        }
-                    }}
+                    onChange={handleInputChange}
                     onFocus={() => setIsPopoverOpen(true)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -72,7 +68,7 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
                             handleSearch();
                         }
                     }}
-                    className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base"
+                    className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
                 />
                 <Button 
                     onClick={handleSearch}
