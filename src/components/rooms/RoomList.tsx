@@ -8,7 +8,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, List, MapPin, DollarSign, Heart, SlidersHorizontal, X, Flame } from 'lucide-react';
+import { AlertCircle, List, MapPin, DollarSign, Heart, SlidersHorizontal, X, Tag } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -124,15 +124,15 @@ export default function RoomList() {
       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1 min-w-0">
-                  <Button
+                 <Button
                     variant={showOnlyHotDeals ? "secondary" : "default"}
                     className={cn(
-                        "h-10 text-left relative transition-all",
+                        "h-10 text-left relative transition-all w-full md:w-auto",
                         !showOnlyHotDeals && "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-orange-500/30 hover:scale-105 hover:shadow-orange-500/50"
                     )}
                     onClick={toggleHotDeals}
                   >
-                      <Flame className="mr-2 h-4 w-4 shrink-0" />
+                      <Tag className="mr-2 h-4 w-4 shrink-0" />
                       <span className='font-bold'>{showOnlyHotDeals ? "Бүгдийг харах" : "Хямдарсан өрөөнүүд"}</span>
                   </Button>
 
