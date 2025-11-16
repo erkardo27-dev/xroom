@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid, Menu } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid, Menu, Hotel } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -192,8 +193,8 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean 
             ) : (
                  <DialogTrigger asChild>
                     <Button onClick={() => handleDialogTrigger('login')}>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Буудлаа бүртгүүлэх
+                        <Hotel className="mr-2 h-4 w-4" />
+                        Өрөөгөө бүртгүүлэх
                     </Button>
                 </DialogTrigger>
             )}
