@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useRoom } from '@/context/RoomContext';
 
 type HotDeal = Room & { discount: number };
 
@@ -21,13 +22,23 @@ type HeroProps = {
     status: 'loading' | 'success' | 'error';
     filteredCount: number;
     onSearch: (term: string) => void;
-    onClearSearch: () => void;
-    hotDeals: HotDeal[];
+    onClear: () => void;
 }
 
-export default function Hero({ status, filteredCount, onSearch, onClearSearch, hotDeals }: HeroProps) {
+export default function Hero({ status, filteredCount, onSearch, onClear }: HeroProps) {
+  const { availableRoomsByType } = useRoom();
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search');
+
+  const hotDeals = useMemo(() => {
+    return availableRoomsByType
+      .filter(room => room.originalPrice && room.originalPrice > room.price)
+      .map(room => ({
+          ...room,
+          discount: Math.round(((room.originalPrice! - room.price) / room.originalPrice!) * 100)
+      }))
+      .sort((a, b) => b.discount - a.discount);
+  }, [availableRoomsByType]);
   
   useEffect(() => {
     if (initialSearch) {
@@ -66,7 +77,7 @@ export default function Hero({ status, filteredCount, onSearch, onClearSearch, h
         priority
         data-ai-hint="hotel room"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/30" />
       <div className="relative z-10 text-white w-full px-4">
         
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl !leading-tight [text-shadow:0_2px_5px_rgb(0_0_0_/_0.5)]">
@@ -113,7 +124,7 @@ export default function Hero({ status, filteredCount, onSearch, onClearSearch, h
         )}
 
         <div className={!bestDeal ? 'mt-8' : 'mt-0'}>
-            <HeroSearch onSearch={onSearch} initialValue={initialSearch ?? ''} onClear={onClearSearch} />
+            <HeroSearch onSearch={onSearch} initialValue={initialSearch ?? ''} onClear={onClear} />
         </div>
         
          <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
