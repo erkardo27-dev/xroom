@@ -8,7 +8,7 @@ import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, List, MapPin, DollarSign, Heart, SlidersHorizontal, Flame, X } from 'lucide-react';
+import { AlertCircle, List, MapPin, DollarSign, Heart, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,17 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
 
 const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
+
+const SaleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M12.876.66a1.18 1.18 0 00-1.752 0L9.13 3.355a1.18 1.18 0 01-1.09.613l-3.055-.002a1.18 1.18 0 00-1.12 1.631l1.503 2.604a1.18 1.18 0 01-.306 1.34L2.43 11.13a1.18 1.18 0 000 2.035l2.632 1.588a1.18 1.18 0 01.306 1.34l-1.503 2.604a1.18 1.18 0 001.12 1.631l3.055-.002a1.18 1.18 0 011.09.613l1.994 2.695a1.18 1.18 0 001.752 0l1.994-2.695a1.18 1.18 0 011.09-.613l3.055.002a1.18 1.18 0 001.12-1.631l-1.503-2.604a1.18 1.18 0 01.306-1.34l2.632-1.588a1.18 1.18 0 000-2.035l-2.632-1.588a1.18 1.18 0 01-.306-1.34l1.503-2.604a1.18 1.18 0 00-1.12-1.631l-3.055.002a1.18 1.18_0 01-1.09-.613L12.876.66z" />
+  </svg>
+);
 
 
 export default function RoomList() {
@@ -131,8 +142,8 @@ export default function RoomList() {
                     className="h-10 text-left relative transition-colors"
                     onClick={toggleHotDeals}
                   >
-                      <Flame className="mr-2 h-4 w-4 shrink-0" />
-                      <span className='font-bold'>{showOnlyHotDeals ? "Бүгдийг харах" : "Зад Хямдрал"}</span>
+                      <SaleIcon className="mr-2 h-4 w-4 shrink-0" />
+                      <span className='font-bold'>{showOnlyHotDeals ? "Бүгдийг харах" : "Хямдарсан өрөөнүүд"}</span>
                   </Button>
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-6 flex-1 min-w-0 md:min-w-[300px]">
