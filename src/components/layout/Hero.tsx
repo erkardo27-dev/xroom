@@ -1,17 +1,41 @@
 
-import { Zap } from 'lucide-react';
+"use client";
+
+import { Zap, Flame } from 'lucide-react';
 import Image from 'next/image';
 import { HeroSearch } from './HeroSearch';
+import { useEffect, useState } from 'react';
+import { Room } from '@/lib/data';
+
+type HotDeal = Room & { discount: number };
 
 type HeroProps = {
     status: 'loading' | 'success' | 'error';
     filteredCount: number;
     onSearch: (term: string) => void;
+    hotDeals: HotDeal[];
 }
 
-export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
+export default function Hero({ status, filteredCount, onSearch, hotDeals }: HeroProps) {
+  const [currentDealIndex, setCurrentDealIndex] = useState(0);
+
+  useEffect(() => {
+    if (hotDeals.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentDealIndex(prevIndex => (prevIndex + 1) % hotDeals.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [hotDeals.length]);
+
+  const handleDealClick = (deal: HotDeal) => {
+    onSearch(deal.hotelName);
+  };
+
+  const currentDeal = hotDeals[currentDealIndex];
+
   return (
-    <div className="relative rounded-xl overflow-hidden mb-6 h-[300px] md:h-[350px] flex items-center justify-center text-center p-4">
+    <div className="relative rounded-xl overflow-hidden mb-6 h-[350px] md:h-[400px] flex items-center justify-center text-center p-4">
       <Image
         src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
         alt="Night city view from a hotel room"
@@ -32,7 +56,22 @@ export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
         <div className='mt-8'>
             <HeroSearch onSearch={onSearch} />
         </div>
-         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
+        
+        {hotDeals.length > 0 && currentDeal && (
+          <div 
+            className="mt-4 max-w-2xl mx-auto text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)] cursor-pointer"
+            onClick={() => handleDealClick(currentDeal)}
+          >
+            <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-sm p-2 px-4 rounded-full transition-colors hover:bg-black/50">
+              <Flame className="w-4 h-4 text-destructive" />
+              <span className="font-bold">Зад Хямдрал:</span>
+              <span className="truncate">{currentDeal.hotelName}</span>
+              <span className="font-extrabold text-yellow-300">{currentDeal.discount}%</span>
+            </div>
+          </div>
+        )}
+
+         <p className="mt-2 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
           {status === 'loading'
             ? "Шилдэг саналуудыг хайж байна..."
             : filteredCount > 0

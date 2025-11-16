@@ -114,8 +114,7 @@ export default function RoomList() {
             ...room,
             discount: Math.round(((room.originalPrice! - room.price) / room.originalPrice!) * 100)
         }))
-        .sort((a, b) => b.discount - a.discount)
-        .slice(0, 4);
+        .sort((a, b) => b.discount - a.discount);
   }, [availableRoomsByType]);
   
   return (
@@ -124,22 +123,8 @@ export default function RoomList() {
           status={status}
           filteredCount={filteredAndSortedRooms.length}
           onSearch={setHeroSearchTerm}
+          hotDeals={hotDeals}
       />
-      
-      {hotDeals.length > 0 && (
-          <div className="mb-10">
-              <div className='flex items-center gap-3 mb-4'>
-                 <Flame className='w-7 h-7 text-destructive' />
-                 <h2 className="text-2xl font-bold tracking-tight">Халуухан Хямдрал</h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-                  {hotDeals.map(room => (
-                      <RoomCard key={room.id} room={room} availableInstances={room.availableInstances} />
-                  ))}
-              </div>
-              <Separator className='mt-10' />
-          </div>
-      )}
 
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
