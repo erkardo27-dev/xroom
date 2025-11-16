@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
@@ -11,6 +12,7 @@ const LIKED_ROOMS_STORAGE_KEY = 'likedRooms';
 type RoomContextType = {
   rooms: Room[];
   roomInstances: RoomInstance[];
+  availableRoomsByType: (Room & { availableInstances: RoomInstance[] })[];
   addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoomInstance: (instanceId: string) => void;
@@ -314,9 +316,38 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   }, [getRoomById, roomInstances, setToastInfo]);
 
+  const availableRoomsByType = useCallback(() => {
+    const today = startOfDay(new Date());
+
+    const availableRoomTypeIds = new Set<string>();
+    roomInstances.forEach(instance => {
+      if (getRoomStatusForDate(instance.instanceId, today) === 'available') {
+        availableRoomTypeIds.add(instance.roomTypeId);
+      }
+    });
+
+    const result = Array.from(availableRoomTypeIds).map(roomTypeId => {
+      const roomType = rooms.find(r => r.id === roomTypeId);
+      if (!roomType) return null;
+
+      const availableInstances = roomInstances.filter(instance => 
+        instance.roomTypeId === roomTypeId && 
+        getRoomStatusForDate(instance.instanceId, today) === 'available'
+      );
+      
+      return {
+        ...roomType,
+        availableInstances,
+      };
+    }).filter((r): r is Room & { availableInstances: RoomInstance[] } => r !== null);
+    
+    return result;
+
+  }, [rooms, roomInstances, getRoomStatusForDate])();
+
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, toggleLike, likedRooms }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, availableRoomsByType, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, toggleLike, likedRooms }}>
       {children}
     </RoomContext.Provider>
   );

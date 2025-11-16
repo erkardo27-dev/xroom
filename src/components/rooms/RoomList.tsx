@@ -33,8 +33,14 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
 const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
-export default function RoomList() {
-  const { rooms, roomInstances, status, error, getRoomStatusForDate } = useRoom();
+type HotDeal = Room & { discount: number };
+
+type RoomListProps = {
+  hotDeals: HotDeal[];
+}
+
+export default function RoomList({ hotDeals }: RoomListProps) {
+  const { availableRoomsByType, status, error } = useRoom();
   const [sortOption, setSortOption] = useState<SortOption>('likes');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -43,36 +49,6 @@ export default function RoomList() {
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
   const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
   const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
-
-  const availableRoomsByType = useMemo(() => {
-    const today = startOfDay(new Date());
-
-    const availableRoomTypeIds = new Set<string>();
-    roomInstances.forEach(instance => {
-      if (getRoomStatusForDate(instance.instanceId, today) === 'available') {
-        availableRoomTypeIds.add(instance.roomTypeId);
-      }
-    });
-
-    const result = Array.from(availableRoomTypeIds).map(roomTypeId => {
-      const roomType = rooms.find(r => r.id === roomTypeId);
-      if (!roomType) return null;
-
-      const availableInstances = roomInstances.filter(instance => 
-        instance.roomTypeId === roomTypeId && 
-        getRoomStatusForDate(instance.instanceId, today) === 'available'
-      );
-      
-      return {
-        ...roomType,
-        availableInstances,
-      };
-    }).filter((r): r is Room & { availableInstances: RoomInstance[] } => r !== null);
-    
-    return result;
-
-  }, [rooms, roomInstances, getRoomStatusForDate]);
-
 
   const filteredAndSortedRooms = useMemo(() => {
     let filtered = availableRoomsByType;
@@ -106,16 +82,6 @@ export default function RoomList() {
     }
     return sorted;
   }, [availableRoomsByType, sortOption, priceRange, distanceLimit, selectedAmenities, heroSearchTerm]);
-
-  const hotDeals = useMemo(() => {
-      return availableRoomsByType
-        .filter(room => room.originalPrice && room.originalPrice > room.price)
-        .map(room => ({
-            ...room,
-            discount: Math.round(((room.originalPrice! - room.price) / room.originalPrice!) * 100)
-        }))
-        .sort((a, b) => b.discount - a.discount);
-  }, [availableRoomsByType]);
   
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -123,7 +89,6 @@ export default function RoomList() {
           status={status}
           filteredCount={filteredAndSortedRooms.length}
           onSearch={setHeroSearchTerm}
-          hotDeals={hotDeals}
       />
 
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
@@ -261,3 +226,4 @@ export default function RoomList() {
       )}
     </div>
   );
+}

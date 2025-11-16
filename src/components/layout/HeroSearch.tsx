@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useRoom } from "@/context/RoomContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,19 @@ import {
 
 type HeroSearchProps = {
   onSearch: (term: string) => void;
+  initialValue?: string;
 };
 
-export function HeroSearch({ onSearch }: HeroSearchProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+export function HeroSearch({ onSearch, initialValue = '' }: HeroSearchProps) {
+  const [searchTerm, setSearchTerm] = useState(initialValue);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { rooms } = useRoom();
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearchTerm(initialValue);
+  }, [initialValue]);
 
   const hotelNames = useMemo(() => {
     const names = new Set(rooms.map(room => room.hotelName));
@@ -38,11 +43,11 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
     return allSuggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 7);
   }, [allSuggestions, searchTerm]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     onSearch(searchTerm);
     setIsPopoverOpen(false);
     inputRef.current?.blur();
-  };
+  }, [onSearch, searchTerm]);
 
   const handleSuggestionClick = (suggestion: string) => {
     setSearchTerm(suggestion);
@@ -105,13 +110,13 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
           {filteredSuggestions.length > 0 ? (
             <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
               {filteredSuggestions.map((suggestion) => (
-                <div
+                <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left"
                 >
                   {suggestion}
-                </div>
+                </button>
               ))}
             </div>
           ) : (

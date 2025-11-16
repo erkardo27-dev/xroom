@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { HeroSearch } from './HeroSearch';
 import { useEffect, useState } from 'react';
 import { Room } from '@/lib/data';
+import { useSearchParams } from 'next/navigation';
 
 type HotDeal = Room & { discount: number };
 
@@ -13,26 +14,18 @@ type HeroProps = {
     status: 'loading' | 'success' | 'error';
     filteredCount: number;
     onSearch: (term: string) => void;
-    hotDeals: HotDeal[];
 }
 
-export default function Hero({ status, filteredCount, onSearch, hotDeals }: HeroProps) {
-  const [currentDealIndex, setCurrentDealIndex] = useState(0);
-
+export default function Hero({ status, filteredCount, onSearch }: HeroProps) {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search');
+  
   useEffect(() => {
-    if (hotDeals.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentDealIndex(prevIndex => (prevIndex + 1) % hotDeals.length);
-      }, 5000);
-      return () => clearInterval(interval);
+    if (initialSearch) {
+      onSearch(initialSearch);
     }
-  }, [hotDeals.length]);
+  }, [initialSearch, onSearch]);
 
-  const handleDealClick = (deal: HotDeal) => {
-    onSearch(deal.hotelName);
-  };
-
-  const currentDeal = hotDeals[currentDealIndex];
 
   return (
     <div className="relative rounded-xl overflow-hidden mb-6 h-[350px] md:h-[400px] flex items-center justify-center text-center p-4">
@@ -54,24 +47,10 @@ export default function Hero({ status, filteredCount, onSearch, hotDeals }: Hero
           Энэ шөнийн онцгой буудлууд
         </h1>
         <div className='mt-8'>
-            <HeroSearch onSearch={onSearch} />
+            <HeroSearch onSearch={onSearch} initialValue={initialSearch ?? ''} />
         </div>
         
-        {hotDeals.length > 0 && currentDeal && (
-          <div 
-            className="mt-4 max-w-2xl mx-auto text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)] cursor-pointer"
-            onClick={() => handleDealClick(currentDeal)}
-          >
-            <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-sm p-2 px-4 rounded-full transition-colors hover:bg-black/50">
-              <Flame className="w-4 h-4 text-destructive" />
-              <span className="font-bold">Зад Хямдрал:</span>
-              <span className="truncate">{currentDeal.hotelName}</span>
-              <span className="font-extrabold text-yellow-300">{currentDeal.discount}%</span>
-            </div>
-          </div>
-        )}
-
-         <p className="mt-2 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
+         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
           {status === 'loading'
             ? "Шилдэг саналуудыг хайж байна..."
             : filteredCount > 0
