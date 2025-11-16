@@ -121,17 +121,14 @@ export default function RoomList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
             
             {/* Deals and Sliders */}
-            <div className="flex flex-col sm:flex-row gap-4 lg:col-span-2">
+            <div className="flex items-center gap-4 lg:col-span-2">
                 {/* Hot Deals */}
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
-                          <Button variant="outline" className='h-auto text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive'>
+                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive">
                               <Flame className="mr-2 h-4 w-4 shrink-0" />
-                              <div>
-                                  <p className='font-bold'>Зад Хямдрал</p>
-                                  <p className='text-xs font-normal'>Онцгой саналууд</p>
-                              </div>
+                              <span className='font-bold'>Зад Хямдрал</span>
                               <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                                   {hotDeals.length}
                               </span>
