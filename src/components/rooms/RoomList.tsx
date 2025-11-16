@@ -126,15 +126,10 @@ export default function RoomList() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             
             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1 min-w-0">
-                  <Button 
-                    variant="outline"
-                    className={cn(
-                        "h-10 text-left relative transition-colors",
-                        "data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground data-[state=active]:border-destructive",
-                        "data-[state=inactive]:border-destructive/50 data-[state=inactive]:text-destructive data-[state=inactive]:bg-destructive/10 data-[state=inactive]:hover:bg-destructive/20"
-                    )}
+                  <Button
+                    variant={showOnlyHotDeals ? "secondary" : "destructive"}
+                    className="h-10 text-left relative transition-colors"
                     onClick={toggleHotDeals}
-                    data-state={showOnlyHotDeals ? 'active' : 'inactive'}
                   >
                       <Flame className="mr-2 h-4 w-4 shrink-0" />
                       <span className='font-bold'>{showOnlyHotDeals ? "Бүгдийг харах" : "Зад Хямдрал"}</span>
@@ -170,7 +165,7 @@ export default function RoomList() {
                           onValueChange={setDistanceLimit}
                           disabled={showOnlyHotDeals}
                         >
-                            <Slider.Thumb />
+                          <Slider.Thumb />
                         </Slider>
                     </div>
                 </div>
