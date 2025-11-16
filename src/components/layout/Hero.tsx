@@ -57,7 +57,7 @@ export default function Hero({ status, filteredCount, onSearch, onClearSearch, h
   };
   
   return (
-    <div className="relative rounded-xl overflow-hidden mb-6 h-[450px] md:h-[500px] flex items-center justify-center text-center p-4">
+    <div className="relative rounded-xl overflow-hidden mb-6 h-[400px] flex items-center justify-center text-center p-4">
       <Image
         src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
         alt="Night city view from a hotel room"
