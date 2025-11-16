@@ -28,7 +28,7 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
       <div className="relative z-10 text-white w-full px-4">
         
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl !leading-tight [text-shadow:0_2px_5px_rgb(0_0_0_/_0.5)]">
-          Энэ шөнийн онцгой буудлууд
+          <span className="text-primary">Х</span>ялбар, <span className="text-primary">Х</span>өөрхөн, <span className="text-primary">Х</span>ямд өрөөнүүд
         </h1>
 
         <div className={'mt-8'}>
