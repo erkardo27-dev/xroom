@@ -27,7 +27,7 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/30" />
       <div className="relative z-10 text-white w-full px-4">
         
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl !leading-tight [text-shadow:0_1px_2px_rgb(0_0_0_/_0.3)]">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl !leading-tight [text-shadow:0_1px_2px_rgb(0_0_0_/_0.3)]">
           <span className="text-primary">Х</span>ялбар, <span className="text-primary">Х</span>өөрхөн, <span className="text-primary">Х</span>ямд өрөөнүүд
         </h1>
 
