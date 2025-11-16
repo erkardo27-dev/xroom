@@ -5,7 +5,7 @@ import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useRoom } from "@/context/RoomContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { locations } from "@/lib/data";
 import {
   Popover,
@@ -15,15 +15,15 @@ import {
 
 type HeroSearchProps = {
   onSearch: (term: string) => void;
+  onClear: () => void;
   initialValue?: string;
 };
 
-export function HeroSearch({ onSearch, initialValue = '' }: HeroSearchProps) {
+export function HeroSearch({ onSearch, onClear, initialValue = '' }: HeroSearchProps) {
   const [searchTerm, setSearchTerm] = useState(initialValue);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { rooms } = useRoom();
   const inputRef = useRef<HTMLInputElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSearchTerm(initialValue);
@@ -56,22 +56,11 @@ export function HeroSearch({ onSearch, initialValue = '' }: HeroSearchProps) {
     inputRef.current?.blur();
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setIsPopoverOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const handleClear = () => {
+    setSearchTerm("");
+    onClear();
+    inputRef.current?.focus();
+  }
 
   return (
     <div className="relative w-full max-w-2xl mx-auto">
@@ -91,8 +80,19 @@ export function HeroSearch({ onSearch, initialValue = '' }: HeroSearchProps) {
                   handleSearch();
                 }
               }}
-              className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
+              className="w-full h-14 pl-12 pr-48 rounded-full shadow-lg text-base text-black"
             />
+            {searchTerm && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleClear}
+                    className="absolute right-[110px] top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                    aria-label="Clear search"
+                >
+                    <X className="h-5 w-5 text-muted-foreground"/>
+                </Button>
+            )}
             <Button
               onClick={handleSearch}
               className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-full px-6 font-bold"
@@ -102,18 +102,17 @@ export function HeroSearch({ onSearch, initialValue = '' }: HeroSearchProps) {
           </div>
         </PopoverAnchor>
         <PopoverContent
-          ref={popoverRef}
           className="w-[--radix-popover-trigger-width] p-0 mt-2"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           {filteredSuggestions.length > 0 ? (
-            <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+            <div className="max-h-[300px] overflow-y-auto overflow-x-hidden" >
               {filteredSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left"
+                  className="relative flex cursor-default select-none items-center rounded-sm px-4 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left"
                 >
                   {suggestion}
                 </button>

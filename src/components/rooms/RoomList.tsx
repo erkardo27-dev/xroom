@@ -50,6 +50,10 @@ export default function RoomList({ hotDeals }: RoomListProps) {
   const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
   const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
 
+  const handleClearSearch = () => {
+    setHeroSearchTerm("");
+  };
+
   const filteredAndSortedRooms = useMemo(() => {
     let filtered = availableRoomsByType;
 
@@ -89,6 +93,7 @@ export default function RoomList({ hotDeals }: RoomListProps) {
           status={status}
           filteredCount={filteredAndSortedRooms.length}
           onSearch={setHeroSearchTerm}
+          onClearSearch={handleClearSearch}
           hotDeals={hotDeals}
       />
 

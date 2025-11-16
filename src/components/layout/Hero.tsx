@@ -4,7 +4,7 @@
 import { Zap, Flame, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { HeroSearch } from './HeroSearch';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Room } from '@/lib/data';
 import { useSearchParams } from 'next/navigation';
 import { Badge } from '../ui/badge';
@@ -21,10 +21,11 @@ type HeroProps = {
     status: 'loading' | 'success' | 'error';
     filteredCount: number;
     onSearch: (term: string) => void;
+    onClearSearch: () => void;
     hotDeals: HotDeal[];
 }
 
-export default function Hero({ status, filteredCount, onSearch, hotDeals }: HeroProps) {
+export default function Hero({ status, filteredCount, onSearch, onClearSearch, hotDeals }: HeroProps) {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search');
   
@@ -33,17 +34,28 @@ export default function Hero({ status, filteredCount, onSearch, hotDeals }: Hero
       onSearch(initialSearch);
     }
   }, [initialSearch, onSearch]);
+  
+  const [dealIndex, setDealIndex] = useState(0);
 
+  useEffect(() => {
+    if (hotDeals.length > 1) {
+      const interval = setInterval(() => {
+        setDealIndex((prevIndex) => (prevIndex + 1) % hotDeals.length);
+      }, 5000); // Change deal every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [hotDeals.length]);
+  
   const bestDeal = useMemo(() => {
     if (!hotDeals || hotDeals.length === 0) return null;
-    // The initial hotDeals are already sorted by discount, so the first one is the best.
-    return hotDeals[0];
-  }, [hotDeals]);
+    return hotDeals[dealIndex];
+  }, [hotDeals, dealIndex]);
 
   const handleDealClick = (hotelName: string) => {
     onSearch(hotelName);
   };
-
+  
   return (
     <div className="relative rounded-xl overflow-hidden mb-6 h-[450px] md:h-[500px] flex items-center justify-center text-center p-4">
       <Image
@@ -65,7 +77,7 @@ export default function Hero({ status, filteredCount, onSearch, hotDeals }: Hero
           <div className="mt-6 mb-8 max-w-2xl mx-auto">
              <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" className="w-full h-auto text-base text-white bg-destructive/20 hover:bg-destructive/30 backdrop-blur-sm rounded-full py-2 px-4 border border-destructive/50 shadow-lg animate-pulse hover:animate-none transition-all duration-300">
+                  <Button variant="ghost" className="w-full h-auto text-base text-white bg-destructive/20 hover:bg-destructive/30 backdrop-blur-sm rounded-full py-2 px-4 border border-destructive/50 shadow-lg hover:scale-[1.02] transition-all duration-300">
                       <span className='mr-2'>🔥</span> 
                       <strong>Зад Хямдрал:</strong> 
                       <span className="mx-1.5 font-semibold">{bestDeal.hotelName}-д</span>
@@ -100,8 +112,8 @@ export default function Hero({ status, filteredCount, onSearch, hotDeals }: Hero
           </div>
         )}
 
-        <div className={bestDeal ? 'mt-0' : 'mt-8'}>
-            <HeroSearch onSearch={onSearch} initialValue={initialSearch ?? ''} />
+        <div className={!bestDeal ? 'mt-8' : 'mt-0'}>
+            <HeroSearch onSearch={onSearch} initialValue={initialSearch ?? ''} onClear={onClearSearch} />
         </div>
         
          <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
