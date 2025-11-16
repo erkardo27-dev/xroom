@@ -120,7 +120,7 @@ export default function RoomList() {
       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             
-            <div className="flex items-center gap-4 flex-1 min-w-[300px] md:min-w-[400px]">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
@@ -158,7 +158,7 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                <div className="grid grid-cols-1 gap-2 flex-1">
+                <div className="grid grid-cols-1 gap-2 flex-1 min-w-[200px] md:min-w-[300px]">
                     <div className="space-y-1">
                         <div className="flex justify-between items-center text-sm">
                             <Label htmlFor="price-range" className="font-semibold text-xs">Үнийн хязгаар</Label>
