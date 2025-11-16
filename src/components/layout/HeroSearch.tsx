@@ -11,6 +11,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PopoverAnchor
 } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
@@ -23,7 +24,6 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
   const [open, setOpen] = useState(false);
   const { rooms } = useRoom();
   const inputRef = useRef<HTMLInputElement>(null);
-
 
   const hotelNames = useMemo(() => {
     const names = new Set(rooms.map(room => room.hotelName));
@@ -41,35 +41,33 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
   return (
     <div className="relative w-full max-w-2xl mx-auto">
       <Popover open={open} onOpenChange={setOpen}>
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder="Зочид буудлын нэр, байршлаар хайх..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value)
-              if (!open) {
-                setOpen(true)
-              }
-            }}
-            onFocus={() => setOpen(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch();
-              }
-            }}
-            className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
-          />
-          <Button 
-              onClick={handleSearch}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-full px-6 font-bold"
-          >
-              Хайх
-          </Button>
-        </div>
+        <PopoverAnchor asChild>
+            <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Зочид буудлын нэр, байршлаар хайх..."
+                    value={searchTerm}
+                    onValueChange={setSearchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setOpen(true)}
+                    onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearch();
+                    }
+                    }}
+                    className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
+                />
+                <Button 
+                    onClick={handleSearch}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-full px-6 font-bold"
+                >
+                    Хайх
+                </Button>
+            </div>
+        </PopoverAnchor>
         <PopoverContent 
           className="w-[--radix-popover-trigger-width] p-0 mt-2" 
           align="start"
