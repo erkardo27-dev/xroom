@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverAnchor,
 } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 type HeroSearchProps = {
   onSearch: (term: string) => void;
@@ -42,13 +42,6 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
     setIsPopoverOpen(false);
     inputRef.current?.blur();
   };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setSearchTerm(suggestion);
-    onSearch(suggestion);
-    setIsPopoverOpen(false);
-    inputRef.current?.blur();
-  };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -59,13 +52,17 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
   }
   
   useEffect(() => {
-    if (!searchTerm && isPopoverOpen) {
-      // maybe keep it open to show all suggestions? For now, close it.
-      // setIsPopoverOpen(false);
-    } else if (searchTerm && !isPopoverOpen) {
+    if (searchTerm && !isPopoverOpen) {
       setIsPopoverOpen(true);
     }
   }, [searchTerm, isPopoverOpen]);
+
+  const handleSelectSuggestion = (currentValue: string) => {
+    setSearchTerm(currentValue);
+    onSearch(currentValue);
+    inputRef.current?.blur();
+    setIsPopoverOpen(false);
+  };
 
 
   return (
@@ -109,10 +106,7 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
                      <CommandItem
                         key={suggestion}
                         value={suggestion}
-                        onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleSuggestionClick(suggestion);
-                        }}
+                        onSelect={handleSelectSuggestion}
                      >
                         {suggestion}
                     </CommandItem>
