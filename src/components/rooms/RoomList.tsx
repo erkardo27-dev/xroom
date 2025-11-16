@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Amenity, Room, SortOption, RoomInstance } from '@/lib/data';
 import { amenityOptions } from '@/lib/data';
 import { RoomCard } from './RoomCard';
@@ -21,8 +20,11 @@ import { startOfDay } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { toggleArrayItem } from '@/lib/utils';
 import { Separator } from '../ui/separator';
+import { useSearchParams } from 'next/navigation';
+import { Badge } from '../ui/badge';
 
 type ViewMode = 'list' | 'map';
+type HotDeal = Room & { discount: number };
 
 const sortOptionsConfig: { value: SortOption; label: string; icon: React.ElementType }[] = [
     { value: 'likes', label: 'Таалагдсан', icon: Heart },
@@ -33,14 +35,12 @@ const sortOptionsConfig: { value: SortOption; label: string; icon: React.Element
 const MAX_PRICE = 1000000;
 const MAX_DISTANCE = 20;
 
-type HotDeal = Room & { discount: number };
 
-type RoomListProps = {
-  hotDeals: HotDeal[];
-}
-
-export default function RoomList({ hotDeals }: RoomListProps) {
+export default function RoomList() {
   const { availableRoomsByType, status, error } = useRoom();
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search');
+  
   const [sortOption, setSortOption] = useState<SortOption>('likes');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -48,11 +48,27 @@ export default function RoomList({ hotDeals }: RoomListProps) {
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
   const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
-  const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
+  const [heroSearchTerm, setHeroSearchTerm] = useState<string>(initialSearch ?? "");
 
   const handleClearSearch = () => {
     setHeroSearchTerm("");
   };
+
+  const hotDeals = useMemo(() => {
+    return availableRoomsByType
+      .filter(room => room.originalPrice && room.originalPrice > room.price)
+      .map(room => ({
+          ...room,
+          discount: Math.round(((room.originalPrice! - room.price) / room.originalPrice!) * 100)
+      }))
+      .sort((a, b) => b.discount - a.discount);
+  }, [availableRoomsByType]);
+  
+  useEffect(() => {
+    if (initialSearch) {
+      setHeroSearchTerm(initialSearch);
+    }
+  }, [initialSearch]);
 
   const filteredAndSortedRooms = useMemo(() => {
     let filtered = availableRoomsByType;
@@ -87,14 +103,18 @@ export default function RoomList({ hotDeals }: RoomListProps) {
     return sorted;
   }, [availableRoomsByType, sortOption, priceRange, distanceLimit, selectedAmenities, heroSearchTerm]);
   
+  const handleDealClick = (hotelName: string) => {
+    setHeroSearchTerm(hotelName);
+  };
+  
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
       <Hero 
           status={status}
           filteredCount={filteredAndSortedRooms.length}
           onSearch={setHeroSearchTerm}
-          onClearSearch={handleClearSearch}
-          hotDeals={hotDeals}
+          onClear={handleClearSearch}
+          initialSearchValue={heroSearchTerm}
       />
 
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
@@ -139,37 +159,42 @@ export default function RoomList({ hotDeals }: RoomListProps) {
 
               {/* Sort and View */}
               <div className="flex items-center justify-between lg:justify-end gap-2">
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" className='relative'>
-                            <SlidersHorizontal className="mr-2 h-4 w-4" />
-                            Нэмэлт шүүлтүүр
-                            {selectedAmenities.length > 0 && (
-                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                    {selectedAmenities.length}
-                                </span>
-                            )}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className='w-64 p-4'>
-                         <div className="space-y-4">
-                            <h4 className="font-medium leading-none">Нэмэлт үйлчилгээ</h4>
-                             <div className="grid grid-cols-2 gap-2">
-                                {amenityOptions.map((amenity) => (
-                                    <Button 
-                                        key={amenity.id}
-                                        variant={selectedAmenities.includes(amenity.id) ? "default" : "outline"}
-                                        size="sm"
-                                        className="text-xs justify-start"
-                                        onClick={() => setSelectedAmenities(toggleArrayItem(selectedAmenities, amenity.id))}
-                                    >
-                                        {amenity.label}
-                                    </Button>
-                                ))}
-                            </div>
-                         </div>
-                    </PopoverContent>
-                </Popover>
+                {hotDeals.length > 0 && (
+                  <Popover>
+                      <PopoverTrigger asChild>
+                          <Button variant="outline" className='relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive'>
+                              <Flame className="mr-2 h-4 w-4" />
+                              Зад Хямдрал
+                              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                                  {hotDeals.length}
+                              </span>
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className='w-80 p-3'>
+                           <div className="space-y-3">
+                              <h4 className="font-bold text-center text-lg">🔥 Зад Хямдралууд</h4>
+                              <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                                  {hotDeals.map(deal => (
+                                      <Button 
+                                          key={deal.id}
+                                          variant="ghost" 
+                                          className="w-full h-auto justify-between p-3"
+                                          onClick={() => handleDealClick(deal.hotelName)}
+                                      >
+                                          <div className='text-left'>
+                                              <p className="font-semibold">{deal.hotelName}</p>
+                                              <p className='text-xs text-muted-foreground'>{deal.roomName}</p>
+                                          </div>
+                                          <Badge variant="destructive" className="text-sm">
+                                              {deal.discount}%
+                                          </Badge>
+                                      </Button>
+                                  ))}
+                              </div>
+                          </div>
+                      </PopoverContent>
+                  </Popover>
+                )}
 
                   <div className='flex items-center gap-1'>
                       <ToggleGroup
