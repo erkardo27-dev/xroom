@@ -118,13 +118,13 @@ export default function RoomList() {
       />
 
       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             
-            <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1 min-w-0">
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
-                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive">
+                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive w-full md:w-auto">
                               <Flame className="mr-2 h-4 w-4 shrink-0" />
                               <span className='font-bold'>Зад Хямдрал</span>
                               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
@@ -158,7 +158,7 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                <div className="grid grid-cols-2 gap-x-6 flex-1 min-w-[300px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-6 flex-1 min-w-0 md:min-w-[300px]">
                     <div className="space-y-1">
                         <div className="flex justify-between items-center text-sm">
                             <Label htmlFor="price-range" className="font-semibold text-xs">Үнийн хязгаар</Label>
@@ -207,12 +207,12 @@ export default function RoomList() {
                     ))}
                 </ToggleGroup>
                 
-                <Separator orientation="vertical" className="h-6 mx-1" />
+                <Separator orientation="vertical" className="h-6 mx-1 hidden md:block" />
 
                 <Button
                   variant="outline"
                   onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
-                  className="h-9 w-28"
+                  className="h-9 w-full md:w-28"
                 >
                  {viewMode === 'list' ? (
                     <>
