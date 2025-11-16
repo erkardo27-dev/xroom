@@ -1,20 +1,8 @@
 
 "use client";
 
-import { Zap, Flame, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { HeroSearch } from './HeroSearch';
-import { useEffect, useMemo, useState } from 'react';
-import { Room } from '@/lib/data';
-import { useSearchParams } from 'next/navigation';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { useRoom } from '@/context/RoomContext';
 
 type HeroProps = {
     status: 'loading' | 'success' | 'error';
