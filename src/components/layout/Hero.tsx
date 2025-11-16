@@ -28,9 +28,9 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
       <div className="relative z-10 text-white w-full px-4">
         
         <h1 className="font-bold tracking-tight !leading-tight [text-shadow:0_1px_2px_rgb(0_0_0_/_0.3)]">
-          <span className="text-2xl sm:text-3xl lg:text-4xl">XRoom-р захиалах нь </span>
+          <span className="text-xl sm:text-2xl lg:text-3xl">xroom-р захиалах нь </span>
           <span className="text-3xl sm:text-4xl lg:text-5xl">
-            <span className="text-primary">Х</span>ялбар, <span className="text-primary">Х</span>урдан, <span className="text-primary">Х</span>алдашгүй
+            <span className="text-primary">х</span>ялбар, <span className="text-primary">х</span>урдан, <span className="text-primary">х</span>алдашгүй
           </span>
         </h1>
 
