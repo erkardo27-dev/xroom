@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRoom } from "@/context/RoomContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { rooms } = useRoom();
+  const inputRef = useRef<HTMLInputElement>(null);
+
 
   const hotelNames = useMemo(() => {
     const names = new Set(rooms.map(room => room.hotelName));
@@ -29,16 +31,23 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
   }, [rooms]);
 
   const allSuggestions = useMemo(() => [...locations, ...hotelNames], [hotelNames]);
+  
+  const filteredSuggestions = useMemo(() => {
+    if (!searchTerm) return allSuggestions;
+    return allSuggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [allSuggestions, searchTerm]);
 
   const handleSearch = () => {
     onSearch(searchTerm);
     setIsPopoverOpen(false);
+    inputRef.current?.blur();
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setSearchTerm(suggestion);
     onSearch(suggestion);
     setIsPopoverOpen(false);
+    inputRef.current?.blur();
   };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,15 +57,25 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
         setIsPopoverOpen(true);
     }
   }
+  
+  useEffect(() => {
+    if (!searchTerm && isPopoverOpen) {
+      // maybe keep it open to show all suggestions? For now, close it.
+      // setIsPopoverOpen(false);
+    } else if (searchTerm && !isPopoverOpen) {
+      setIsPopoverOpen(true);
+    }
+  }, [searchTerm, isPopoverOpen]);
 
 
   return (
     <div className="relative w-full max-w-2xl mx-auto">
        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverAnchor>
+        <PopoverAnchor asChild>
             <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
+                    ref={inputRef}
                     type="text"
                     placeholder="Зочид буудлын нэр, байршлаар хайх..."
                     value={searchTerm}
@@ -86,11 +105,14 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
           <Command shouldFilter={false}>
             <CommandList>
                 <CommandEmpty>Илэрц олдсонгүй</CommandEmpty>
-                {allSuggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 7).map((suggestion) => (
+                {filteredSuggestions.slice(0, 7).map((suggestion) => (
                      <CommandItem
                         key={suggestion}
-                        onSelect={() => handleSuggestionClick(suggestion)}
                         value={suggestion}
+                        onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSuggestionClick(suggestion);
+                        }}
                      >
                         {suggestion}
                     </CommandItem>
