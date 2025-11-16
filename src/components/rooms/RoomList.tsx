@@ -118,16 +118,16 @@ export default function RoomList() {
       />
 
       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             
-            <div className="flex items-center gap-4 lg:col-span-2">
+            <div className="flex items-center gap-4 flex-1 min-w-[300px] md:min-w-[400px]">
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
-                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive w-40">
+                           <Button variant="outline" className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive">
                               <Flame className="mr-2 h-4 w-4 shrink-0" />
                               <span className='font-bold'>Зад Хямдрал</span>
-                              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                                   {hotDeals.length}
                               </span>
                           </Button>
@@ -158,10 +158,10 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-                    <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2 flex-1">
+                    <div className="space-y-1">
                         <div className="flex justify-between items-center text-sm">
-                            <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
+                            <Label htmlFor="price-range" className="font-semibold text-xs">Үнийн хязгаар</Label>
                             <span className="font-medium text-primary text-xs">{priceRange[0].toLocaleString()}₮ - {priceRange[1] === MAX_PRICE ? `${(MAX_PRICE / 1000)}k+₮` : `${priceRange[1].toLocaleString()}₮`}</span>
                         </div>
                         <Slider
@@ -171,14 +171,11 @@ export default function RoomList() {
                           step={10000}
                           value={priceRange}
                           onValueChange={setPriceRange}
-                        >
-                          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-                          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-                        </Slider>
+                        />
                     </div>
-                     <div className="space-y-2">
+                     <div className="space-y-1">
                          <div className="flex justify-between items-center text-sm">
-                            <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                            <Label htmlFor="distance-limit" className="font-semibold text-xs">Зай</Label>
                             <span className="font-medium text-primary text-xs">{distanceLimit[0]} км хүртэл</span>
                         </div>
                         <Slider
@@ -188,7 +185,6 @@ export default function RoomList() {
                           step={1}
                           value={distanceLimit}
                           onValueChange={setDistanceLimit}
-                          className="[&>span>span]:h-4 [&>span>span]:w-4"
                         />
                     </div>
                 </div>
