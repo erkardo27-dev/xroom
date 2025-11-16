@@ -89,6 +89,7 @@ export default function RoomList({ hotDeals }: RoomListProps) {
           status={status}
           filteredCount={filteredAndSortedRooms.length}
           onSearch={setHeroSearchTerm}
+          hotDeals={hotDeals}
       />
 
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">

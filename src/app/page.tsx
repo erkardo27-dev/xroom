@@ -21,7 +21,7 @@ function HomePageContent() {
   
   return (
     <div className="flex flex-col min-h-screen bg-muted/30 text-foreground">
-      <Header hotDeals={hotDeals} />
+      <Header />
       <main className="flex-1">
         <RoomList hotDeals={hotDeals} />
       </main>

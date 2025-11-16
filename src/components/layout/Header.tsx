@@ -46,9 +46,8 @@ import { HotelSettingsForm } from '../dashboard/HotelSettingsForm';
 import { Room } from '@/lib/data';
 
 type DialogType = 'addRoom' | 'login' | 'settings' | null;
-type HotDeal = Room & { discount: number };
 
-export default function Header({ isDashboard = false, hotDeals = [] }: { isDashboard?: boolean; hotDeals?: HotDeal[] }) {
+export default function Header({ isDashboard = false }: { isDashboard?: boolean; }) {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
   const { isLoggedIn, userEmail, hotelInfo, logout } = useAuth();
   const router = useRouter();
@@ -70,14 +69,6 @@ export default function Header({ isDashboard = false, hotDeals = [] }: { isDashb
   const handleLogout = async () => {
     await logout();
   }
-
-  const bestDeal = hotDeals.length > 0 ? hotDeals[0] : null;
-
-  const handleHotDealClick = () => {
-    if (bestDeal) {
-      router.push(`/?search=${encodeURIComponent(bestDeal.hotelName)}`);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -205,29 +196,6 @@ export default function Header({ isDashboard = false, hotDeals = [] }: { isDashb
                 </>
             ) : (
                 <div className="flex items-center gap-2">
-                    {bestDeal && (
-                         <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="destructive" className="animate-pulse">
-                                    <Flame className="mr-2 h-4 w-4" />
-                                    Зад Хямдрал
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent align="end" className="w-80">
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <h4 className="font-medium leading-none text-destructive">Онцгой санал!</h4>
-                                        <p className="text-sm text-muted-foreground">
-                                           <span className="font-bold text-foreground">{bestDeal.hotelName}</span>-д <span className="font-bold text-foreground">{bestDeal.roomName}</span> өрөөг <span className="font-bold text-destructive">{bestDeal.discount}%</span>-ийн хямдралтай захиалаарай.
-                                        </p>
-                                    </div>
-                                    <Button onClick={handleHotDealClick} className="w-full">
-                                        Дэлгэрэнгүй <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    )}
                     <DialogTrigger asChild>
                         <Button onClick={() => handleDialogTrigger('login')}>
                             <Hotel className="mr-2 h-4 w-4" />
