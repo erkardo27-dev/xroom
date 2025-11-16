@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useRoom } from "@/context/RoomContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { locations } from "@/lib/data";
 import {
   Popover,
   PopoverContent,
-  PopoverAnchor,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
@@ -20,7 +20,7 @@ type HeroSearchProps = {
 
 export function HeroSearch({ onSearch }: HeroSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { rooms } = useRoom();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,81 +32,62 @@ export function HeroSearch({ onSearch }: HeroSearchProps) {
 
   const allSuggestions = useMemo(() => [...locations, ...hotelNames], [hotelNames]);
   
-  const filteredSuggestions = useMemo(() => {
-    if (!searchTerm) return allSuggestions;
-    return allSuggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [allSuggestions, searchTerm]);
-
   const handleSearch = () => {
     onSearch(searchTerm);
-    setIsPopoverOpen(false);
+    setOpen(false);
     inputRef.current?.blur();
   };
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    if (!isPopoverOpen && value) {
-        setIsPopoverOpen(true);
-    }
-  }
-  
-  useEffect(() => {
-    if (searchTerm && !isPopoverOpen) {
-      setIsPopoverOpen(true);
-    }
-  }, [searchTerm, isPopoverOpen]);
-
-  const handleSelectSuggestion = (currentValue: string) => {
-    setSearchTerm(currentValue);
-    onSearch(currentValue);
-    inputRef.current?.blur();
-    setIsPopoverOpen(false);
-  };
-
-
   return (
     <div className="relative w-full max-w-2xl mx-auto">
-       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverAnchor asChild>
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Зочид буудлын нэр, байршлаар хайх..."
-                    value={searchTerm}
-                    onChange={handleInputChange}
-                    onFocus={() => setIsPopoverOpen(true)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleSearch();
-                        }
-                    }}
-                    className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
-                />
-                <Button 
-                    onClick={handleSearch}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-full px-6 font-bold"
-                >
-                    Хайх
-                </Button>
-            </div>
-        </PopoverAnchor>
+      <Popover open={open} onOpenChange={setOpen}>
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            ref={inputRef}
+            type="text"
+            placeholder="Зочид буудлын нэр, байршлаар хайх..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              if (!open) {
+                setOpen(true)
+              }
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearch();
+              }
+            }}
+            className="w-full h-14 pl-12 pr-32 rounded-full shadow-lg text-base text-black"
+          />
+          <Button 
+              onClick={handleSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-full px-6 font-bold"
+          >
+              Хайх
+          </Button>
+        </div>
         <PopoverContent 
-            className="w-[--radix-popover-trigger-width] p-0 mt-2" 
-            align="start"
-            onOpenAutoFocus={(e) => e.preventDefault()}
+          className="w-[--radix-popover-trigger-width] p-0 mt-2" 
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <Command shouldFilter={false}>
+          <Command>
             <CommandList>
                 <CommandEmpty>Илэрц олдсонгүй</CommandEmpty>
-                {filteredSuggestions.slice(0, 7).map((suggestion) => (
+                {allSuggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 7).map((suggestion) => (
                      <CommandItem
                         key={suggestion}
                         value={suggestion}
-                        onSelect={handleSelectSuggestion}
+                        onSelect={(currentValue) => {
+                            setSearchTerm(currentValue)
+                            onSearch(currentValue)
+                            setOpen(false)
+                            inputRef.current?.blur()
+                        }}
                      >
                         {suggestion}
                     </CommandItem>
