@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -15,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import Hero from '@/components/layout/Hero';
 import { useRoom } from '@/context/RoomContext';
 import { useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 type ViewMode = 'list' | 'map';
 
@@ -125,8 +127,12 @@ export default function RoomList() {
             
             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1 min-w-0">
                   <Button 
-                    variant={showOnlyHotDeals ? "default" : "outline"} 
-                    className="h-10 text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground"
+                    variant="outline"
+                    className={cn(
+                        "h-10 text-left relative transition-colors",
+                        "data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground data-[state=active]:border-destructive",
+                        "data-[state=inactive]:border-destructive/50 data-[state=inactive]:text-destructive data-[state=inactive]:bg-destructive/10 data-[state=inactive]:hover:bg-destructive/20"
+                    )}
                     onClick={toggleHotDeals}
                     data-state={showOnlyHotDeals ? 'active' : 'inactive'}
                   >
@@ -163,7 +169,9 @@ export default function RoomList() {
                           value={distanceLimit}
                           onValueChange={setDistanceLimit}
                           disabled={showOnlyHotDeals}
-                        />
+                        >
+                            <Slider.Thumb />
+                        </Slider>
                     </div>
                 </div>
             </div>

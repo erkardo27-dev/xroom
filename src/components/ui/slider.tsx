@@ -21,17 +21,25 @@ const Slider = React.forwardRef<
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
       <SliderPrimitive.Range className="absolute h-full bg-primary" />
     </SliderPrimitive.Track>
-    {React.Children.count(props.children) > 0 ? (
-      <>
-        {React.Children.map(props.children, (child) =>
-          React.isValidElement(child) ? child : null
-        )}
-      </>
-    ) : (
-      <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-    )}
+    {props.children}
   </SliderPrimitive.Root>
 ))
 Slider.displayName = SliderPrimitive.Root.displayName
+
+const SliderThumb = React.forwardRef<
+  React.ElementRef<typeof SliderPrimitive.Thumb>,
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Thumb>
+>((props, ref) => (
+  <SliderPrimitive.Thumb
+    ref={ref}
+    className={cn(
+      "block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      props.className
+    )}
+  />
+));
+SliderThumb.displayName = SliderPrimitive.Thumb.displayName;
+
+Slider.Thumb = SliderThumb;
 
 export { Slider }
