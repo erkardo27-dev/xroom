@@ -165,7 +165,9 @@ export default function RoomList() {
                           value={distanceLimit}
                           onValueChange={setDistanceLimit}
                           disabled={showOnlyHotDeals}
-                        />
+                        >
+                            <Slider.Thumb />
+                        </Slider>
                     </div>
                 </div>
             </div>
