@@ -117,55 +117,22 @@ export default function RoomList() {
           initialSearchValue={heroSearchTerm}
       />
 
-       <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
-              {/* Filters */}
-              <div className="md:col-span-2 lg:col-span-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                      <div className="space-y-2">
-                          <div className="flex justify-between items-center text-sm">
-                              <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
-                              <span className="font-medium text-primary">{priceRange[0].toLocaleString()}₮ - {priceRange[1] === MAX_PRICE ? `${(MAX_PRICE / 1000)}k+₮` : `${priceRange[1].toLocaleString()}₮`}</span>
-                          </div>
-                          <Slider
-                            id="price-range"
-                            min={0}
-                            max={MAX_PRICE}
-                            step={10000}
-                            value={priceRange}
-                            onValueChange={setPriceRange}
-                          >
-                            {priceRange.map((_, i) => (
-                              <SliderPrimitive.Thumb key={i} className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-                            ))}
-                          </Slider>
-                      </div>
-                       <div className="space-y-2">
-                           <div className="flex justify-between items-center text-sm">
-                              <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
-                              <span className="font-medium text-primary">{distanceLimit[0]} км хүртэл</span>
-                          </div>
-                          <Slider
-                            id="distance-limit"
-                            min={1}
-                            max={MAX_DISTANCE}
-                            step={1}
-                            value={distanceLimit}
-                            onValueChange={setDistanceLimit}
-                          />
-                      </div>
-                  </div>
-              </div>
-
-              {/* Sort and View */}
-              <div className="flex items-center justify-between lg:justify-end gap-2">
+      <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
+            
+            {/* Deals and Sliders */}
+            <div className="flex flex-col sm:flex-row gap-4 lg:col-span-2">
+                {/* Hot Deals */}
                 {hotDeals.length > 0 && (
                   <Popover>
                       <PopoverTrigger asChild>
-                          <Button variant="outline" className='relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive'>
-                              <Flame className="mr-2 h-4 w-4" />
-                              Зад Хямдрал
-                              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                          <Button variant="outline" className='h-auto text-left relative border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20 hover:text-destructive'>
+                              <Flame className="mr-2 h-4 w-4 shrink-0" />
+                              <div>
+                                  <p className='font-bold'>Зад Хямдрал</p>
+                                  <p className='text-xs font-normal'>Онцгой саналууд</p>
+                              </div>
+                              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                                   {hotDeals.length}
                               </span>
                           </Button>
@@ -196,32 +163,83 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                  <div className='flex items-center gap-1'>
-                      <ToggleGroup
-                          type="single"
-                          value={sortOption}
-                          onValueChange={(value) => {
-                              if (value) setSortOption(value as SortOption);
-                          }}
-                          aria-label="Эрэмбэлэх"
-                          className="gap-1"
-                      >
-                          {sortOptionsConfig.map(option => (
-                                <ToggleGroupItem key={option.value} value={option.value} aria-label={option.label} className="h-9 w-9 p-0 data-[state=on]:bg-primary/20 data-[state=on]:text-primary" data-state={sortOption === option.value ? 'on' : 'off'}>
-                                  <option.icon className="h-4 w-4" />
-                              </ToggleGroupItem>
+                {/* Sliders */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <Label htmlFor="price-range" className="font-semibold">Үнийн хязгаар</Label>
+                            <span className="font-medium text-primary text-xs">{priceRange[0].toLocaleString()}₮ - {priceRange[1] === MAX_PRICE ? `${(MAX_PRICE / 1000)}k+₮` : `${priceRange[1].toLocaleString()}₮`}</span>
+                        </div>
+                        <Slider
+                          id="price-range"
+                          min={0}
+                          max={MAX_PRICE}
+                          step={10000}
+                          value={priceRange}
+                          onValueChange={setPriceRange}
+                        >
+                          {priceRange.map((_, i) => (
+                            <SliderPrimitive.Thumb key={i} className="block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
                           ))}
-                      </ToggleGroup>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
-                    className="w-10 h-9 p-0"
-                  >
-                   {viewMode === 'list' ? <MapPin className="h-4 w-4" /> : <List className="h-4 w-4" />}
-                  </Button>
-              </div>
-          </div>
+                        </Slider>
+                    </div>
+                     <div className="space-y-2">
+                         <div className="flex justify-between items-center text-sm">
+                            <Label htmlFor="distance-limit" className="font-semibold">Зай</Label>
+                            <span className="font-medium text-primary text-xs">{distanceLimit[0]} км хүртэл</span>
+                        </div>
+                        <Slider
+                          id="distance-limit"
+                          min={1}
+                          max={MAX_DISTANCE}
+                          step={1}
+                          value={distanceLimit}
+                          onValueChange={setDistanceLimit}
+                          className="[&>span>span]:h-4 [&>span>span]:w-4"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Sort and View */}
+            <div className="flex items-center justify-end gap-2">
+                <ToggleGroup
+                    type="single"
+                    value={sortOption}
+                    onValueChange={(value) => {
+                        if (value) setSortOption(value as SortOption);
+                    }}
+                    aria-label="Эрэмбэлэх"
+                    className="gap-1"
+                >
+                    {sortOptionsConfig.map(option => (
+                          <ToggleGroupItem key={option.value} value={option.value} aria-label={option.label} className="h-9 w-9 p-0 data-[state=on]:bg-primary/20 data-[state=on]:text-primary" data-state={sortOption === option.value ? 'on' : 'off'}>
+                            <option.icon className="h-4 w-4" />
+                        </ToggleGroupItem>
+                    ))}
+                </ToggleGroup>
+                
+                <Separator orientation="vertical" className="h-6 mx-1" />
+
+                <Button
+                  variant="outline"
+                  onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+                  className="h-9 w-28"
+                >
+                 {viewMode === 'list' ? (
+                    <>
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Газрын зураг
+                    </>
+                 ) : (
+                    <>
+                      <List className="h-4 w-4 mr-2" />
+                      Жагсаалт
+                    </>
+                 )}
+                </Button>
+            </div>
+        </div>
       </div>
       
       {status === 'error' && error && (
