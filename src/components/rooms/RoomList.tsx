@@ -158,7 +158,7 @@ export default function RoomList() {
                   </Popover>
                 )}
 
-                <div className="grid grid-cols-1 gap-2 flex-1 min-w-[200px] md:min-w-[300px]">
+                <div className="grid grid-cols-2 gap-x-6 flex-1 min-w-[300px]">
                     <div className="space-y-1">
                         <div className="flex justify-between items-center text-sm">
                             <Label htmlFor="price-range" className="font-semibold text-xs">Үнийн хязгаар</Label>
