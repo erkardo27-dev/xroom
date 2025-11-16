@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Star } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Star, Flame } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,7 +96,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
-  const isSoldOut = availableInstances.length === 0;
+  const availableCount = availableInstances.length;
+  const isSoldOut = availableCount === 0;
   const totalPrice = room.price + SERVICE_FEE;
   const isLiked = likedRooms.includes(room.id);
 
@@ -169,6 +170,24 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
       e.stopPropagation();
       toggleLike(room.id);
   }
+  
+  const UrgencyMessage = () => {
+      if (isSoldOut || availableCount > 5) return null;
+      if (availableCount === 1) {
+          return (
+             <p className="text-sm font-semibold text-destructive flex items-center gap-1.5 mt-2">
+                <Flame className="w-4 h-4" />
+                Сүүлчийн өрөө!
+            </p>
+          )
+      }
+      return (
+           <p className="text-sm font-semibold text-orange-600 flex items-center gap-1.5 mt-2">
+                <Flame className="w-4 h-4" />
+                Энэ үнээр зөвхөн <strong className='mx-1'>{availableCount}</strong> өрөө үлдлээ!
+            </p>
+      )
+  }
 
   return (
     <>
@@ -236,6 +255,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             </div>
             <span>{room.distance}км</span>
           </div>
+
+          <UrgencyMessage />
 
           <div className="flex-grow" />
 

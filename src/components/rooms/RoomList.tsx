@@ -3,22 +3,24 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import type { Room, SortOption, RoomInstance } from '@/lib/data';
-import { locations as allLocations } from '@/lib/data';
+import type { Amenity, Room, SortOption, RoomInstance } from '@/lib/data';
+import { amenityOptions } from '@/lib/data';
 import { RoomCard } from './RoomCard';
 import { RoomCardSkeleton } from './RoomCardSkeleton';
 import { RoomMap } from './RoomMap';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, List, MapPin, DollarSign, Heart } from 'lucide-react';
+import { AlertCircle, List, MapPin, DollarSign, Heart, Sparkles, SlidersHorizontal, Flame } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Hero from '@/components/layout/Hero';
 import { useRoom } from '@/context/RoomContext';
 import { startOfDay } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { toggleArrayItem } from '@/lib/utils';
+import { Separator } from '../ui/separator';
 
 type ViewMode = 'list' | 'map';
 
@@ -39,22 +41,19 @@ export default function RoomList() {
   // Filter state
   const [priceRange, setPriceRange] = useState<number[]>([0, MAX_PRICE]);
   const [distanceLimit, setDistanceLimit] = useState<number[]>([MAX_DISTANCE]);
-  const [location, setLocation] = useState<string>('all');
+  const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
   const [heroSearchTerm, setHeroSearchTerm] = useState<string>("");
 
   const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());
 
-    // 1. Find all room types that have at least one 'available' instance for today.
     const availableRoomTypeIds = new Set<string>();
     roomInstances.forEach(instance => {
-      // Use the dedicated function which checks overrides as well
       if (getRoomStatusForDate(instance.instanceId, today) === 'available') {
         availableRoomTypeIds.add(instance.roomTypeId);
       }
     });
 
-    // 2. For those room types, gather all their available instances.
     const result = Array.from(availableRoomTypeIds).map(roomTypeId => {
       const roomType = rooms.find(r => r.id === roomTypeId);
       if (!roomType) return null;
@@ -78,7 +77,6 @@ export default function RoomList() {
   const filteredAndSortedRooms = useMemo(() => {
     let filtered = availableRoomsByType;
 
-    // Hero search filter
     if (heroSearchTerm) {
         const lowercasedTerm = heroSearchTerm.toLowerCase();
         filtered = filtered.filter(room => 
@@ -87,12 +85,11 @@ export default function RoomList() {
         );
     }
       
-    // Other filters
     filtered = filtered.filter(room => 
         room.price >= priceRange[0] &&
         (priceRange[1] === MAX_PRICE ? true : room.price <= priceRange[1]) &&
         room.distance <= distanceLimit[0] &&
-        (location === 'all' || room.location === location)
+        (selectedAmenities.length === 0 || selectedAmenities.every(a => room.amenities.includes(a)))
     );
 
     const sorted = [...filtered];
@@ -108,7 +105,18 @@ export default function RoomList() {
         break;
     }
     return sorted;
-  }, [availableRoomsByType, sortOption, priceRange, distanceLimit, location, heroSearchTerm]);
+  }, [availableRoomsByType, sortOption, priceRange, distanceLimit, selectedAmenities, heroSearchTerm]);
+
+  const hotDeals = useMemo(() => {
+      return availableRoomsByType
+        .filter(room => room.originalPrice && room.originalPrice > room.price)
+        .map(room => ({
+            ...room,
+            discount: Math.round(((room.originalPrice! - room.price) / room.originalPrice!) * 100)
+        }))
+        .sort((a, b) => b.discount - a.discount)
+        .slice(0, 4);
+  }, [availableRoomsByType]);
   
   return (
     <div className="container mx-auto py-8 px-4 md:px-8">
@@ -118,10 +126,25 @@ export default function RoomList() {
           onSearch={setHeroSearchTerm}
       />
       
+      {hotDeals.length > 0 && (
+          <div className="mb-10">
+              <div className='flex items-center gap-3 mb-4'>
+                 <Flame className='w-7 h-7 text-destructive' />
+                 <h2 className="text-2xl font-bold tracking-tight">Халуухан Хямдрал</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                  {hotDeals.map(room => (
+                      <RoomCard key={room.id} room={room} availableInstances={room.availableInstances} />
+                  ))}
+              </div>
+              <Separator className='mt-10' />
+          </div>
+      )}
+
        <div className="sticky top-[65px] z-40 bg-background/95 backdrop-blur-sm rounded-xl border shadow-sm mb-6 p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
               {/* Filters */}
-              <div className="lg:col-span-3">
+              <div className="md:col-span-2 lg:col-span-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="space-y-2">
                           <div className="flex justify-between items-center text-sm">
@@ -159,8 +182,40 @@ export default function RoomList() {
               </div>
 
               {/* Sort and View */}
-              <div className="flex items-center justify-between lg:justify-end gap-4">
-                  <div className='flex items-center gap-2'>
+              <div className="flex items-center justify-between lg:justify-end gap-2">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className='relative'>
+                            <SlidersHorizontal className="mr-2 h-4 w-4" />
+                            Нэмэлт шүүлтүүр
+                            {selectedAmenities.length > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                                    {selectedAmenities.length}
+                                </span>
+                            )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-64 p-4'>
+                         <div className="space-y-4">
+                            <h4 className="font-medium leading-none">Нэмэлт үйлчилгээ</h4>
+                             <div className="grid grid-cols-2 gap-2">
+                                {amenityOptions.map((amenity) => (
+                                    <Button 
+                                        key={amenity.id}
+                                        variant={selectedAmenities.includes(amenity.id) ? "default" : "outline"}
+                                        size="sm"
+                                        className="text-xs justify-start"
+                                        onClick={() => setSelectedAmenities(toggleArrayItem(selectedAmenities, amenity.id))}
+                                    >
+                                        {amenity.label}
+                                    </Button>
+                                ))}
+                            </div>
+                         </div>
+                    </PopoverContent>
+                </Popover>
+
+                  <div className='flex items-center gap-1'>
                       <ToggleGroup
                           type="single"
                           value={sortOption}
@@ -180,19 +235,9 @@ export default function RoomList() {
                   <Button
                     variant="outline"
                     onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
-                    className="w-28 justify-center"
+                    className="w-10 h-9 p-0"
                   >
-                    {viewMode === 'list' ? (
-                      <>
-                        <MapPin className="mr-2 h-4 w-4" />
-                        Зураг
-                      </>
-                    ) : (
-                      <>
-                        <List className="mr-2 h-4 w-4" />
-                        Жагсаалт
-                      </>
-                    )}
+                   {viewMode === 'list' ? <MapPin className="h-4 w-4" /> : <List className="h-4 w-4" />}
                   </Button>
               </div>
           </div>
@@ -231,10 +276,3 @@ export default function RoomList() {
       )}
     </div>
   );
-
-    
-
-
-
-
-
