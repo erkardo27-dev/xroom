@@ -20,15 +20,18 @@ import { Amenity, Room, amenityOptions } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import Image from "next/image";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Check, Image as ImageIcon } from "lucide-react";
 
 const formSchema = z.object({
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
   originalPrice: z.coerce.number().optional().nullable(),
   totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
-  imageIds: z.array(z.string()).refine(value => value.some(item => item), {
-    message: "You have to select at least one item.",
+  imageIds: z.array(z.string()).refine(value => value.length > 0, {
+    message: "Та дор хаяж нэг зураг сонгох шаардлагатай.",
   }),
   amenities: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one item.",
@@ -49,6 +52,13 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const { userEmail, hotelInfo } = useAuth();
     
     const isEditMode = !!roomToEdit;
+
+    const hotelGalleryImages = useMemo(() => {
+        if (!hotelInfo?.galleryImageIds) return [];
+        return hotelInfo.galleryImageIds.map(id => 
+            PlaceHolderImages.find(p_img => p_img.id === id)
+        ).filter(Boolean);
+    }, [hotelInfo?.galleryImageIds]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -181,56 +191,68 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         </FormItem>
                     )}
                 />
-                <FormField
+               <FormField
                     control={form.control}
                     name="imageIds"
                     render={() => (
                         <FormItem>
                         <div className="mb-4">
-                            <FormLabel className="text-base">Зураг</FormLabel>
+                            <FormLabel className="text-base">Өрөөний зураг</FormLabel>
                             <FormDescription>
-                                Хамгийн багадаа нэг зураг сонгоно уу.
+                                Энэ өрөөг илэрхийлэх зургуудыг буудлынхаа зургийн сангаас сонгоно уу.
                             </FormDescription>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                        {PlaceHolderImages.slice(0, 6).map((item) => (
-                            <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="imageIds"
-                            render={({ field }) => {
-                                return (
-                                <FormItem
-                                    key={item.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...(field.value || []), item.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                (value) => value !== item.id
-                                                )
-                                            )
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                        {item.id}
-                                    </FormLabel>
-                                </FormItem>
-                                )
-                            }}
-                            />
-                        ))}
-                        </div>
+                        {hotelGalleryImages.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {hotelGalleryImages.map((item) => (
+                                <FormField
+                                key={item!.id}
+                                control={form.control}
+                                name="imageIds"
+                                render={({ field }) => {
+                                    const isChecked = field.value?.includes(item!.id);
+                                    return (
+                                    <FormItem key={item!.id}>
+                                        <FormControl>
+                                            <Checkbox
+                                                id={`room-image-${item!.id}`}
+                                                checked={isChecked}
+                                                onCheckedChange={(checked) => {
+                                                    return checked
+                                                        ? field.onChange([...(field.value || []), item!.id])
+                                                        : field.onChange(
+                                                            field.value?.filter(
+                                                            (value) => value !== item!.id
+                                                            )
+                                                        )
+                                                }}
+                                                className="sr-only"
+                                            />
+                                        </FormControl>
+                                        <FormLabel htmlFor={`room-image-${item!.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
+                                                <Image src={item!.imageUrl} alt={item!.description} width={200} height={150} className="aspect-video object-cover" />
+                                                {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
+                                        </FormLabel>
+                                    </FormItem>
+                                    )
+                                }}
+                                />
+                            ))}
+                            </div>
+                        ) : (
+                            <Alert variant="default" className="bg-amber-50 border-amber-200">
+                                <ImageIcon className="h-4 w-4 text-amber-600" />
+                                <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
+                                <AlertDescription className="text-amber-700">
+                                    Эхлээд Буудлын тохиргоо &gt; Зургийн сан хэсэгт зураг нэмнэ үү.
+                                </AlertDescription>
+                            </Alert>
+                        )}
                         <FormMessage />
                         </FormItem>
                     )}
                 />
+
 
                 <FormField
                     control={form.control}
