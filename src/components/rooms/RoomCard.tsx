@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Check } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Check, Banknote, Building2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +57,7 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
     massage: <Hand className="w-4 h-4" />,
 };
 
-type BookingStep = 'selection' | 'booking' | 'success';
+type BookingStep = 'details' | 'payment' | 'processing' | 'success';
 type PaymentMethod = 'qpay' | 'socialpay' | 'transfer';
 const SERVICE_FEE = 5000;
 
@@ -89,7 +89,7 @@ type RoomCardProps = {
 
 export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [bookingStep, setBookingStep] = useState<BookingStep>('selection');
+  const [bookingStep, setBookingStep] = useState<BookingStep>('details');
   const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
@@ -104,7 +104,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const isLiked = likedRooms.includes(room.id);
 
   useEffect(() => {
-    if (isBookingOpen && bookingStep === 'selection') {
+    if (isBookingOpen && bookingStep === 'details') {
       setTimeout(() => {
         initialFocusRef.current?.focus();
       }, 100);
@@ -131,21 +131,24 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     }
     setIsBookingOpen(true);
   };
+
+  const handleProceedToPayment = () => {
+      setBookingStep('payment');
+  }
   
-  const handleConfirmBooking = () => {
-    if (isSoldOut) return;
+  const handleConfirmPayment = () => {
+    if (isSoldOut || !paymentMethod) return;
 
-    const instanceToBook = availableInstances[0];
-    setRoomStatusForDate(
-        instanceToBook.instanceId,
-        startOfDay(new Date()),
-        'booked',
-        checkinCode
-    );
-
-    setBookingStep('booking');
+    setBookingStep('processing');
     
     setTimeout(() => {
+        const instanceToBook = availableInstances[0];
+        setRoomStatusForDate(
+            instanceToBook.instanceId,
+            startOfDay(new Date()),
+            'booked',
+            checkinCode
+        );
         setBookingStep('success');
     }, 1500);
   };
@@ -153,7 +156,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const closeAndResetDialog = () => {
     setIsBookingOpen(false);
     setTimeout(() => {
-        setBookingStep('selection');
+        setBookingStep('details');
         setCheckinCode('');
         setTermsAccepted(false);
         setPaymentMethod(null);
@@ -166,7 +169,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
   })), [room.amenities]);
   
-  const isConfirmationDisabled = !paymentMethod || checkinCode.length !== 4 || !termsAccepted;
+  const isDetailsConfirmationDisabled = checkinCode.length !== 4 || !termsAccepted;
   
   const handleLikeClick = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -295,10 +298,10 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 
       <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
         <AlertDialogContent>
-        {bookingStep === 'selection' && (
+        {bookingStep === 'details' && (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>Захиалга баталгаажуулах</AlertDialogTitle>
+                <AlertDialogTitle>Захиалгын мэдээлэл</AlertDialogTitle>
                 <AlertDialogDescription>
                    Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг захиалах гэж байна.
                 </AlertDialogDescription>
@@ -306,7 +309,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               
               <div className="space-y-6 pt-2">
                  <div className='bg-muted/50 rounded-xl p-4 space-y-2 border'>
-                    <div className='flex justify-between text-sm'>
+                     <div className='flex justify-between items-center text-sm font-semibold'>
+                        <p className='flex items-center gap-2'><Building2 className='w-4 h-4' />Буудлын хаяг</p>
+                    </div>
+                    <Separator />
+                    <p className='text-sm text-muted-foreground'>{room.detailedAddress || 'Дэлгэрэнгүй хаяг оруулаагүй байна.'}</p>
+                    <div className='flex justify-between text-sm pt-2'>
                         <p>Өрөөний үнэ</p>
                         <p className='font-medium'>{room.price.toLocaleString()}₮</p>
                     </div>
@@ -331,24 +339,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                         <p className='font-semibold'>Нийт дүн</p>
                         <p className='font-bold text-primary text-lg'>{totalPrice.toLocaleString()}₮</p>
                     </div>
-                </div>
-
-                <div className="space-y-3">
-                    <Label className="font-semibold">Төлбөрийн арга</Label>
-                    <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-3 gap-3">
-                        <Label htmlFor="qpay" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                            <RadioGroupItem value="qpay" id="qpay" className="sr-only peer" />
-                            <QPayIcon className="h-8 w-auto text-[#00AEEF]" />
-                        </Label>
-                        <Label htmlFor="socialpay" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                            <RadioGroupItem value="socialpay" id="socialpay" className="sr-only peer" />
-                            <SocialPayIcon className="h-8 w-auto text-[#7E469C]" />
-                        </Label>
-                        <Label htmlFor="transfer" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                             <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
-                            <TransferIcon className="h-8 w-auto text-muted-foreground" />
-                        </Label>
-                    </RadioGroup>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 items-center">
@@ -377,13 +367,59 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               </div>
               <AlertDialogFooter>
                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <Button onClick={handleConfirmBooking} disabled={isConfirmationDisabled} className="shadow-md shadow-primary/40">
+                <Button onClick={handleProceedToPayment} disabled={isDetailsConfirmationDisabled} className="shadow-md shadow-primary/40">
                   Төлбөр төлөх
                 </Button>
               </AlertDialogFooter>
             </>
         )}
-        {bookingStep === 'booking' && (
+        {bookingStep === 'payment' && (
+             <>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Төлбөрийн хэрэгсэл сонгох</AlertDialogTitle>
+                    <AlertDialogDescription>
+                       Та доорх хэрэгслүүдээс сонгон төлбөрөө төлнө үү.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                 <div className="space-y-6 pt-2">
+                    <div className='text-center'>
+                         <p className="text-sm text-muted-foreground">Төлөх дүн</p>
+                         <p className="text-4xl font-bold text-primary">{totalPrice.toLocaleString()}₮</p>
+                    </div>
+                    <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-3 gap-4">
+                        <div>
+                            <RadioGroupItem value="qpay" id="qpay" className="peer sr-only" />
+                            <Label htmlFor="qpay" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                <QPayIcon className="mb-3 h-8 w-8" />
+                                QPay
+                            </Label>
+                        </div>
+                        <div>
+                            <RadioGroupItem value="socialpay" id="socialpay" className="peer sr-only" />
+                            <Label htmlFor="socialpay" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                <SocialPayIcon className="mb-3 h-8 w-8" />
+                                SocialPay
+                            </Label>
+                        </div>
+                        <div>
+                            <RadioGroupItem value="transfer" id="transfer" className="peer sr-only" />
+                            <Label htmlFor="transfer" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                <Banknote className="mb-3 h-8 w-8" />
+                                Дансаар
+                            </Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setBookingStep('details')}>Буцах</AlertDialogCancel>
+                    <Button onClick={handleConfirmPayment} disabled={!paymentMethod} className="shadow-md shadow-primary/40">
+                        Төлбөр шалгах
+                    </Button>
+                </AlertDialogFooter>
+             </>
+        )}
+        {bookingStep === 'processing' && (
              <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
                 <AlertDialogTitle>Төлбөрийг боловсруулж байна...</AlertDialogTitle>
@@ -437,3 +473,5 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
+
+    

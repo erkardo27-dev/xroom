@@ -32,6 +32,7 @@ import { format } from "date-fns";
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
+  detailedAddress: z.string().optional(),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
   galleryImageIds: z.array(z.string()).optional(),
@@ -83,6 +84,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         defaultValues: {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
+            detailedAddress: hotelInfo?.detailedAddress || "",
             phoneNumber: hotelInfo?.phoneNumber || "",
             amenities: hotelInfo?.amenities || [],
             galleryImageIds: hotelInfo?.galleryImageIds || [],
@@ -110,6 +112,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         const payload: Parameters<typeof updateHotelInfo>[0] = {
              hotelName: values.hotelName,
              location: values.location,
+             detailedAddress: values.detailedAddress,
              phoneNumber: values.phoneNumber,
              amenities: values.amenities,
              galleryImageIds: values.galleryImageIds,
@@ -161,7 +164,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                 name="location"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Байршил</FormLabel>
+                                    <FormLabel>Байршил (Дүүрэг)</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
@@ -176,14 +179,30 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     </FormItem>
                                 )}
                             />
+                             <FormField
+                                control={form.control}
+                                name="detailedAddress"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Дэлгэрэнгүй хаяг</FormLabel>
+                                        <FormControl>
+                                            <Textarea placeholder="ж.нь: СБД, 8-р хороо, Амарын гудамж, 28-р байр" {...field} value={field.value ?? ""} />
+                                        </FormControl>
+                                         <FormDescription>
+                                            Захиалагчид харагдах дэлгэрэнгүй хаяг.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="phoneNumber"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Утасны дугаар</FormLabel>
+                                        <FormLabel>Холбоо барих утас</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
+                                            <Input placeholder="9911XXXX" {...field} />
                                         </FormControl>
                                         <FormDescription>
                                             Шинэ захиалга орж ирэх үед энэ дугаарт мэдэгдэл илгээнэ.
@@ -415,3 +434,5 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         </Form>
     )
 }
+
+    

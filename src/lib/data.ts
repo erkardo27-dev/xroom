@@ -1,3 +1,4 @@
+
 import { PlaceHolderImages } from './placeholder-images';
 
 export type Amenity = 
@@ -41,6 +42,7 @@ export type Room = {
   amenities: Amenity[];
   imageIds: string[];
   location: Location;
+  detailedAddress?: string;
   ownerId: string;
   phoneNumber: string;
   totalQuantity: number;
@@ -68,7 +70,7 @@ export type RoomInstance = {
 };
 
 
-const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber' | 'originalPrice'>[] = [
+const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber' | 'originalPrice' | 'detailedAddress'>[] = [
     {
       id: 'room-type-1',
       roomName: 'Стандарт Кинг Өрөө',
@@ -102,6 +104,7 @@ export const initialRooms: Room[] = initialRoomTypesData.map((rt, index) => {
     const isDiscounted = index % 2 === 0; // Make some rooms discounted
     return {
         ...rt,
+        detailedAddress: `${rt.location}, ${index + 1}-р гудамж, ${index + 5}-р байр`,
         originalPrice: isDiscounted ? Math.round((rt.price * 1.3) / 10000) * 10000 : undefined,
         ownerId: "owner@example.com", // Assign a default owner for initial data
         phoneNumber: "99118811",
@@ -125,4 +128,6 @@ export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomTyp
 });
 
 
-export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'likes' | 'originalPrice'>
+export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'likes' | 'originalPrice' | 'detailedAddress'>
+
+    

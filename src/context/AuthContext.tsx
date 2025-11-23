@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 type HotelInfo = {
     hotelName: string;
     location: string;
+    detailedAddress?: string;
     phoneNumber: string;
     amenities?: Amenity[];
     galleryImageIds?: string[];
@@ -25,7 +26,7 @@ type AuthContextType = {
   userEmail: string | null;
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
-  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds'>) => Promise<void>;
+  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress'>) => Promise<void>;
   logout: () => Promise<void>;
   updateHotelInfo: (hotelInfo: Partial<HotelInfo>) => void;
 };
@@ -55,9 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds'>) => {
+  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress'>) => {
     const fullHotelInfo: HotelInfo = {
         ...hotel,
+        detailedAddress: '',
         amenities: [],
         galleryImageIds: [],
     };
@@ -121,3 +123,5 @@ const getAuthState = () => {
 useAuth.getState = getAuthState;
 
 export { useAuth };
+
+    
