@@ -6,6 +6,8 @@ import { Amenity } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+import { useUser, useAuth as useFirebaseAuth } from "@/firebase";
+import { signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 type HotelInfo = {
     hotelName: string;
@@ -28,7 +30,8 @@ type AuthContextType = {
   userEmail: string | null;
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
-  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
+  login: (email: string, password?: string) => Promise<void>;
+  register: (email: string, password: string, hotelData: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
   logout: () => Promise<void>;
   updateHotelInfo: (hotelInfo: Partial<HotelInfo>) => void;
 };
@@ -36,52 +39,89 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { user, isUserLoading } = useUser();
+  const auth = useFirebaseAuth();
   const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    try {
-        const savedUser = localStorage.getItem('authUser');
-        if (savedUser) {
-            const { email, hotel } = JSON.parse(savedUser);
-            setUserEmail(email);
-            setHotelInfo(hotel);
-            setIsLoggedIn(true);
-        }
-    } catch (error) {
-        console.warn("Could not read from localStorage");
-    }
-    setIsLoading(false);
-  }, []);
+  const isLoggedIn = !!user;
+  const userEmail = user?.email || null;
 
-  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
-    const fullHotelInfo: HotelInfo = {
-        ...hotel,
-        detailedAddress: '',
-        amenities: [],
-        galleryImageIds: [],
-    };
-    setIsLoggedIn(true);
-    setUserEmail(email);
-    setHotelInfo(fullHotelInfo);
-    localStorage.setItem('authUser', JSON.stringify({ email, hotel: fullHotelInfo }));
-    toast({
-        title: "Амжилттай нэвтэрлээ",
-        description: `${hotel.hotelName}-д тавтай морилно уу.`,
-    });
-    router.push('/dashboard');
-    router.refresh();
+  useEffect(() => {
+    setIsLoading(isUserLoading);
+    if (!isUserLoading && user) {
+        // In a real app, you would fetch hotel info from Firestore based on user.uid
+        // For now, we'll continue to use localStorage for hotelInfo persistence
+        try {
+            const savedHotelInfo = localStorage.getItem(`hotelInfo_${user.uid}`);
+            if (savedHotelInfo) {
+                setHotelInfo(JSON.parse(savedHotelInfo));
+            }
+        } catch (error) {
+            console.warn("Could not read hotel info from localStorage", error);
+        }
+    } else if (!isUserLoading && !user) {
+        setHotelInfo(null);
+    }
+  }, [user, isUserLoading]);
+
+
+  const login = async (email: string, password?: string) => {
+    try {
+        if (password) {
+            await signInWithEmailAndPassword(auth, email, password);
+        } else {
+            // This is for the anonymous login flow from the original code
+            // This might need adjustment based on final auth strategy
+            await signInAnonymously(auth); 
+        }
+        toast({
+            title: "Амжилттай нэвтэрлээ",
+        });
+        router.push('/dashboard');
+        router.refresh();
+    } catch (error: any) {
+         toast({
+            variant: "destructive",
+            title: "Нэвтрэхэд алдаа гарлаа",
+            description: error.message,
+        });
+    }
   };
+
+  const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const fullHotelInfo: HotelInfo = {
+            ...hotelData,
+            detailedAddress: '',
+            amenities: [],
+            galleryImageIds: [],
+        };
+        setHotelInfo(fullHotelInfo);
+        localStorage.setItem(`hotelInfo_${userCredential.user.uid}`, JSON.stringify(fullHotelInfo));
+        toast({
+            title: "Амжилттай бүртгүүллээ",
+            description: `${hotelData.hotelName}-д тавтай морилно уу.`,
+        });
+        router.push('/dashboard');
+        router.refresh();
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Бүртгүүлэхэд алдаа гарлаа",
+            description: error.message,
+        });
+    }
+  }
   
   const updateHotelInfo = (newHotelInfo: Partial<HotelInfo>) => {
-      if (isLoggedIn && userEmail && hotelInfo) {
-          const updatedHotelInfo = { ...hotelInfo, ...newHotelInfo };
+      if (user) {
+          const updatedHotelInfo = { ...(hotelInfo || {}), ...newHotelInfo } as HotelInfo;
           setHotelInfo(updatedHotelInfo);
-          localStorage.setItem('authUser', JSON.stringify({ email: userEmail, hotel: updatedHotelInfo }));
+          localStorage.setItem(`hotelInfo_${user.uid}`, JSON.stringify(updatedHotelInfo));
            toast({
                 title: "Амжилттай",
                 description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
@@ -90,40 +130,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    setIsLoggedIn(false);
-    setUserEmail(null);
-    setHotelInfo(null);
-    localStorage.removeItem('authUser');
-    toast({
-        title: "Системээс гарлаа",
-        description: "Та амжилттай системээс гарлаа.",
-    });
-    router.push('/');
+    try {
+        await signOut(auth);
+        setHotelInfo(null);
+        toast({
+            title: "Системээс гарлаа",
+            description: "Та амжилттай системээс гарлаа.",
+        });
+        router.push('/');
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Гарахад алдаа гарлаа",
+            description: error.message,
+        });
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, logout, isLoading, updateHotelInfo }}>
+    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, register, logout, isLoading, updateHotelInfo }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// This allows accessing the state outside of React components if needed
-const useAuth = () => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
-
-const getAuthState = () => {
-    const context = useContext(AuthContext);
-    return context || { hotelInfo: null }; // Provide a default for non-React contexts
-}
-
-useAuth.getState = getAuthState;
-
-export { useAuth };
-
-    

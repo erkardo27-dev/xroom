@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { locations } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "И-мэйл хаяг буруу байна." }),
@@ -42,7 +44,8 @@ type OwnerLoginFormProps = {
 
 
 export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
-    const { login, hotelInfo } = useAuth();
+    const { login, register } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
     
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -61,19 +64,17 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
     });
 
     async function onLoginSubmit(values: LoginFormValues) {
-        // In a real app, you'd fetch this for a logging-in user
-        // For this demo, we'll use existing hotelInfo if available, or a mock one.
-        const infoToLogin = hotelInfo || { hotelName: "Миний буудал", location: "Хотын төв", phoneNumber: "88118811"};
-        await login(values.email, infoToLogin);
+        setIsLoading(true);
+        await login(values.email, values.password);
+        setIsLoading(false);
         onFormSubmit();
     }
     
     async function onRegisterSubmit(values: RegisterFormValues) {
-        await login(values.email, { 
-            hotelName: values.hotelName, 
-            location: values.location,
-            phoneNumber: values.phoneNumber,
-        });
+        setIsLoading(true);
+        const { email, password, ...hotelData } = values;
+        await register(email, password, hotelData);
+        setIsLoading(false);
         onFormSubmit();
     }
 
@@ -120,7 +121,8 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" className="w-full">
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Нэвтрэх
                                 </Button>
                             </form>
@@ -211,7 +213,8 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" className="w-full">
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Бүртгүүлэх
                                 </Button>
                             </form>

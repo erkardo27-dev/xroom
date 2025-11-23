@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/context/AuthContext';
+import { FirebaseClientProvider } from '@/firebase';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="mn" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <FirebaseClientProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>
