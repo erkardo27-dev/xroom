@@ -120,7 +120,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const updateHotelInfo = (newHotelInfo: Partial<Omit<HotelInfo, 'id'>>) => {
       if (hotelInfoRef) {
-        setDocumentNonBlocking(hotelInfoRef, newHotelInfo, { merge: true });
+        // Sanitize data: Firestore doesn't accept `undefined`. Convert to `null`.
+        const sanitizedData = Object.fromEntries(
+            Object.entries(newHotelInfo).map(([key, value]) => [key, value === undefined ? null : value])
+        );
+
+        setDocumentNonBlocking(hotelInfoRef, sanitizedData, { merge: true });
         toast({
             title: "Амжилттай",
             description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
