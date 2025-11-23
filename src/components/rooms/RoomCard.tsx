@@ -107,7 +107,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const isLiked = likedRooms.includes(room.id);
 
   const autoplay = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: false })
   )
 
   useEffect(() => {
@@ -325,8 +325,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                     setApi={setApi} 
                     className="relative w-full rounded-t-lg overflow-hidden"
                     plugins={[autoplay.current]}
-                    onMouseEnter={autoplay.current.stop}
-                    onMouseLeave={autoplay.current.reset}
+                    onMouseEnter={() => autoplay.current.stop()}
+                    onMouseLeave={() => autoplay.current.play()}
                   >
                       <CarouselContent>
                           {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
