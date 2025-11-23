@@ -19,18 +19,19 @@ import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Amenity, amenityOptions, locations } from "@/lib/data";
 import { useEffect } from "react";
-import { Separator } from "../ui/separator";
 import { Checkbox } from "../ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Textarea } from "../ui/textarea";
-
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import Image from "next/image";
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
+  galleryImageIds: z.array(z.string()).optional(),
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
@@ -39,6 +40,32 @@ const formSchema = z.object({
 type HotelSettingsFormProps = {
     onFormSubmit: () => void;
 };
+
+const contractText = `XROOM TONIGHT - ҮЙЛЧИЛГЭЭНИЙ ГЭРЭЭ
+
+Нэг. Ерөнхий зүйл
+1.1. Энэхүү гэрээ нь "XRoom Tonight" (цаашид "Үйлчилгээ үзүүлэгч") болон гэрээнд нэгдсэн зочид буудал (цаашид "Хамтрагч") хоорондын хамтын ажиллагааны нөхцөлийг тодорхойлно.
+1.2. Хамтрагч нь Үйлчилгээ үзүүлэгчийн платформоор дамжуулан сүүлчийн минутын өрөөний захиалга авах, сурталчлах үйлчилгээнд хамрагдана.
+
+Хоёр. Талуудын эрх, үүрэг
+2.1. Үйлчилгээ үзүүлэгчийн эрх, үүрэг:
+- Платформын хэвийн, найдвартай ажиллагааг хангах.
+- Хамтрагчийн өрөөний мэдээллийг хэрэглэгчдэд үнэн зөв хүргэх.
+- Захиалгын төлбөр тооцоог гэрээнд заасны дагуу шийдвэрлэх.
+- Хэрэглэгчийн санал гомдлыг хүлээн авч, шийдвэрлэхэд хамтран ажиллах.
+2.2. Хамтрагчийн эрх, үүрэг:
+- Өрөөний үнэ, тоо ширхэг, нөхцөл зэрэг мэдээллийг үнэн зөв, цаг тухайд нь системд оруулах.
+- Платформоор орж ирсэн захиалгыг хүлээн авч, хэрэглэгчид гэрээнд заасан үйлчилгээг үзүүлэх.
+- Үйлчилгээний шимтгэлийг тохиролцсон хугацаанд төлөх.
+- Хэрэглэгчийн нэвтрэх кодыг шалгаж, өрөөг хүлээлгэн өгөх.
+
+Гурав. Төлбөр тооцоо
+3.1. Үйлчилгээ үзүүлэгч нь амжилттай хийгдсэн захиалга бүрээс тохиролцсон хувийн шимтгэл авна.
+3.2. Хэрэглэгчийн төлсөн төлбөр нь үйлчилгээний шимтгэл болон аппликейшний хураамжийг хассаны дараа Хамтрагчийн дансанд шилжинэ.
+
+Дөрөв. Бусад заалт
+4.1. Энэхүү гэрээ нь Хамтрагч системд бүртгүүлж, үйлчилгээний нөхцөлийг зөвшөөрснөөр хүчин төгөлдөр болно.
+4.2. Гэрээтэй холбоотой маргаантай асуудлыг талууд харилцан тохиролцох замаар шийдвэрлэнэ.`;
 
 
 export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
@@ -51,6 +78,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             location: hotelInfo?.location || undefined,
             phoneNumber: hotelInfo?.phoneNumber || "",
             amenities: hotelInfo?.amenities || [],
+            galleryImageIds: hotelInfo?.galleryImageIds || [],
             bankName: hotelInfo?.bankName || "",
             accountNumber: hotelInfo?.accountNumber || "",
             accountHolderName: hotelInfo?.accountHolderName || "",
@@ -62,6 +90,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             form.reset({
                 ...hotelInfo,
                 amenities: hotelInfo.amenities || [],
+                galleryImageIds: hotelInfo.galleryImageIds || [],
             });
         }
     }, [hotelInfo, form])
@@ -75,7 +104,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                  <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="h-auto">
+                    <TabsList className="h-auto flex-wrap">
                         <TabsTrigger value="info">Үндсэн мэдээлэл</TabsTrigger>
                         <TabsTrigger value="payment">Банкны данс</TabsTrigger>
                         <TabsTrigger value="gallery">Зургийн сан</TabsTrigger>
@@ -229,30 +258,74 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                             />
                         </TabsContent>
                          <TabsContent value="gallery">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Зургийн сан</CardTitle>
-                                    <CardDescription>Тун удахгүй...</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <p>Энд та зочид буудлынхаа зургуудыг удирдах боломжтой болно.</p>
-                                </CardContent>
-                            </Card>
+                            <FormField
+                                control={form.control}
+                                name="galleryImageIds"
+                                render={() => (
+                                    <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Буудлын зургийн сан</FormLabel>
+                                        <FormDescription>
+                                            Танай буудлыг илэрхийлэх зургуудыг сонгоно уу. Энэ нь хэрэглэгчийн хуудсанд харагдана.
+                                        </FormDescription>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {PlaceHolderImages.filter(img => img.id.startsWith("hotel-")).map((item) => (
+                                        <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="galleryImageIds"
+                                        render={({ field }) => {
+                                            const isChecked = field.value?.includes(item.id);
+                                            return (
+                                            <FormItem key={item.id}>
+                                                <FormControl>
+                                                    <Checkbox
+                                                        id={`gallery-${item.id}`}
+                                                        checked={isChecked}
+                                                        onCheckedChange={(checked) => {
+                                                            return checked
+                                                                ? field.onChange([...(field.value || []), item.id])
+                                                                : field.onChange(
+                                                                    field.value?.filter(
+                                                                    (value) => value !== item.id
+                                                                    )
+                                                                )
+                                                        }}
+                                                        className="sr-only"
+                                                    />
+                                                </FormControl>
+                                                <FormLabel htmlFor={`gallery-${item.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
+                                                     <Image src={item.imageUrl} alt={item.description} width={200} height={150} className="aspect-video object-cover" />
+                                                     {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
+                                                </FormLabel>
+                                            </FormItem>
+                                            )
+                                        }}
+                                        />
+                                    ))}
+                                    </div>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
                         </TabsContent>
                         <TabsContent value="contract">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Гэрээ</CardTitle>
-                                     <CardDescription>Тун удахгүй...</CardDescription>
+                                    <CardTitle>Үйлчилгээний гэрээ</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                     <p>Энд та XRoom Tonight-тай хийсэн үйлчилгээний гэрээгээ харах боломжтой болно.</p>
+                                    <Textarea
+                                        readOnly
+                                        value={contractText}
+                                        className="min-h-[300px] text-xs bg-muted/30"
+                                    />
                                 </CardContent>
                             </Card>
                         </TabsContent>
                     </div>
                 </Tabs>
-
 
                 <Button type="submit" className="w-full">
                     Хадгалах

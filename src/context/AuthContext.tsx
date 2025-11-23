@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Amenity } from "@/lib/data";
@@ -10,6 +11,7 @@ type HotelInfo = {
     location: string;
     phoneNumber: string;
     amenities?: Amenity[];
+    galleryImageIds?: string[];
     bankName?: string;
     accountNumber?: string;
     accountHolderName?: string;
