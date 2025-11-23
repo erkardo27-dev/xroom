@@ -1,120 +1,53 @@
-/**
- * Core Philosophy: This ruleset supports a public-facing hotel booking application.
- * The primary security model allows for public, read-only browsing of all hotel
- * and room information by any user, including unauthenticated ones. However,
- * all booking actions are strictly controlled. Bookings are private and can only
- * be created, viewed, updated, or deleted by the authenticated user who made them.
- *
- * Data Structure: The data is organized hierarchically. Top-level '/hotels'
- * contain hotel details. Each hotel can have a subcollection of '/rooms', and
- * each room can have a subcollection of '/bookings'. This structure is intuitive
- * but requires careful security rule implementation to protect private booking data.
- *
- * Key Security Decisions:
- * - Public Data: The '/hotels' and '/hotels/{hotelId}/rooms' collections are
- *   publicly readable to allow for searching and browsing. Client-side writes to
- *   these collections are completely disabled, assuming this data is managed by
- *   an administrative backend.
- * - Private Bookings: The '/bookings' subcollection is private. A user can only
- *   access bookings they have created. This is enforced by requiring a 'userId'
- *   field on every booking document.
- * - No Booking Lists: To prevent data leakage where one user could see all
- *   bookings for a popular room, direct listing of the '/bookings' subcollection
- *   is disabled. Clients should fetch a user's bookings through a properly
- *   indexed query, not by listing a room's entire booking history.
- *
- * Denormalization for Authorization: To ensure fast and secure authorization,
- * it is CRITICAL that every 'Booking' document contains a 'userId' field storing
- * the UID of the user who created it. This avoids costly and insecure 'get()'
- * calls to other documents and allows rules to directly verify ownership.
- *
- * Structural Segregation: While the data structure is nested, the rules create
- * a clear security boundary. The parent collections ('hotels', 'rooms') are treated
- * as public resources, while the deeply nested 'bookings' subcollection is treated
- * as a private, user-owned resource.
- */
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper Functions
-    
-    /**
-     * Checks if a user is authenticated.
-     */
-    function isSignedIn() {
-      return request.auth != null;
+  
+    // Helper function to check if the user is the owner of a document
+    function isOwner(docOwnerId) {
+      return request.auth != null && request.auth.uid == docOwnerId;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the fundamental check for document ownership.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * Checks for ownership on an existing document.
-     * Used for update and delete operations to prevent modifying non-existent data.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-    
-    /**
-     * Validates that critical, immutable fields of a booking are not changed during an update.
-     */
-    function bookingFieldsAreImmutable() {
-      // The user who owns the booking and the room it applies to must never change.
-      return request.resource.data.userId == resource.data.userId
-          && request.resource.data.roomId == resource.data.roomId;
-    }
-
-    /**
-     * @description Publicly readable hotel data. Writes are disallowed from the client.
-     * @path /hotels/{hotelId}
-     * @allow (get) Any user, signed in or not, can view hotel details.
-     * @deny (create) A user attempts to create a new hotel document.
-     * @principle Separates public read access from restricted write access, assuming data is admin-managed.
-     */
+    // Hotels collection: Contains public information about each hotel,
+    // but can only be written to by the owner.
     match /hotels/{hotelId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      // Anyone can read hotel information
+      allow read: if true;
+      
+      // Only the authenticated owner can create, update or delete their hotel info.
+      // The hotel document ID must match the user's UID.
+      allow write: if isOwner(hotelId);
+    }
+    
+    // Room Types collection: Contains templates for room types.
+    match /room_types/{roomTypeId} {
+      // Anyone can read room type information.
+      allow read: if true;
+      
+      // Only the owner can write to their own room types.
+      allow write: if isOwner(request.resource.data.ownerId);
+    }
+    
+    // Room Instances collection: Represents physical rooms.
+    match /room_instances/{instanceId} {
+      // Anyone can read room instance data to see availability.
+      allow read: if true;
+      
+      // The owner can update their own room instances (e.g. room number, initial status).
+      allow update: if isOwner(request.resource.data.ownerId);
 
-      /**
-       * @description Publicly readable room data for a specific hotel. Writes are disallowed.
-       * @path /hotels/{hotelId}/rooms/{roomId}
-       * @allow (list) Any user can list all rooms for a given hotel.
-       * @deny (update) A user attempts to change the price of a room.
-       * @principle Inherits the public-read, admin-write model from its parent collection.
-       */
-      match /rooms/{roomId} {
-        allow get: if true;
-        allow list: if true;
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
-
-        /**
-         * @description Private user bookings. A booking is strictly owned by its creator.
-         * @path /hotels/{hotelId}/rooms/{roomId}/bookings/{bookingId}
-         * @allow (create) An authenticated user creates a booking for themselves (request.resource.data.userId == auth.uid).
-         * @deny (get) A user tries to read another user's booking details.
-         * @deny (list) A user tries to list all bookings for a room, which would be a privacy violation.
-         * @principle Enforces strict document ownership for all operations and validates relational integrity on creation.
-         */
-        match /bookings/{bookingId} {
-          allow get: if isOwner(resource.data.userId);
-          allow list: if false;
-          allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-          allow update: if isExistingOwner(resource.data.userId) && bookingFieldsAreImmutable();
-          allow delete: if isExistingOwner(resource.data.userId);
-        }
-      }
+      // Only the owner can create or delete room instances.
+      allow create, delete: if isOwner(request.resource.data.ownerId);
+      
+      // A special case for booking: Any authenticated user can update a room instance
+      // to book it, but ONLY if they are changing the status to 'booked' and not
+      // overwriting an existing booking. This is a simplified rule for the MVP.
+      // A more robust solution would use a transaction and a separate 'bookings' collection.
+      allow update: if request.auth != null &&
+                      request.resource.data.overrides[request.time.date().toString()].status == 'booked' &&
+                      (!resource.data.overrides.keys().hasAny([request.time.date().toString()])) ||
+                      (resource.data.overrides[request.time.date().toString()].status != 'booked');
     }
   }
 }

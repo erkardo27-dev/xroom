@@ -2,10 +2,14 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
-import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from "react";
+import { Room, RoomInstance, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay } from 'date-fns';
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, doc, writeBatch } from "firebase/firestore";
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useAuth } from "./AuthContext";
 
 const LIKED_ROOMS_STORAGE_KEY = 'likedRooms';
 
@@ -23,9 +27,9 @@ type RoomContextType = {
   getRoomStatusForDate: (instanceId: string, date: Date) => RoomStatus;
   setRoomStatusForDate: (instanceId: string, date: Date, status: RoomStatus, bookingCode?: string) => void;
   getRoomPriceForDate: (instanceId: string, date: Date) => number;
-  setRoomPriceForDate: (instanceId: string, date: Date, price: number) => void;
-  getPriceForRoomTypeOnDate: (roomTypeId: string, date: Date) => number;
   setPriceForRoomTypeOnDate: (roomTypeId: string, date: Date, price: number | undefined) => void;
+  getPriceForRoomTypeOnDate: (roomTypeId: string, date: Date) => number;
+  setRoomPriceForDate: (instanceId: string, date: Date, price: number) => void;
   toggleLike: (roomId: string) => void;
   likedRooms: string[];
 };
@@ -33,53 +37,40 @@ type RoomContextType = {
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [error, setError] = useState<string | null>(null);
+  const firestore = useFirestore();
+  const { user } = useAuth();
+
+  const roomsQuery = useMemoFirebase(() => collection(firestore, 'room_types'), [firestore]);
+  const { data: rooms = [], isLoading: isRoomsLoading, error: roomsError } = useCollection<Room>(roomsQuery);
+  
+  const instancesQuery = useMemoFirebase(() => collection(firestore, 'room_instances'), [firestore]);
+  const { data: roomInstances = [], isLoading: isInstancesLoading, error: instancesError } = useCollection<RoomInstance>(instancesQuery);
+
   const [likedRooms, setLikedRooms] = useState<string[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        try {
-            const savedRooms = localStorage.getItem('rooms');
-            const savedInstances = localStorage.getItem('roomInstances');
-            const savedLikedRooms = localStorage.getItem(LIKED_ROOMS_STORAGE_KEY);
-            
-            if (savedRooms && savedInstances) {
-                setRooms(JSON.parse(savedRooms));
-                setRoomInstances(JSON.parse(savedInstances).map((inst: RoomInstance) => ({ ...inst, overrides: inst.overrides || {} }))); // Ensure overrides is not undefined
-            } else {
-                setRooms(initialRooms);
-                setRoomInstances(initialRoomInstances);
-            }
-             if (savedLikedRooms) {
-                setLikedRooms(JSON.parse(savedLikedRooms));
-            }
-            setStatus('success');
-        } catch (e) {
-            console.error("Failed to load data from localStorage", e);
-            setRooms(initialRooms);
-            setRoomInstances(initialRoomInstances);
-            setStatus('success');
-        }
-    }, 500);
+  const status = isRoomsLoading || isInstancesLoading ? 'loading' : (roomsError || instancesError) ? 'error' : 'success';
+  const error = roomsError?.message || instancesError?.message || null;
 
-    return () => clearTimeout(timer);
+
+  useEffect(() => {
+     try {
+        const savedLikedRooms = localStorage.getItem(LIKED_ROOMS_STORAGE_KEY);
+         if (savedLikedRooms) {
+            setLikedRooms(JSON.parse(savedLikedRooms));
+        }
+    } catch (e) {
+        console.error("Failed to load liked rooms from localStorage", e);
+    }
   }, []);
 
   useEffect(() => {
-    if (status === 'success') {
-        try {
-            localStorage.setItem('rooms', JSON.stringify(rooms));
-            localStorage.setItem('roomInstances', JSON.stringify(roomInstances));
-            localStorage.setItem(LIKED_ROOMS_STORAGE_KEY, JSON.stringify(likedRooms));
-        } catch (e) {
-            console.error("Failed to save data to localStorage", e);
-        }
+    try {
+        localStorage.setItem(LIKED_ROOMS_STORAGE_KEY, JSON.stringify(likedRooms));
+    } catch (e) {
+        console.error("Failed to save liked rooms to localStorage", e);
     }
-  }, [rooms, roomInstances, likedRooms, status]);
+  }, [likedRooms]);
 
 
     const toggleLike = (roomId: string) => {
@@ -90,61 +81,75 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         
         setLikedRooms(newLikedRooms);
         
-        setRooms(prevRooms => prevRooms.map(room => {
-            if (room.id === roomId) {
-                return { ...room, likes: isLiked ? (room.likes || 0) - 1 : (room.likes || 0) + 1 };
-            }
-            return room;
-        }));
+        const roomRef = doc(firestore, "room_types", roomId);
+        const room = rooms.find(r => r.id === roomId);
+        if (room) {
+            const newLikes = isLiked ? (room.likes || 0) - 1 : (room.likes || 0) + 1;
+            setDocumentNonBlocking(roomRef, { likes: newLikes }, { merge: true });
+        }
     };
 
-  const addRoom = (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => {
+  const addRoom = async (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => {
+    if (!firestore || !user) return;
+
+    const roomTypeId = doc(collection(firestore, 'room_types')).id;
+    const newRoomTypeRef = doc(firestore, "room_types", roomTypeId);
+
     const newRoomType: Room = {
       ...roomData,
-      id: `room-type-${Date.now()}`,
+      id: roomTypeId,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
       distance: +(Math.random() * 10 + 0.5).toFixed(1),
       likes: 0,
+      ownerId: user.uid,
     };
     
-    const newInstances: RoomInstance[] = Array.from({ length: newRoomType.totalQuantity }).map((_, i) => ({
-      instanceId: `${newRoomType.id}-instance-${i + 1}`,
-      roomTypeId: newRoomType.id,
-      roomNumber: `...`, // Placeholder, user will edit
-      status: 'available',
-      ownerId: newRoomType.ownerId,
-      overrides: {},
-    }));
-    
-    setRooms(prev => [newRoomType, ...prev]);
-    setRoomInstances(prev => [...prev, ...newInstances]);
+    const batch = writeBatch(firestore);
+    batch.set(newRoomTypeRef, newRoomType);
 
-     toast({
-        title: "Өрөөний төрөл нэмэгдлээ!",
-        description: `${newRoomType.roomName} төрлийн ${newRoomType.totalQuantity} ширхэг өрөө үүслээ. Одоо өрөө тус бүрийн дугаарыг онооно уу.`,
+    const newInstances: RoomInstance[] = Array.from({ length: newRoomType.totalQuantity }).map((_, i) => {
+        const instanceId = doc(collection(firestore, 'room_instances')).id;
+        const newInstanceRef = doc(firestore, "room_instances", instanceId);
+        const instanceData: RoomInstance = {
+            instanceId: instanceId,
+            roomTypeId: newRoomType.id,
+            roomNumber: `...`,
+            status: 'available',
+            ownerId: newRoomType.ownerId,
+            overrides: {},
+        };
+        batch.set(newInstanceRef, instanceData);
+        return instanceData;
     });
+
+    try {
+        await batch.commit();
+        toast({
+            title: "Өрөөний төрөл нэмэгдлээ!",
+            description: `${newRoomType.roomName} төрлийн ${newRoomType.totalQuantity} ширхэг өрөө үүслээ. Одоо өрөө тус бүрийн дугаарыг онооно уу.`,
+        });
+    } catch (e: any) {
+        toast({
+            variant: "destructive",
+            title: "Алдаа",
+            description: "Өрөө нэмэхэд алдаа гарлаа: " + e.message,
+        });
+    }
   };
 
   const updateRoom = (updatedRoom: Room) => {
-    setRooms(prevRooms => prevRooms.map(room => room.id === updatedRoom.id ? updatedRoom : room));
+    const roomRef = doc(firestore, "room_types", updatedRoom.id);
+    setDocumentNonBlocking(roomRef, updatedRoom, { merge: true });
   };
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
-    setRoomInstances(prev => prev.map(instance => instance.instanceId === updatedInstance.instanceId ? updatedInstance : instance));
+    const instanceRef = doc(firestore, "room_instances", updatedInstance.instanceId);
+    setDocumentNonBlocking(instanceRef, updatedInstance, { merge: true });
   };
 
   const deleteRoomInstance = (instanceId: string) => {
-    const instanceToDelete = roomInstances.find(i => i.instanceId === instanceId);
-    if (!instanceToDelete) return;
-
-    const roomType = rooms.find(r => r.id === instanceToDelete.roomTypeId);
-    
-    setRoomInstances(prev => prev.filter(instance => instance.instanceId !== instanceId));
-    
-    // Also decrement totalQuantity on the room type
-    if (roomType) {
-        updateRoom({ ...roomType, totalQuantity: roomType.totalQuantity - 1 });
-    }
+    const instanceRef = doc(firestore, "room_instances", instanceId);
+    deleteDocumentNonBlocking(instanceRef);
 
     toast({
         title: "Өрөө устгагдлаа",
@@ -192,74 +197,66 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
     const isToday = dateKey === todayKey;
 
-    setRoomInstances(prev =>
-      prev.map(instance => {
-        if (instance.instanceId === instanceId) {
-          const newInstance = { ...instance, overrides: {...instance.overrides} };
+    const instance = roomInstances.find(i => i.instanceId === instanceId);
+    if (!instance) return;
 
-          if (!newInstance.overrides[dateKey]) {
-            newInstance.overrides[dateKey] = {};
-          }
-          
-          newInstance.overrides[dateKey].status = status;
-          if (bookingCode) {
-            newInstance.overrides[dateKey].bookingCode = bookingCode;
-          }
+    const newInstance = { ...instance, overrides: {...instance.overrides} };
 
-          if (isToday) {
-            newInstance.status = status;
-            if (bookingCode) {
-                newInstance.bookingCode = bookingCode;
-            } else if (status === 'available') {
-                delete newInstance.bookingCode;
-            }
-          }
+    if (!newInstance.overrides[dateKey]) {
+        newInstance.overrides[dateKey] = {};
+    }
+    
+    newInstance.overrides[dateKey].status = status;
+    if (bookingCode) {
+        newInstance.overrides[dateKey].bookingCode = bookingCode;
+    }
 
-          return newInstance;
+    if (isToday) {
+        newInstance.status = status;
+        if (bookingCode) {
+            newInstance.bookingCode = bookingCode;
+        } else if (status === 'available') {
+            delete newInstance.bookingCode;
         }
-        return instance;
-      })
-    );
-  }, []);
+    }
+    
+    const instanceRef = doc(firestore, "room_instances", instanceId);
+    setDocumentNonBlocking(instanceRef, newInstance, { merge: true });
+
+  }, [roomInstances, firestore]);
 
   const setRoomPriceForDate = useCallback((instanceId: string, date: Date, price: number) => {
      const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-      const room = rooms.find(r => r.id === roomInstances.find(i => i.instanceId === instanceId)?.roomTypeId);
       const instance = roomInstances.find(i => i.instanceId === instanceId);
+      if(!instance) return;
 
-      setRoomInstances(prev =>
-        prev.map(instance => {
-            if (instance.instanceId === instanceId) {
-                const roomType = getRoomById(instance.roomTypeId);
-                if (!roomType) return instance;
-
-                const newInstance = { ...instance, overrides: { ...instance.overrides } };
-                
-                if (!newInstance.overrides[dateKey]) {
-                    newInstance.overrides[dateKey] = {};
-                }
-
-                if (price === roomType.price) {
-                    delete newInstance.overrides[dateKey].price;
-                    if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
-                        delete newInstance.overrides[dateKey];
-                    }
-                } else {
-                    newInstance.overrides[dateKey].price = price;
-                }
-
-                return newInstance;
-            }
-            return instance;
-        })
-      );
-      if (room && instance) {
-         toast({
-            title: "Үнэ шинэчлэгдлээ",
-            description: `${format(date, 'M/d')}-ний ${room.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
-        });
+      const room = rooms.find(r => r.id === instance.roomTypeId);
+      if(!room) return;
+      
+      const newInstance = { ...instance, overrides: { ...instance.overrides } };
+      
+      if (!newInstance.overrides[dateKey]) {
+          newInstance.overrides[dateKey] = {};
       }
-  }, [getRoomById, roomInstances, rooms, toast]);
+
+      if (price === room.price) {
+          delete newInstance.overrides[dateKey].price;
+          if (Object.keys(newInstance.overrides[dateKey]).length === 0) {
+              delete newInstance.overrides[dateKey];
+          }
+      } else {
+          newInstance.overrides[dateKey].price = price;
+      }
+
+      const instanceRef = doc(firestore, "room_instances", instanceId);
+      setDocumentNonBlocking(instanceRef, newInstance, { merge: true });
+      
+      toast({
+        title: "Үнэ шинэчлэгдлээ",
+        description: `${format(date, 'M/d')}-ний ${room.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
+      });
+
+  }, [roomInstances, rooms, firestore, toast]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
@@ -274,48 +271,51 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const setPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date, price: number | undefined) => {
     const roomType = getRoomById(roomTypeId);
-    if (!roomType) return;
+    if (!roomType || !firestore) return;
     
     const finalPrice = price === undefined ? roomType.price : price;
+    const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
 
     const instancesToUpdate = roomInstances.filter(i => i.roomTypeId === roomTypeId);
-    
-    setRoomInstances(prev => {
-        const newInstances = [...prev];
-        instancesToUpdate.forEach(inst => {
-            const index = newInstances.findIndex(i => i.instanceId === inst.instanceId);
-            if (index !== -1) {
-                const updatedInstance = { ...newInstances[index], overrides: { ...newInstances[index].overrides } };
-                const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
+    const batch = writeBatch(firestore);
 
-                if (!updatedInstance.overrides[dateKey]) {
-                    updatedInstance.overrides[dateKey] = {};
-                }
-                
-                if (price === undefined || price === roomType.price) {
-                    delete updatedInstance.overrides[dateKey].price;
-                } else {
-                    updatedInstance.overrides[dateKey].price = price;
-                }
+    instancesToUpdate.forEach(inst => {
+        const instanceRef = doc(firestore, "room_instances", inst.instanceId);
+        const newOverrides = { ...inst.overrides };
+        
+        if (!newOverrides[dateKey]) {
+            newOverrides[dateKey] = {};
+        }
 
-                if (Object.keys(updatedInstance.overrides[dateKey]).length === 0) {
-                    delete updatedInstance.overrides[dateKey];
-                }
-                
-                newInstances[index] = updatedInstance;
+        if (price === undefined || price === roomType.price) {
+            delete newOverrides[dateKey].price;
+            if(Object.keys(newOverrides[dateKey]).length === 0) {
+                 delete newOverrides[dateKey];
             }
+        } else {
+            newOverrides[dateKey].price = price;
+        }
+        batch.update(instanceRef, { overrides: newOverrides });
+    });
+    
+    batch.commit().then(() => {
+        toast({
+            title: "Үнэ шинэчлэгдлээ",
+            description: `${format(date, 'M/d')}-ний ${roomType.name} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
         });
-        return newInstances;
+    }).catch((e) => {
+         toast({
+            variant: "destructive",
+            title: "Алдаа",
+            description: "Үнийг шинэчлэхэд алдаа гарлаа: " + e.message,
+        });
     });
 
-    toast({
-        title: "Үнэ шинэчлэгдлээ",
-        description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
-    });
 
-  }, [getRoomById, roomInstances, toast]);
+  }, [getRoomById, roomInstances, toast, firestore]);
 
   const availableRoomsByType = useMemo(() => {
+    if (!rooms) return [];
     const today = startOfDay(new Date());
 
     return rooms.map(roomType => {
@@ -333,7 +333,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, availableRoomsByType, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setRoomPriceForDate, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, toggleLike, likedRooms }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, availableRoomsByType, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setPriceForRoomTypeOnDate, getPriceForRoomTypeOnDate, setRoomPriceForDate, toggleLike, likedRooms }}>
       {children}
     </RoomContext.Provider>
   );
@@ -346,3 +346,4 @@ export const useRoom = () => {
   }
   return context;
 };
+

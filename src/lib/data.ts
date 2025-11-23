@@ -1,7 +1,4 @@
 
-
-import { PlaceHolderImages } from './placeholder-images';
-
 export type Amenity = 
   | 'wifi' 
   | 'parking' 
@@ -33,9 +30,9 @@ export type Location = typeof locations[number];
 
 export type RoomStatus = 'available' | 'booked' | 'maintenance' | 'closed' | 'occupied';
 
-// Represents a template for a room type
+// Represents a template for a room type, stored in 'room_types' collection
 export type Room = {
-  id: string; // This will now be room TYPE id
+  id: string; 
   roomName: string;
   hotelName: string;
   price: number;
@@ -46,7 +43,7 @@ export type Room = {
   detailedAddress?: string;
   latitude?: number;
   longitude?: number;
-  ownerId: string;
+  ownerId: string; // user.uid of the hotel owner
   phoneNumber: string;
   totalQuantity: number;
   rating: number; 
@@ -54,14 +51,14 @@ export type Room = {
   likes: number;
 };
 
-// Represents an individual, physical room
+// Represents an individual, physical room, stored in 'room_instances' collection
 export type RoomInstance = {
-    instanceId: string; // Unique ID for each physical room, e.g., 'room-101-1'
+    instanceId: string;
     roomTypeId: string; // Foreign key to Room (the template)
     roomNumber: string; // e.g., "101", "205A"
     status: RoomStatus; // Base status for TODAY. Future dates default to this.
     bookingCode?: string; // 4-digit code if booked for TODAY
-    ownerId: string;
+    ownerId: string; // user.uid of the hotel owner
     // Date-specific overrides. Key is ISO date string (YYYY-MM-DD)
     overrides: { 
         [date: string]: {
@@ -71,68 +68,3 @@ export type RoomInstance = {
         }
     };
 };
-
-
-const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber' | 'originalPrice' | 'detailedAddress' | 'latitude' | 'longitude'>[] = [
-    {
-      id: 'room-type-1',
-      roomName: 'Стандарт Кинг Өрөө',
-      hotelName: 'Их Оазис',
-      price: 400000,
-      amenities: ['wifi', 'parking', 'restaurant', 'breakfast', 'fitness'],
-      imageIds: ['hotel-1', 'hotel-7', 'hotel-8'],
-      location: 'Хотын төв',
-    },
-    {
-      id: 'room-type-2',
-      roomName: 'Делюкс Люкс',
-      hotelName: 'Хотын Төв',
-      price: 320000,
-      amenities: ['wifi', 'restaurant', 'unifi', 'bathtub'],
-      imageIds: ['hotel-2', 'hotel-9', 'hotel-1'],
-      location: 'Хотын төв',
-    },
-    {
-      id: 'room-type-3',
-      roomName: 'Голын Харагдацтай Давхар Ор',
-      hotelName: 'Голын Эрэг Амралт',
-      price: 510000,
-      amenities: ['wifi', 'parking', 'breakfast', 'massage'],
-      imageIds: ['hotel-3', 'hotel-10', 'hotel-2'],
-      location: 'Зайсан',
-    },
-];
-
-export const initialRooms: Room[] = initialRoomTypesData.map((rt, index) => {
-    const isDiscounted = index % 2 === 0; // Make some rooms discounted
-    return {
-        ...rt,
-        detailedAddress: `${rt.location}, ${index + 1}-р гудамж, ${index + 5}-р байр`,
-        latitude: 47.91 + (Math.random() - 0.5) * 0.05, // Random coords around UB
-        longitude: 106.91 + (Math.random() - 0.5) * 0.1,
-        originalPrice: isDiscounted ? Math.round((rt.price * 1.3) / 10000) * 10000 : undefined,
-        ownerId: "owner@example.com", // Assign a default owner for initial data
-        phoneNumber: "99118811",
-        distance: +(Math.random() * 10 + 0.5).toFixed(1),
-        rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
-        totalQuantity: Math.floor(Math.random() * 5) + 2, // 2 to 6 rooms
-        likes: Math.floor(Math.random() * 200) + 20, // 20 to 220 likes
-    }
-});
-
-
-export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomType => {
-    return Array.from({ length: roomType.totalQuantity }).map((_, i) => ({
-        instanceId: `${roomType.id}-instance-${i + 1}`,
-        roomTypeId: roomType.id,
-        roomNumber: `${Math.floor(Math.random() * 4) + 1}0${i + 1}`, // e.g., 101, 202...
-        status: 'available',
-        ownerId: roomType.ownerId,
-        overrides: {}
-    }));
-});
-
-
-export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'likes' | 'originalPrice' | 'detailedAddress' | 'latitude' | 'longitude'>
-
-    

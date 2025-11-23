@@ -19,7 +19,7 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Amenity, amenityOptions, locations } from "@/lib/data";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Check, CheckCircle } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -86,19 +86,19 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         resolver: zodResolver(formSchema),
         mode: 'onChange',
         defaultValues: {
-            hotelName: hotelInfo?.hotelName || "",
-            location: hotelInfo?.location || undefined,
-            detailedAddress: hotelInfo?.detailedAddress || "",
-            latitude: hotelInfo?.latitude,
-            longitude: hotelInfo?.longitude,
-            phoneNumber: hotelInfo?.phoneNumber || "",
-            amenities: hotelInfo?.amenities || [],
-            galleryImageIds: hotelInfo?.galleryImageIds || [],
-            bankName: hotelInfo?.bankName || "",
-            accountNumber: hotelInfo?.accountNumber || "",
-            accountHolderName: hotelInfo?.accountHolderName || "",
-            signatureName: hotelInfo?.signatureName || "",
-            termsAccepted: isContractSigned,
+            hotelName: "",
+            location: undefined,
+            detailedAddress: "",
+            latitude: undefined,
+            longitude: undefined,
+            phoneNumber: "",
+            amenities: [],
+            galleryImageIds: [],
+            bankName: "",
+            accountNumber: "",
+            accountHolderName: "",
+            signatureName: "",
+            termsAccepted: false,
         },
     });
     
@@ -106,8 +106,17 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         if (hotelInfo) {
             form.reset({
                 ...hotelInfo,
+                hotelName: hotelInfo.hotelName || "",
+                location: hotelInfo.location || undefined,
+                detailedAddress: hotelInfo.detailedAddress || "",
+                latitude: hotelInfo.latitude,
+                longitude: hotelInfo.longitude,
+                phoneNumber: hotelInfo.phoneNumber || "",
                 amenities: hotelInfo.amenities || [],
                 galleryImageIds: hotelInfo.galleryImageIds || [],
+                bankName: hotelInfo.bankName || "",
+                accountNumber: hotelInfo.accountNumber || "",
+                accountHolderName: hotelInfo.accountHolderName || "",
                 signatureName: hotelInfo.signatureName || "",
                 termsAccepted: !!hotelInfo.contractSignedOn,
             });
@@ -132,9 +141,6 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         if (!isContractSigned && values.signatureName && values.termsAccepted) {
             payload.contractSignedOn = new Date().toISOString();
             payload.signatureName = values.signatureName;
-        } else {
-            payload.contractSignedOn = hotelInfo?.contractSignedOn;
-            payload.signatureName = hotelInfo?.signatureName;
         }
 
         updateHotelInfo(payload);
@@ -398,12 +404,12 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                 </CardContent>
                             </Card>
                             
-                             {isContractSigned ? (
+                             {isContractSigned && hotelInfo?.contractSignedOn ? (
                                 <div className="rounded-lg border bg-secondary/50 p-4 text-center">
                                     <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
                                     <p className="font-semibold text-green-700 dark:text-green-400">Гэрээ баталгаажсан</p>
                                     <p className="text-sm text-muted-foreground">
-                                        Та {format(new Date(hotelInfo.contractSignedOn!), 'yyyy оны M сарын d-нд')} <strong className="text-foreground">{hotelInfo.signatureName}</strong> нэрээр гэрээг баталгаажуулсан байна.
+                                        Та {format(new Date(hotelInfo.contractSignedOn), 'yyyy оны M сарын d-нд')} <strong className="text-foreground">{hotelInfo.signatureName}</strong> нэрээр гэрээг баталгаажуулсан байна.
                                     </p>
                                 </div>
                             ) : (
@@ -437,6 +443,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                         placeholder="Та энд өөрийн нэрээ бүтэн бичнэ үү" 
                                                         {...field} 
                                                         disabled={isContractSigned}
+                                                        value={field.value ?? ""}
                                                     />
                                                 </FormControl>
                                                 <FormDescription>

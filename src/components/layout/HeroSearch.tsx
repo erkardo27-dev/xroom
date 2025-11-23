@@ -30,6 +30,7 @@ export function HeroSearch({ onSearch, onClear, initialValue = '' }: HeroSearchP
   }, [initialValue]);
 
   const hotelNames = useMemo(() => {
+    if (!rooms) return [];
     const names = new Set(rooms.map(room => room.hotelName));
     return Array.from(names);
   }, [rooms]);
