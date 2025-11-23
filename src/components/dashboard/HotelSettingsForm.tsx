@@ -41,15 +41,20 @@ const formSchema = z.object({
   signatureName: z.string().optional(),
   termsAccepted: z.boolean().optional(),
 }).refine(data => {
-    // If there is no existing signature, the new signature fields are required.
     const { hotelInfo } = useAuth.getState();
-    if (!hotelInfo?.contractSignedOn) {
+    // If contract is already signed, no need for this validation.
+    if (hotelInfo?.contractSignedOn) {
+        return true;
+    }
+    // If user has started filling out the signature part, they must complete it.
+    if (data.signatureName || data.termsAccepted) {
         return !!data.signatureName && data.signatureName.length > 2 && !!data.termsAccepted;
     }
+    // If they haven't touched the contract part, it's fine.
     return true;
 }, {
     message: "Гэрээг баталгаажуулахын тулд нэрээ бичиж, нөхцөлийг зөвшөөрнө үү.",
-    path: ["signatureName"],
+    path: ["signatureName"], // Or another appropriate path
 });
 
 type HotelSettingsFormProps = {
@@ -89,6 +94,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        mode: 'onChange', // Validate on change to enable button
         defaultValues: {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
@@ -417,7 +423,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                     </div>
                 </Tabs>
 
-                <Button type="submit" className="w-full" disabled={!isContractSigned && (!form.watch('termsAccepted') || !form.watch('signatureName'))}>
+                <Button type="submit" className="w-full" disabled={!form.formState.isValid || !form.formState.isDirty}>
                     Хадгалах
                 </Button>
             </form>
