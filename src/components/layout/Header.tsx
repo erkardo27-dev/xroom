@@ -206,7 +206,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
                 </div>
             )}
 
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className={openDialog === 'settings' ? "sm:max-w-lg" : "sm:max-w-md"}>
                 {openDialog === 'login' && (
                     <>
                        <DialogHeader>

@@ -75,7 +75,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                  <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="h-auto">
                         <TabsTrigger value="info">Үндсэн мэдээлэл</TabsTrigger>
                         <TabsTrigger value="payment">Банкны данс</TabsTrigger>
                         <TabsTrigger value="gallery">Зургийн сан</TabsTrigger>
