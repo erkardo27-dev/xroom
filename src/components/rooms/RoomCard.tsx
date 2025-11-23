@@ -35,6 +35,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
@@ -42,7 +43,6 @@ import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { amenityOptions, Room, RoomInstance } from '@/lib/data';
-import { type CarouselApi } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 
 
@@ -88,6 +88,50 @@ type RoomCardProps = {
   availableInstances: RoomInstance[];
 };
 
+type BookingCarouselProps = {
+    images: typeof PlaceHolderImages;
+    isOpen: boolean;
+};
+
+const BookingCarousel = ({ images, isOpen }: BookingCarouselProps) => {
+    const [api, setApi] = useState<CarouselApi>();
+    const autoplay = useRef(Autoplay({ delay: 2000, stopOnInteraction: false }));
+
+    useEffect(() => {
+        if (isOpen && api) {
+            api.reInit();
+        }
+    }, [isOpen, api]);
+    
+    return (
+        <Carousel
+            setApi={setApi}
+            className="relative w-full rounded-t-lg overflow-hidden"
+            plugins={[autoplay.current]}
+            onMouseEnter={() => autoplay.current.stop()}
+            onMouseLeave={() => autoplay.current.play()}
+        >
+            <CarouselContent>
+                {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
+                    <CarouselItem key={image.id}>
+                        <div className="relative h-48 w-full">
+                            <Image
+                                src={image.imageUrl}
+                                alt={image.description}
+                                data-ai-hint={image.imageHint}
+                                fill
+                                className="object-cover"
+                            />
+                        </div>
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+            <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+            <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
+        </Carousel>
+    );
+}
 
 export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -95,7 +139,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>('qpay');
-  const [api, setApi] = useState<CarouselApi>()
   
   const { setRoomStatusForDate, toggleLike, likedRooms } = useRoom();
   const { toast } = useToast();
@@ -106,10 +149,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const totalPrice = room.price + SERVICE_FEE;
   const isLiked = likedRooms.includes(room.id);
 
-  const autoplay = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: false })
-  )
-
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'details') {
       setTimeout(() => {
@@ -118,15 +157,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     }
   }, [isBookingOpen, bookingStep]);
   
-  useEffect(() => {
-    if (!api) {
-      return
-    }
-    if(isBookingOpen) {
-        api.reInit()
-    }
-  }, [api, isBookingOpen])
-
 
   const images = useMemo(() => 
     room.imageIds.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean) as typeof PlaceHolderImages, 
@@ -321,36 +351,11 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           {bookingStep === 'details' && (
               <>
                 <AlertDialogHeader className='-m-6 mb-0'>
-                  <Carousel 
-                    setApi={setApi} 
-                    className="relative w-full rounded-t-lg overflow-hidden"
-                    plugins={[autoplay.current]}
-                    onMouseEnter={() => autoplay.current.stop()}
-                    onMouseLeave={() => autoplay.current.play()}
-                  >
-                      <CarouselContent>
-                          {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
-                          <CarouselItem key={image.id}>
-                              <div className="relative h-48 w-full">
-                              <Image
-                                  src={image.imageUrl}
-                                  alt={image.description}
-                                  data-ai-hint={image.imageHint}
-                                  fill
-                                  className="object-cover"
-                              />
-                              </div>
-                          </CarouselItem>
-                          ))}
-                      </CarouselContent>
-                      <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
-                      <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
-                      <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
-                      <div className='absolute bottom-4 left-4 text-white'>
-                          <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
-                          <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
-                      </div>
-                  </Carousel>
+                  <BookingCarousel images={images} isOpen={isBookingOpen} />
+                  <div className='absolute bottom-4 left-4 text-white p-6'>
+                      <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
+                      <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
+                  </div>
                 </AlertDialogHeader>
                 
                 <div className="space-y-4 pt-4">
@@ -531,3 +536,5 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
+
+    
