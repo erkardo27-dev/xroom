@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,10 @@ import { Amenity, amenityOptions, locations } from "@/lib/data";
 import { useEffect } from "react";
 import { Separator } from "../ui/separator";
 import { Checkbox } from "../ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Textarea } from "../ui/textarea";
+
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
@@ -68,152 +73,185 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                <FormField
-                    control={form.control}
-                    name="hotelName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Зочид буудлын нэр</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Танай буудлын нэр" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Байршил</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Буудлын байршил сонгоно уу" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Утасны дугаар</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
-                            </FormControl>
-                             <FormDescription>
-                                Шинэ захиалга орж ирэх үед энэ дугаарт мэдэгдэл илгээнэ.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="amenities"
-                    render={() => (
-                        <FormItem>
-                        <div className="mb-4">
-                            <FormLabel className="text-base">Нийтлэг үйлчилгээ</FormLabel>
-                             <FormDescription>
-                                Танай буудалд байдаг нийтлэг үйлчилгээнүүдийг сонгоно уу.
-                            </FormDescription>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            {amenityOptions.map((item) => (
-                                <FormField
-                                key={item.id}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                 <Tabs defaultValue="info" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="info">Үндсэн мэдээлэл</TabsTrigger>
+                        <TabsTrigger value="payment">Банкны данс</TabsTrigger>
+                        <TabsTrigger value="gallery">Зургийн сан</TabsTrigger>
+                        <TabsTrigger value="contract">Гэрээ</TabsTrigger>
+                    </TabsList>
+
+                    <div className="mt-4 max-h-[60vh] overflow-y-auto pr-3">
+                        <TabsContent value="info" className="space-y-4">
+                             <FormField
+                                control={form.control}
+                                name="hotelName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Зочид буудлын нэр</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Танай буудлын нэр" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="location"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Байршил</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Буудлын байршил сонгоно уу" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Утасны дугаар</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Мэдэгдэл хүлээн авах дугаар" {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Шинэ захиалга орж ирэх үед энэ дугаарт мэдэгдэл илгээнэ.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
                                 control={form.control}
                                 name="amenities"
-                                render={({ field }) => {
-                                    return (
-                                    <FormItem
-                                        key={item.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                        <FormControl>
-                                        <Checkbox
-                                            checked={field.value?.includes(item.id)}
-                                            onCheckedChange={(checked) => {
-                                            return checked
-                                                ? field.onChange([...(field.value || []), item.id])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                    (value) => value !== item.id
-                                                    )
+                                render={() => (
+                                    <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Нийтлэг үйлчилгээ</FormLabel>
+                                        <FormDescription>
+                                            Танай буудалд байдаг нийтлэг үйлчилгээнүүдийг сонгоно уу.
+                                        </FormDescription>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {amenityOptions.map((item) => (
+                                            <FormField
+                                            key={item.id}
+                                            control={form.control}
+                                            name="amenities"
+                                            render={({ field }) => {
+                                                return (
+                                                <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                                >
+                                                    <FormControl>
+                                                    <Checkbox
+                                                        checked={field.value?.includes(item.id)}
+                                                        onCheckedChange={(checked) => {
+                                                        return checked
+                                                            ? field.onChange([...(field.value || []), item.id])
+                                                            : field.onChange(
+                                                                field.value?.filter(
+                                                                (value) => value !== item.id
+                                                                )
+                                                            )
+                                                        }}
+                                                    />
+                                                    </FormControl>
+                                                    <FormLabel className="font-normal">
+                                                    {item.label}
+                                                    </FormLabel>
+                                                </FormItem>
                                                 )
                                             }}
-                                        />
-                                        </FormControl>
-                                        <FormLabel className="font-normal">
-                                        {item.label}
-                                        </FormLabel>
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
                                     </FormItem>
-                                    )
-                                }}
-                                />
-                            ))}
-                        </div>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <Separator className="my-6" />
-                <div>
-                    <h3 className="text-lg font-medium">Төлбөрийн данс</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Зочны төлсөн төлбөр энэ данс руу автоматаар шилжинэ.
-                    </p>
-                </div>
-                 <FormField
-                    control={form.control}
-                    name="bankName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Банкны нэр</FormLabel>
-                            <FormControl>
-                                <Input placeholder="ХААН БАНК" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="accountNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Дансны дугаар</FormLabel>
-                            <FormControl>
-                                <Input placeholder="50xxxxxxxx" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="accountHolderName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Б.БАТ" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                )}
+                            />
+                        </TabsContent>
+                        <TabsContent value="payment" className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Зочны төлсөн төлбөр энэ данс руу автоматаар шилжинэ.
+                            </p>
+                            <FormField
+                                control={form.control}
+                                name="bankName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Банкны нэр</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="ХААН БАНК" {...field} value={field.value ?? ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="accountNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Дансны дугаар</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="50xxxxxxxx" {...field} value={field.value ?? ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="accountHolderName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Б.БАТ" {...field} value={field.value ?? ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </TabsContent>
+                         <TabsContent value="gallery">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Зургийн сан</CardTitle>
+                                    <CardDescription>Тун удахгүй...</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p>Энд та зочид буудлынхаа зургуудыг удирдах боломжтой болно.</p>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="contract">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Гэрээ</CardTitle>
+                                     <CardDescription>Тун удахгүй...</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                     <p>Энд та XRoom Tonight-тай хийсэн үйлчилгээний гэрээгээ харах боломжтой болно.</p>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </div>
+                </Tabs>
 
 
                 <Button type="submit" className="w-full">
