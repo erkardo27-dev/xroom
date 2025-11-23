@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Image from 'next/image';
@@ -199,8 +198,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
-            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
-              <CarouselItem key={index}>
+            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
+              <CarouselItem key={image.id}>
                 <div className="relative h-56 w-full">
                   <Image
                     src={image.imageUrl}
@@ -299,7 +298,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           </div>
         </CardContent>
       </Card>
-
+      
       <React.Fragment key={room.id}>
         <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
           <AlertDialogContent>
@@ -496,7 +495,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                           <AlertTitle className='text-yellow-700 dark:text-yellow-400 font-bold'>Чухал санамж</AlertTitle>
                           <AlertDescription className='text-yellow-600 dark:text-yellow-500'>
                               Энэ цонхыг хаасны дараа нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
-                          </Aler tDescription>
+                          </AlertDescription>
                       </Alert>
                   </div>
                   <AlertDialogFooter>
