@@ -6,7 +6,7 @@ import { Amenity } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth as useFirebaseAuth } from "@/firebase";
@@ -118,21 +118,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
   
-  const updateHotelInfo = async (newHotelInfo: Partial<Omit<HotelInfo, 'id'>>) => {
+  const updateHotelInfo = (newHotelInfo: Partial<Omit<HotelInfo, 'id'>>) => {
       if (hotelInfoRef) {
-          try {
-            await setDoc(hotelInfoRef, newHotelInfo, { merge: true });
-            toast({
-                title: "Амжилттай",
-                description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
-            });
-          } catch(error: any) {
-             toast({
-                variant: "destructive",
-                title: "Алдаа гарлаа",
-                description: "Мэдээллийг хадгалахад алдаа гарлаа. Дараа дахин оролдоно уу.",
-            });
-          }
+        setDocumentNonBlocking(hotelInfoRef, newHotelInfo, { merge: true });
+        toast({
+            title: "Амжилттай",
+            description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
+        });
+      } else {
+        toast({
+            variant: "destructive",
+            title: "Алдаа гарлаа",
+            description: "Мэдээллийг хадгалах боломжгүй байна. Та дахин нэвтэрч ороод оролдоно уу.",
+        });
       }
   };
 
