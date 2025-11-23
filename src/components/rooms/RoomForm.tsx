@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const isEditMode = !!roomToEdit;
 
     const hotelGalleryImages = useMemo(() => {
-        if (!hotelInfo?.galleryImageIds) return [];
+        if (!hotelInfo?.galleryImageIds || hotelInfo.galleryImageIds.length === 0) return [];
         return hotelInfo.galleryImageIds.map(id => 
             PlaceHolderImages.find(p_img => p_img.id === id)
         ).filter(Boolean);
