@@ -11,6 +11,8 @@ type HotelInfo = {
     hotelName: string;
     location: string;
     detailedAddress?: string;
+    latitude?: number;
+    longitude?: number;
     phoneNumber: string;
     amenities?: Amenity[];
     galleryImageIds?: string[];
@@ -26,7 +28,7 @@ type AuthContextType = {
   userEmail: string | null;
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
-  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress'>) => Promise<void>;
+  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
   logout: () => Promise<void>;
   updateHotelInfo: (hotelInfo: Partial<HotelInfo>) => void;
 };
@@ -56,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress'>) => {
+  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
     const fullHotelInfo: HotelInfo = {
         ...hotel,
         detailedAddress: '',

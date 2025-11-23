@@ -19,7 +19,7 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Amenity, amenityOptions, locations } from "@/lib/data";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Check, CheckCircle } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,11 +28,15 @@ import { Textarea } from "../ui/textarea";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { format } from "date-fns";
+import { MapLocationPicker } from './MapLocationPicker';
+
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
   location: z.string({ required_error: "Байршил сонгоно уу."}),
   detailedAddress: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
   galleryImageIds: z.array(z.string()).optional(),
@@ -85,6 +89,8 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
             detailedAddress: hotelInfo?.detailedAddress || "",
+            latitude: hotelInfo?.latitude,
+            longitude: hotelInfo?.longitude,
             phoneNumber: hotelInfo?.phoneNumber || "",
             amenities: hotelInfo?.amenities || [],
             galleryImageIds: hotelInfo?.galleryImageIds || [],
@@ -113,6 +119,8 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
              hotelName: values.hotelName,
              location: values.location,
              detailedAddress: values.detailedAddress,
+             latitude: values.latitude,
+             longitude: values.longitude,
              phoneNumber: values.phoneNumber,
              amenities: values.amenities,
              galleryImageIds: values.galleryImageIds,
@@ -195,6 +203,29 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     </FormItem>
                                 )}
                             />
+                             <FormField
+                                control={form.control}
+                                name="latitude"
+                                render={({ field }) => (
+                                     <FormItem>
+                                        <FormLabel>Газрын зургийн байршил</FormLabel>
+                                        <FormControl>
+                                            <MapLocationPicker
+                                                value={{ lat: field.value, lng: form.getValues().longitude }}
+                                                onChange={(coords) => {
+                                                    form.setValue('latitude', coords.lat, { shouldDirty: true });
+                                                    form.setValue('longitude', coords.lng, { shouldDirty: true });
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Газрын зураг дээр дарж буудлынхаа байршлыг сонгоно уу.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <FormField
                                 control={form.control}
                                 name="phoneNumber"
@@ -238,13 +269,10 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                     <Checkbox
                                                         checked={field.value?.includes(item.id)}
                                                         onCheckedChange={(checked) => {
-                                                        return checked
-                                                            ? field.onChange([...(field.value || []), item.id])
-                                                            : field.onChange(
-                                                                field.value?.filter(
-                                                                (value) => value !== item.id
-                                                                )
-                                                            )
+                                                            const newValue = checked
+                                                                ? [...(field.value || []), item.id]
+                                                                : (field.value || []).filter((value) => value !== item.id);
+                                                            field.onChange(newValue);
                                                         }}
                                                     />
                                                     </FormControl>
@@ -333,13 +361,10 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                         id={`gallery-${item.id}`}
                                                         checked={isChecked}
                                                         onCheckedChange={(checked) => {
-                                                            return checked
-                                                                ? field.onChange([...(field.value || []), item.id])
-                                                                : field.onChange(
-                                                                    field.value?.filter(
-                                                                    (value) => value !== item.id
-                                                                    )
-                                                                )
+                                                            const newValue = checked
+                                                                ? [...(field.value || []), item.id]
+                                                                : (field.value || []).filter((value) => value !== item.id);
+                                                            field.onChange(newValue);
                                                         }}
                                                         className="sr-only"
                                                     />
@@ -434,5 +459,3 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         </Form>
     )
 }
-
-    

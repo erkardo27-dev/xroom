@@ -3,7 +3,7 @@
 "use client";
 
 import Image from 'next/image';
-import type { Room, RoomInstance } from '@/lib/data';
+import type { Room, RoomInstance, Amenity } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,6 +43,8 @@ import { useRoom } from '@/context/RoomContext';
 import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
+import { amenityOptions } from '@/lib/data';
+
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
     wifi: <Wifi className="w-4 h-4" />,
@@ -163,11 +165,9 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     }, 300);
   }
 
-  const amenities = useMemo(() => room.amenities.map(amenity => ({
-    key: amenity,
-    icon: amenityIcons[amenity],
-    label: amenity.charAt(0).toUpperCase() + amenity.slice(1),
-  })), [room.amenities]);
+  const amenities = useMemo(() => 
+    amenityOptions.filter(opt => room.amenities.includes(opt.id)),
+  [room.amenities]);
   
   const isDetailsConfirmationDisabled = checkinCode.length !== 4 || !termsAccepted;
   
@@ -266,20 +266,25 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           <div className="flex-grow" />
 
           <div className="flex items-center gap-2 mt-4 flex-wrap">
-            {amenities.map(a => (
-                <TooltipProvider key={a.key}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="flex items-center justify-center w-8 h-8 bg-secondary/70 rounded-lg">
-                                {a.icon}
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{a.label}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            ))}
+            {Object.keys(amenityIcons).slice(0, 5).map(key => {
+                const amenity = room.amenities.find(a => a === key);
+                if (!amenity) return null;
+                const option = amenityOptions.find(o => o.id === amenity);
+                return (
+                    <TooltipProvider key={key}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex items-center justify-center w-8 h-8 bg-secondary/70 rounded-lg">
+                                    {amenityIcons[amenity]}
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                            <p>{option?.label}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )
+            })}
           </div>
 
           <div className="flex justify-between items-end mt-4 pt-4 border-t">
@@ -301,30 +306,53 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         {bookingStep === 'details' && (
             <>
               <AlertDialogHeader className='-m-6 mb-0'>
-                <div className='relative h-40 w-full rounded-t-lg overflow-hidden'>
-                    {images.length > 0 && (
-                        <Image 
-                            src={images[0].imageUrl}
-                            alt={room.roomName}
-                            fill
-                            className='object-cover'
-                        />
-                    )}
-                     <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
+                <Carousel className="relative w-full rounded-t-lg overflow-hidden">
+                    <CarouselContent>
+                        {images.map((image, index) => (
+                        <CarouselItem key={index}>
+                            <div className="relative h-48 w-full">
+                            <Image
+                                src={image.imageUrl}
+                                alt={image.description}
+                                fill
+                                className="object-cover"
+                            />
+                            </div>
+                        </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+                    <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+                    <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
                     <div className='absolute bottom-4 left-4 text-white'>
                         <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
                         <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
                     </div>
-                </div>
+                </Carousel>
               </AlertDialogHeader>
               
               <div className="space-y-4 pt-4">
-                 <div className='bg-muted/50 rounded-xl p-4 space-y-2 border'>
+                 <div className='bg-muted/50 rounded-xl p-4 space-y-3 border'>
                      <div className='flex justify-between items-center text-sm font-semibold'>
                         <p className='flex items-center gap-2'><Building2 className='w-4 h-4' />Буудлын хаяг</p>
                     </div>
                     <Separator />
                     <p className='text-sm text-muted-foreground'>{room.detailedAddress || 'Дэлгэрэнгүй хаяг оруулаагүй байна.'}</p>
+                    
+                    <div className="pt-2">
+                        <p className="font-semibold text-sm">Өрөөний үйлчилгээ</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm text-muted-foreground">
+                            {amenities.map(amenity => (
+                                <div key={amenity.id} className="flex items-center gap-2">
+                                    {amenityIcons[amenity.id]}
+                                    <span>{amenity.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <Separator />
+
                     <div className='flex justify-between text-sm pt-2'>
                         <p>Өрөөний үнэ</p>
                         <p className='font-medium'>{room.price.toLocaleString()}₮</p>
