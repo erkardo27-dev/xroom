@@ -2,7 +2,7 @@
 "use client";
 
 import Image from 'next/image';
-import type { Room, RoomInstance, Amenity } from '@/lib/data';
+import type { Amenity } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,13 +35,14 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  useCarousel,
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
 import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
-import { amenityOptions } from '@/lib/data';
+import { amenityOptions, Room, RoomInstance } from '@/lib/data';
 
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -98,6 +99,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
+  const [api, setApi] = React.useState<ReturnType<typeof useCarousel>[1]>()
+
   const availableCount = availableInstances.length;
   const isSoldOut = availableCount === 0;
   const totalPrice = room.price + SERVICE_FEE;
@@ -110,6 +113,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
       }, 100);
     }
   }, [isBookingOpen, bookingStep]);
+
+  useEffect(() => {
+    if (api && isBookingOpen) {
+      api.reInit();
+    }
+  }, [api, isBookingOpen]);
 
 
   const images = useMemo(() => 
@@ -193,7 +202,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   }
 
   return (
-    <React.Fragment>
+    <>
       <Card className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl bg-card border-transparent hover:border-primary/20 shadow-lg hover:shadow-primary/10 flex flex-col">
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
@@ -305,7 +314,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           {bookingStep === 'details' && (
               <>
                 <AlertDialogHeader className='-m-6 mb-0'>
-                  <Carousel className="relative w-full rounded-t-lg overflow-hidden">
+                  <Carousel setApi={setApi} className="relative w-full rounded-t-lg overflow-hidden">
                       <CarouselContent>
                           {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
                           <CarouselItem key={image.id}>
@@ -506,8 +515,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           </AlertDialogContent>
         </AlertDialog>
       </React.Fragment>
-    </React.Fragment>
+    </>
   );
 }
-
-    
