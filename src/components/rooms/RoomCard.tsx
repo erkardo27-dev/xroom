@@ -62,21 +62,22 @@ type PaymentMethod = 'qpay' | 'socialpay' | 'transfer';
 const SERVICE_FEE = 5000;
 
 const QPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-12h4v2h-4v-2zm0 4h4v2h-4v-2zm-2 2h8v2h-8v-2z" fill="currentColor"/>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path fillRule="evenodd" clipRule="evenodd" d="M12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24ZM11.1664 6.88339C10.741 6.64391 10.2319 6.83296 10.0152 7.27988C9.91436 7.47881 9.87034 7.71261 9.90169 7.94056L10.5181 12.3338C10.5739 12.7565 10.9254 13.0694 11.3468 13.0694H12.6521C13.2543 13.0694 13.7383 12.5854 13.7383 11.9832C13.7383 11.381 13.2543 10.897 12.6521 10.897H11.7583L12.0166 9.07174C12.0537 8.7997 11.8398 8.56022 11.5678 8.52309C11.5259 8.51741 11.4834 8.51741 11.4415 8.52309L10.3621 8.68114C10.0901 8.71827 9.87614 8.95775 9.83901 9.22971C9.80188 9.50166 10.0158 9.74114 10.2878 9.77827L10.9252 9.67498L10.5843 12.0832L11.3468 12.0832C11.6677 12.0832 11.9251 11.8257 11.9251 11.5048C11.9251 11.1839 11.6677 10.9265 11.3468 10.9265H10.7473L11.1664 6.88339ZM8.24391 10.88C8.61803 10.5529 9.17637 10.518 9.58579 10.7937L12.9818 13.2268C13.3855 13.5025 13.6896 13.9169 13.7372 14.3941L14.0747 17.6625C14.128 18.1906 13.7243 18.6439 13.1962 18.6972C12.6681 18.7505 12.2148 18.3468 12.1615 17.8187L11.866 14.938L9.04944 16.7932C8.64861 17.0688 8.14812 17.027 7.78822 16.6671C7.42832 16.3072 7.38655 15.8067 7.66223 15.4059L8.24391 10.88Z" fill="#00AEEF"/>
     </svg>
 );
 
 const SocialPayIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" />
-        <path d="M15.5 12c0-1.93-1.57-3.5-3.5-3.5S8.5 10.07 8.5 12s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5zm-3.5 2c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="currentColor" />
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="24" cy="24" r="24" fill="#7E469C"/>
+        <path d="M24.0013 32.32C28.5833 32.32 32.3213 28.582 32.3213 24C32.3213 19.418 28.5833 15.68 24.0013 15.68C19.4193 15.68 15.6813 19.418 15.6813 24C15.6813 28.582 19.4193 32.32 24.0013 32.32Z" stroke="white" strokeWidth="3.2" strokeMiterlimit="10" strokeLinecap="round"/>
+        <path d="M24 28.2C26.3152 28.2 28.2 26.3152 28.2 24C28.2 21.6848 26.3152 19.8 24 19.8C21.6848 19.8 19.8 21.6848 19.8 24C19.8 26.3152 21.6848 28.2 24 28.2Z" fill="white"/>
     </svg>
 );
 
 const TransferIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M17 10H3v2h14v-2zm2-4H3v2h16V6zm-4 8H3v2h12v-2zM3 18v-2h18v2H3z" fill="currentColor"/>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M17 10H3V12H17V10ZM21 6H3V8H21V6ZM13 14H3V16H13V14ZM21 18H3V20H21V18Z" fill="currentColor"/>
     </svg>
 );
 
@@ -134,17 +135,17 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const handleConfirmBooking = () => {
     if (isSoldOut) return;
 
+    const instanceToBook = availableInstances[0];
+    setRoomStatusForDate(
+        instanceToBook.instanceId,
+        startOfDay(new Date()),
+        'booked',
+        checkinCode
+    );
+
     setBookingStep('booking');
     
     setTimeout(() => {
-        const instanceToBook = availableInstances[0];
-        setRoomStatusForDate(
-            instanceToBook.instanceId,
-            startOfDay(new Date()),
-            'booked',
-            checkinCode
-        );
-
         setBookingStep('success');
     }, 1500);
   };
@@ -302,108 +303,82 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                    Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг захиалах гэж байна.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-
-              <div className="py-2 space-y-4">
-                <div className='bg-muted/50 rounded-lg p-4 space-y-2'>
+              
+              <div className="space-y-6 pt-2">
+                 <div className='bg-muted/50 rounded-xl p-4 space-y-2 border'>
                     <div className='flex justify-between text-sm'>
                         <p>Өрөөний үнэ</p>
                         <p className='font-medium'>{room.price.toLocaleString()}₮</p>
                     </div>
                     <div className='flex justify-between text-sm'>
-                        <p className='flex items-center gap-1.5'>
+                        <p className='flex items-center gap-1.5 text-muted-foreground'>
                             Үйлчилгээний шимтгэл
-                             <TooltipProvider>
+                             <TooltipProvider delayDuration={100}>
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                                        <Info className="w-3.5 h-3.5" />
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                    <p>Аппликейшнийн найдвартай, тасралтгүй <br/> ажиллагааг хангахад зориулагдана.</p>
+                                    <p>Аппликейшний найдвартай, тасралтгүй <br/> ажиллагааг хангахад зориулагдана.</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
                         </p>
-                        <p className='font-medium'>{SERVICE_FEE.toLocaleString()}₮</p>
+                        <p className='font-medium text-muted-foreground'>{SERVICE_FEE.toLocaleString()}₮</p>
                     </div>
                     <Separator />
                      <div className='flex justify-between text-base'>
                         <p className='font-semibold'>Нийт дүн</p>
-                        <p className='font-bold text-primary'>{totalPrice.toLocaleString()}₮</p>
+                        <p className='font-bold text-primary text-lg'>{totalPrice.toLocaleString()}₮</p>
                     </div>
                 </div>
-              </div>
 
-
-              <div className="space-y-6">
-                <div>
-                    <Label className="font-semibold text-base">Төлбөрийн арга</Label>
-                    <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-1 gap-3 mt-2">
-                        <div>
+                <div className="space-y-3">
+                    <Label className="font-semibold">Төлбөрийн арга</Label>
+                    <RadioGroup onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} className="grid grid-cols-3 gap-3">
+                        <Label htmlFor="qpay" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
                             <RadioGroupItem value="qpay" id="qpay" className="sr-only peer" />
-                            <Label htmlFor="qpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                            <QPayIcon className="h-6 w-6 text-blue-600"/>
-                            <div>
-                                <span className="font-semibold">QPAY</span>
-                                <p className="text-sm text-muted-foreground">QPay-ээр шууд төлөх</p>
-                            </div>
-                            </Label>
-                        </div>
-                        <div>
+                            <QPayIcon className="h-8 w-auto text-[#00AEEF]" />
+                        </Label>
+                        <Label htmlFor="socialpay" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
                             <RadioGroupItem value="socialpay" id="socialpay" className="sr-only peer" />
-                            <Label htmlFor="socialpay" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                            <SocialPayIcon className="h-6 w-6 text-purple-600" />
-                            <div>
-                                <span className="font-semibold">SocialPay</span>
-                                <p className="text-sm text-muted-foreground">SocialPay-ээр шууд төлөх</p>
-                            </div>
-                            </Label>
-                        </div>
-                        <div>
-                            <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
-                            <Label htmlFor="transfer" className="flex items-center gap-4 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                            <TransferIcon className="h-6 w-6 text-gray-600"/>
-                            <div>
-                                <span className="font-semibold">Дансаар</span>
-                                <p className="text-sm text-muted-foreground">Дансанд мөнгө шилжүүлэх</p>
-                            </div>
-                            </Label>
-                        </div>
+                            <SocialPayIcon className="h-8 w-auto text-[#7E469C]" />
+                        </Label>
+                        <Label htmlFor="transfer" className="flex items-center justify-center p-3 rounded-lg border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                             <RadioGroupItem value="transfer" id="transfer" className="sr-only peer" />
+                            <TransferIcon className="h-8 w-auto text-muted-foreground" />
+                        </Label>
                     </RadioGroup>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="checkin-code" className="font-semibold text-base">
-                        Нэвтрэх код
-                    </Label>
-                    <Input
-                        id="checkin-code"
-                        ref={initialFocusRef}
-                        type="password"
-                        placeholder="••••"
-                        maxLength={4}
-                        value={checkinCode}
-                        onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="text-center text-3xl tracking-[0.5em] font-mono h-14"
-                    />
-                     <div className='flex items-center gap-2 text-xs text-muted-foreground pt-1'>
-                        <HelpCircle className="w-3 h-3"/>
-                        <span>Энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглана.</span>
-                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-                    <label
-                      htmlFor="terms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
-                    </label>
-                  </div>
+                <div className="grid grid-cols-2 gap-4 items-center">
+                    <div className="space-y-2">
+                        <Label htmlFor="checkin-code" className="font-semibold">
+                            Нэвтрэх код
+                        </Label>
+                        <Input
+                            id="checkin-code"
+                            ref={initialFocusRef}
+                            type="password"
+                            placeholder="••••"
+                            maxLength={4}
+                            value={checkinCode}
+                            onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
+                            className="text-center text-2xl tracking-[0.5em] font-mono h-12"
+                        />
+                    </div>
+                     <div className="flex items-center space-x-2 pt-8">
+                        <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
+                        <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
+                        </label>
+                    </div>
+                 </div>
               </div>
               <AlertDialogFooter>
                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <Button onClick={handleConfirmBooking} disabled={isConfirmationDisabled}>
-                  Төлбөр төлөх ({totalPrice.toLocaleString()}₮)
+                <Button onClick={handleConfirmBooking} disabled={isConfirmationDisabled} className="shadow-md shadow-primary/40">
+                  Төлбөр төлөх
                 </Button>
               </AlertDialogFooter>
             </>
@@ -411,16 +386,19 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         {bookingStep === 'booking' && (
              <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <AlertDialogTitle>Таны захиалгыг боловсруулж байна...</AlertDialogTitle>
+                <AlertDialogTitle>Төлбөрийг боловсруулж байна...</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Энэ нь хэдхэн секунд үргэлжилнэ. Түр хүлээнэ үү.
+                    Таны захиалгыг баталгаажуулж байна, түр хүлээнэ үү.
                 </AlertDialogDescription>
             </div>
         )}
         {bookingStep === 'success' && (
              <>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Захиалга баталгаажлаа!</AlertDialogTitle>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center border-4 border-green-200">
+                        <Check className="h-8 w-8 text-green-600" />
+                    </div>
+                    <AlertDialogTitle className="pt-2">Захиалга баталгаажлаа!</AlertDialogTitle>
                     <AlertDialogDescription>
                         Та доорх мэдээллийг ашиглан буудалд нэвтэрнэ үү.
                     </AlertDialogDescription>
@@ -432,17 +410,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                                 <p className='font-semibold text-foreground'>{room.hotelName}</p>
                                 <p className='flex items-center gap-2'><MapPin className='w-3.5 h-3.5' />{room.location}</p>
                             </div>
+                              <p className='flex items-center gap-2'><Phone className='w-3.5 h-3.5' /> {room.phoneNumber}</p>
                         </div>
                         <Separator/>
                         <div>
-                            <p className='font-semibold text-foreground'>Таны нэвтрэх код</p>
-                            <p className="font-bold text-primary tracking-widest text-2xl">{checkinCode}</p>
-                            <p className='text-xs'>Та энэ кодыг зочид буудалд өрөөгөө хүлээн авахдаа ашиглах тул мартаж болохгүйг анхаарна уу.</p>
-                        </div>
-                        <Separator/>
-                        <div>
-                            <p className='font-semibold text-foreground'>Холбоо барих</p>
-                            <p className='flex items-center gap-2'><Phone className='w-3.5 h-3.5' /> {room.phoneNumber}</p>
+                            <p className='font-semibold text-foreground uppercase'>Таны нэвтрэх код</p>
+                            <p className="font-bold text-primary tracking-[0.3em] text-4xl bg-background/50 py-2 mt-1 rounded-md">{checkinCode}</p>
                         </div>
                     </div>
 
@@ -455,7 +428,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                     </Alert>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogAction onClick={closeAndResetDialog}>Дуусгах</AlertDialogAction>
+                    <AlertDialogAction onClick={closeAndResetDialog} className="w-full">Ойлголоо</AlertDialogAction>
                 </AlertDialogFooter>
              </>
         )}
