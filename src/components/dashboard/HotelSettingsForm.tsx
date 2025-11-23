@@ -29,6 +29,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { MapLocationPicker } from './MapLocationPicker';
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 
 const formSchema = z.object({
@@ -81,6 +82,7 @@ const contractText = `XROOM TONIGHT - ҮЙЛЧИЛГЭЭНИЙ ГЭРЭЭ
 export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
     const { hotelInfo, updateHotelInfo } = useAuth();
     const isContractSigned = !!hotelInfo?.contractSignedOn;
+    const { toast } = useToast();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -164,7 +166,11 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         };
         reader.onerror = () => {
             setIsUploading(false);
-            alert('Зураг уншихад алдаа гарлаа.');
+            toast({
+                variant: 'destructive',
+                title: 'Алдаа',
+                description: 'Зураг уншихад алдаа гарлаа.',
+            });
         }
         reader.readAsDataURL(file);
     };
@@ -379,54 +385,63 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     className="hidden"
                                     accept="image/png, image/jpeg, image/webp"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading}
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <UploadCloud className="mr-2 h-4 w-4" />
-                                    )}
-                                    Зураг хуулах
-                                </Button>
                                 
                                 <FormField
                                     control={form.control}
                                     name="galleryImageUris"
                                     render={({ field }) => (
                                         <FormItem>
-                                            {field.value && field.value.length > 0 ? (
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                    {field.value.map((uri, index) => (
-                                                        <div key={index} className="relative group">
-                                                            <Image
-                                                                src={uri}
-                                                                alt={`Uploaded image ${index + 1}`}
-                                                                width={200}
-                                                                height={150}
-                                                                className="aspect-video object-cover rounded-lg border"
-                                                            />
-                                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            {(field.value && field.value.length > 0) ? (
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                        {field.value.map((uri, index) => (
+                                                            <div key={index} className="relative group aspect-video">
+                                                                <Image
+                                                                    src={uri}
+                                                                    alt={`Uploaded image ${index + 1}`}
+                                                                    fill
+                                                                    className="object-cover rounded-lg border"
+                                                                />
                                                                 <Button
                                                                     type="button"
                                                                     variant="destructive"
                                                                     size="icon"
+                                                                    className="absolute top-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
                                                                     onClick={() => handleRemoveImage(uri)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        ))}
+                                                    </div>
+                                                     <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="w-full"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        disabled={isUploading}
+                                                    >
+                                                        {isUploading ? (
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <UploadCloud className="mr-2 h-4 w-4" />
+                                                        )}
+                                                        Дахин зураг хуулах
+                                                    </Button>
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg">
-                                                    <ImageIcon className="w-10 h-10 text-muted-foreground" />
-                                                    <p className="mt-2 text-sm text-muted-foreground">Зургийн сан хоосон байна.</p>
+                                                 <div 
+                                                    className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 hover:border-primary/50 transition-colors"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                >
+                                                    <div className="p-3 bg-secondary rounded-full border mb-4">
+                                                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                                    </div>
+                                                    <p className="mt-2 text-sm font-semibold text-foreground">Зураг хуулах</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        PNG, JPG, WEBP төрлийн зураг сонгоно уу.
+                                                    </p>
+                                                     {isUploading && <Loader2 className="mt-4 h-5 w-5 animate-spin" />}
                                                 </div>
                                             )}
                                         </FormItem>
@@ -510,3 +525,5 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         </Form>
     )
 }
+
+    
