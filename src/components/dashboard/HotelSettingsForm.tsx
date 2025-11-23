@@ -40,21 +40,6 @@ const formSchema = z.object({
   accountHolderName: z.string().optional(),
   signatureName: z.string().optional(),
   termsAccepted: z.boolean().optional(),
-}).refine(data => {
-    const { hotelInfo } = useAuth.getState();
-    // If contract is already signed, no need for this validation.
-    if (hotelInfo?.contractSignedOn) {
-        return true;
-    }
-    // If user has started filling out the signature part, they must complete it.
-    if (data.signatureName || data.termsAccepted) {
-        return !!data.signatureName && data.signatureName.length > 2 && !!data.termsAccepted;
-    }
-    // If they haven't touched the contract part, it's fine.
-    return true;
-}, {
-    message: "Гэрээг баталгаажуулахын тулд нэрээ бичиж, нөхцөлийг зөвшөөрнө үү.",
-    path: ["signatureName"], // Or another appropriate path
 });
 
 type HotelSettingsFormProps = {
@@ -423,7 +408,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                     </div>
                 </Tabs>
 
-                <Button type="submit" className="w-full" disabled={!form.formState.isValid || !form.formState.isDirty}>
+                <Button type="submit" className="w-full" disabled={!form.formState.isDirty}>
                     Хадгалах
                 </Button>
             </form>
