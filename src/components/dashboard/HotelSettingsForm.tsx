@@ -79,7 +79,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        mode: 'onChange', // Validate on change to enable button
+        mode: 'onChange',
         defaultValues: {
             hotelName: hotelInfo?.hotelName || "",
             location: hotelInfo?.location || undefined,
@@ -134,7 +134,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                  <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="h-auto flex-wrap">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="info">Үндсэн мэдээлэл</TabsTrigger>
                         <TabsTrigger value="payment">Банкны данс</TabsTrigger>
                         <TabsTrigger value="gallery">Зургийн сан</TabsTrigger>

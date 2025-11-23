@@ -2,7 +2,7 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { Room, RoomInstance, initialRooms, initialRoomInstances, RoomStatus } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay } from 'date-fns';
@@ -316,34 +316,21 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   }, [getRoomById, roomInstances, setToastInfo]);
 
-  const availableRoomsByType = useCallback(() => {
+  const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());
 
-    const availableRoomTypeIds = new Set<string>();
-    roomInstances.forEach(instance => {
-      if (getRoomStatusForDate(instance.instanceId, today) === 'available') {
-        availableRoomTypeIds.add(instance.roomTypeId);
-      }
-    });
-
-    const result = Array.from(availableRoomTypeIds).map(roomTypeId => {
-      const roomType = rooms.find(r => r.id === roomTypeId);
-      if (!roomType) return null;
-
+    return rooms.map(roomType => {
       const availableInstances = roomInstances.filter(instance => 
-        instance.roomTypeId === roomTypeId && 
+        instance.roomTypeId === roomType.id && 
         getRoomStatusForDate(instance.instanceId, today) === 'available'
       );
-      
       return {
         ...roomType,
         availableInstances,
       };
-    }).filter((r): r is Room & { availableInstances: RoomInstance[] } => r !== null);
-    
-    return result;
+    }).filter(room => room.availableInstances.length > 0);
 
-  }, [rooms, roomInstances, getRoomStatusForDate])();
+  }, [rooms, roomInstances, getRoomStatusForDate]);
 
 
   return (

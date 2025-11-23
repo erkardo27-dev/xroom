@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid, Menu, Hotel, Flame, ArrowRight } from 'lucide-react';
+import { PlusCircle, LogIn, LogOut, Settings, Building, BarChart2, DollarSign, LayoutGrid, Menu, Hotel } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -30,11 +30,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
   } from "@/components/ui/dropdown-menu"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { OwnerLoginForm } from '@/components/auth/OwnerLoginForm';
 import { RoomForm } from '@/components/rooms/RoomForm';
 import { Logo } from './Logo';
@@ -43,7 +38,6 @@ import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
 import { HotelSettingsForm } from '../dashboard/HotelSettingsForm';
-import { Room } from '@/lib/data';
 
 type DialogType = 'addRoom' | 'login' | 'settings' | null;
 

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, useMemo, ChangeEvent } from "react";
@@ -7,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRoom } from "@/context/RoomContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Room } from "@/lib/data";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { addDays, format, getDay } from "date-fns";
@@ -99,57 +100,45 @@ export default function PricingClient() {
   const handleAiPriceSuggest = async () => {
     setIsAiLoading(true);
     setAiRecommendation(null);
-    
-    // MOCK IMPLEMENTATION
-    setTimeout(() => {
-        if (ownerRoomTypes.length === 0) {
-             toast({
-                title: "Өрөө олдсонгүй",
-                description: "AI зөвлөмж гаргахын тулд танд дор хаяж нэг өрөөний төрөл байх шаардлагатай.",
-            });
-            setIsAiLoading(false);
-            return;
-        }
 
-        const recommendations: Record<string, number> = {};
-        const firstRoomType = ownerRoomTypes[0];
+    if (ownerRoomTypes.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Өрөө олдсонгүй",
+        description: "AI зөвлөмж гаргахын тулд танд дор хаяж нэг өрөөний төрөл байх шаардлагатай.",
+      });
+      setIsAiLoading(false);
+      return;
+    }
 
-        dateColumns.forEach(date => {
-            const day = getDay(date); // Sunday: 0, Monday: 1, ..., Saturday: 6
-            const dateStr = format(date, 'yyyy-MM-dd');
-            const key = `${firstRoomType.id}_${dateStr}`;
-            let newPrice: number | null = null;
-            
-            // Friday or Saturday: Increase by 15%
-            if (day === 5 || day === 6) {
-                newPrice = Math.round((firstRoomType.price * 1.15) / 1000) * 1000;
-            }
-            // Monday: Decrease by 10%
-            else if (day === 1) {
-                 newPrice = Math.round((firstRoomType.price * 0.9) / 1000) * 1000;
-            }
+    const input: PricingRecommendationInput = {
+      roomTypes: ownerRoomTypes.map(({ originalPrice, totalQuantity, ...rest }) => rest), // Exclude fields not in schema
+      dateRange: {
+        startDate: format(dateColumns[0], 'yyyy-MM-dd'),
+        endDate: format(dateColumns[dateColumns.length - 1], 'yyyy-MM-dd'),
+      },
+    };
 
-            if (newPrice && newPrice !== firstRoomType.price) {
-                recommendations[key] = newPrice;
-            }
+    try {
+      const recommendation = await getPricingRecommendation(input);
+      if (Object.keys(recommendation.recommendations).length === 0) {
+        toast({
+            title: "Өөрчлөлт санал болгосонгүй",
+            description: "AI одоогийн үнийг хамгийн оновчтой гэж үзэж байна.",
         });
-        
-        const mockRecommendation: PricingRecommendation = {
-            summary: "Амралтын өдрүүдэд эрэлт ихсэх тул үнийг нэмж, ажлын өдрүүдэд хямдруулав.",
-            recommendations: recommendations
-        };
-
-        if (Object.keys(mockRecommendation.recommendations).length === 0) {
-            toast({
-                title: "Өөрчлөлт санал болгосонгүй",
-                description: "AI одоогийн үнийг хамгийн оновчтой гэж үзэж байна.",
-            });
-        } else {
-            setAiRecommendation(mockRecommendation);
-        }
-        setIsAiLoading(false);
-
-    }, 1500);
+      } else {
+        setAiRecommendation(recommendation);
+      }
+    } catch (error) {
+      console.error("AI pricing recommendation failed:", error);
+      toast({
+        variant: "destructive",
+        title: "AI зөвлөмж авахад алдаа гарлаа",
+        description: "Дараа дахин оролдоно уу. Хэрэв алдаа давтагдвал системд асуудал гарсан байж магадгүй.",
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
   }
   
   const handleAcceptAiRecommendation = () => {
@@ -294,7 +283,7 @@ export default function PricingClient() {
                                                             onBlur={handleInputBlur}
                                                             onKeyDown={handleInputKeyDown}
                                                             autoFocus
-                                                            className="w-full text-center font-semibold pr-7"
+                                                            className="w-full text-center font-semibold pr-7 h-10"
                                                         />
                                                         {isOverridden && (
                                                             <Button 
@@ -334,5 +323,3 @@ export default function PricingClient() {
     </div>
   );
 }
-
-    

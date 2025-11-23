@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from 'next/image';
@@ -8,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, CheckCircle, Loader2, BedDouble, ChevronLeft, ChevronRight, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Star, Flame } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -408,12 +409,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             </>
         )}
         {bookingStep === 'booking' && (
-            <AlertDialogHeader>
-                <AlertDialogTitle>Таны өрөөг баталгаажуулж байна...</AlertDialogTitle>
+             <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <AlertDialogTitle>Таны захиалгыг боловсруулж байна...</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Энэ нь түр зуур үргэлжилнэ.
+                    Энэ нь хэдхэн секунд үргэлжилнэ. Түр хүлээнэ үү.
                 </AlertDialogDescription>
-            </AlertDialogHeader>
+            </div>
         )}
         {bookingStep === 'success' && (
              <>

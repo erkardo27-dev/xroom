@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
-import { Amenity, Room, amenityOptions } from "@/lib/data";
+import { Amenity, Room } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
@@ -58,7 +59,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
         if (!hotelInfo?.galleryImageIds || hotelInfo.galleryImageIds.length === 0) return [];
         return hotelInfo.galleryImageIds.map(id => 
             PlaceHolderImages.find(p_img => p_img.id === id)
-        ).filter(Boolean);
+        ).filter((img): img is NonNullable<typeof img> => !!img);
     }, [hotelInfo?.galleryImageIds]);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -209,31 +210,31 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                             {hotelGalleryImages.map((item) => (
                                 <FormField
-                                key={item!.id}
+                                key={item.id}
                                 control={form.control}
                                 name="imageIds"
                                 render={({ field }) => {
-                                    const isChecked = field.value?.includes(item!.id);
+                                    const isChecked = field.value?.includes(item.id);
                                     return (
-                                    <FormItem key={item!.id}>
+                                    <FormItem key={item.id}>
                                         <FormControl>
                                             <Checkbox
-                                                id={`room-image-${item!.id}`}
+                                                id={`room-image-${item.id}`}
                                                 checked={isChecked}
                                                 onCheckedChange={(checked) => {
                                                     return checked
-                                                        ? field.onChange([...(field.value || []), item!.id])
+                                                        ? field.onChange([...(field.value || []), item.id])
                                                         : field.onChange(
                                                             field.value?.filter(
-                                                            (value) => value !== item!.id
+                                                            (value) => value !== item.id
                                                             )
                                                         )
                                                 }}
                                                 className="sr-only"
                                             />
                                         </FormControl>
-                                        <FormLabel htmlFor={`room-image-${item!.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
-                                                <Image src={item!.imageUrl} alt={item!.description} width={200} height={150} className="aspect-video object-cover" />
+                                        <FormLabel htmlFor={`room-image-${item.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
+                                                <Image src={item.imageUrl} alt={item.description} width={200} height={150} className="aspect-video object-cover" />
                                                 {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
                                         </FormLabel>
                                     </FormItem>
