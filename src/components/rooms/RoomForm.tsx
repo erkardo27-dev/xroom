@@ -19,7 +19,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
 import { Amenity, Room, amenityOptions } from "@/lib/data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useMemo } from "react";
@@ -56,11 +55,15 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const isEditMode = !!roomToEdit;
 
     const hotelGalleryImages = useMemo(() => {
-        if (!hotelInfo?.galleryImageIds || hotelInfo.galleryImageIds.length === 0) return [];
-        return hotelInfo.galleryImageIds.map(id => 
-            PlaceHolderImages.find(p_img => p_img.id === id)
-        ).filter((img): img is NonNullable<typeof img> => !!img);
-    }, [hotelInfo?.galleryImageIds]);
+        if (!hotelInfo?.galleryImageUris || hotelInfo.galleryImageUris.length === 0) return [];
+        // Since they are URIs, we don't need to find them in placeholder images.
+        // We map them to an object structure that the form component expects.
+        return hotelInfo.galleryImageUris.map((uri, index) => ({
+            id: uri, // Use URI as a unique ID for selection
+            imageUrl: uri,
+            description: `Uploaded image ${index + 1}`
+        }));
+    }, [hotelInfo?.galleryImageUris]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

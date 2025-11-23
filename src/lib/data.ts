@@ -1,4 +1,5 @@
 
+
 export type Amenity = 
   | 'wifi' 
   | 'parking' 
@@ -38,7 +39,7 @@ export type Room = {
   price: number;
   originalPrice?: number;
   amenities: Amenity[];
-  imageIds: string[];
+  imageIds: string[]; // These are now data URIs from the hotel's gallery
   location: Location;
   detailedAddress?: string;
   latitude?: number;

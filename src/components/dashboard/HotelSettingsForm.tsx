@@ -19,16 +19,16 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Amenity, amenityOptions, locations } from "@/lib/data";
-import { useEffect } from "react";
-import { Check, CheckCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, CheckCircle, Image as ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Textarea } from "../ui/textarea";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { format } from "date-fns";
 import { MapLocationPicker } from './MapLocationPicker';
+import { cn } from "@/lib/utils";
 
 
 const formSchema = z.object({
@@ -39,7 +39,7 @@ const formSchema = z.object({
   longitude: z.number().optional(),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
-  galleryImageIds: z.array(z.string()).optional(),
+  galleryImageUris: z.array(z.string()).optional(),
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
@@ -82,6 +82,9 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
     const { hotelInfo, updateHotelInfo } = useAuth();
     const isContractSigned = !!hotelInfo?.contractSignedOn;
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         mode: 'onChange',
@@ -93,7 +96,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             longitude: undefined,
             phoneNumber: "",
             amenities: [],
-            galleryImageIds: [],
+            galleryImageUris: [],
             bankName: "",
             accountNumber: "",
             accountHolderName: "",
@@ -113,7 +116,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                 longitude: hotelInfo.longitude,
                 phoneNumber: hotelInfo.phoneNumber || "",
                 amenities: hotelInfo.amenities || [],
-                galleryImageIds: hotelInfo.galleryImageIds || [],
+                galleryImageUris: hotelInfo.galleryImageUris || [],
                 bankName: hotelInfo.bankName || "",
                 accountNumber: hotelInfo.accountNumber || "",
                 accountHolderName: hotelInfo.accountHolderName || "",
@@ -132,7 +135,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
              longitude: values.longitude,
              phoneNumber: values.phoneNumber,
              amenities: values.amenities,
-             galleryImageIds: values.galleryImageIds,
+             galleryImageUris: values.galleryImageUris,
              bankName: values.bankName,
              accountNumber: values.accountNumber,
              accountHolderName: values.accountHolderName,
@@ -146,6 +149,30 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         updateHotelInfo(payload);
         onFormSubmit();
     }
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUri = e.target?.result as string;
+            const currentUris = form.getValues('galleryImageUris') || [];
+            form.setValue('galleryImageUris', [...currentUris, dataUri], { shouldDirty: true });
+            setIsUploading(false);
+        };
+        reader.onerror = () => {
+            setIsUploading(false);
+            alert('Зураг уншихад алдаа гарлаа.');
+        }
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveImage = (uriToRemove: string) => {
+        const currentUris = form.getValues('galleryImageUris') || [];
+        form.setValue('galleryImageUris', currentUris.filter(uri => uri !== uriToRemove), { shouldDirty: true });
+    };
 
     return (
         <Form {...form}>
@@ -341,54 +368,71 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                             />
                         </TabsContent>
                          <TabsContent value="gallery">
-                            <FormField
-                                control={form.control}
-                                name="galleryImageIds"
-                                render={() => (
-                                    <FormItem>
-                                    <div className="mb-4">
-                                        <FormLabel className="text-base">Буудлын зургийн сан</FormLabel>
-                                        <FormDescription>
-                                            Танай буудлыг илэрхийлэх зургуудыг сонгоно уу. Энэ нь хэрэглэгчийн хуудсанд харагдана.
-                                        </FormDescription>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                    {PlaceHolderImages.filter(img => img.id.startsWith("hotel-")).map((item) => (
-                                        <FormField
-                                        key={item.id}
-                                        control={form.control}
-                                        name="galleryImageIds"
-                                        render={({ field }) => {
-                                            const isChecked = field.value?.includes(item.id);
-                                            return (
-                                            <FormItem key={item.id}>
-                                                <FormControl>
-                                                    <Checkbox
-                                                        id={`gallery-${item.id}`}
-                                                        checked={isChecked}
-                                                        onCheckedChange={(checked) => {
-                                                            const newValue = checked
-                                                                ? [...(field.value || []), item.id]
-                                                                : (field.value || []).filter((value) => value !== item.id);
-                                                            field.onChange(newValue);
-                                                        }}
-                                                        className="sr-only"
-                                                    />
-                                                </FormControl>
-                                                <FormLabel htmlFor={`gallery-${item.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
-                                                     <Image src={item.imageUrl} alt={item.description} width={200} height={150} className="aspect-video object-cover" />
-                                                     {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
-                                                </FormLabel>
-                                            </FormItem>
-                                            )
-                                        }}
-                                        />
-                                    ))}
-                                    </div>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
+                             <div className="space-y-4">
+                                <CardDescription>
+                                    Буудлынхаа зургуудыг эндээс удирдан, өрөөний төрөл үүсгэхдээ ашиглана уу.
+                                </CardDescription>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    accept="image/png, image/jpeg, image/webp"
                                 />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <UploadCloud className="mr-2 h-4 w-4" />
+                                    )}
+                                    Зураг хуулах
+                                </Button>
+                                
+                                <FormField
+                                    control={form.control}
+                                    name="galleryImageUris"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            {field.value && field.value.length > 0 ? (
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                    {field.value.map((uri, index) => (
+                                                        <div key={index} className="relative group">
+                                                            <Image
+                                                                src={uri}
+                                                                alt={`Uploaded image ${index + 1}`}
+                                                                width={200}
+                                                                height={150}
+                                                                className="aspect-video object-cover rounded-lg border"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    size="icon"
+                                                                    onClick={() => handleRemoveImage(uri)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg">
+                                                    <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                                                    <p className="mt-2 text-sm text-muted-foreground">Зургийн сан хоосон байна.</p>
+                                                </div>
+                                            )}
+                                        </FormItem>
+                                    )}
+                                />
+                             </div>
                         </TabsContent>
                         <TabsContent value="contract" className="space-y-6">
                              <Card>

@@ -20,7 +20,7 @@ export type HotelInfo = {
     longitude?: number;
     phoneNumber: string;
     amenities?: Amenity[];
-    galleryImageIds?: string[];
+    galleryImageUris?: string[];
     bankName?: string;
     accountNumber?: string;
     accountHolderName?: string;
@@ -34,7 +34,7 @@ type AuthContextType = {
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<void>;
-  register: (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
+  register: (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUris' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
   logout: () => Promise<void>;
   updateHotelInfo: (hotelInfo: Partial<Omit<HotelInfo, 'id'>>) => void;
 };
@@ -78,14 +78,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageIds' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
+  const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUris' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const newHotelInfo: HotelInfo = {
             id: userCredential.user.uid,
             ...hotelData,
             amenities: [],
-            galleryImageIds: [],
+            galleryImageUris: [],
         };
         const newHotelRef = doc(firestore, "hotels", userCredential.user.uid);
         await setDoc(newHotelRef, newHotelInfo);

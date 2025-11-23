@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from 'next/image';
@@ -36,7 +37,6 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-  useCarousel,
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
@@ -114,8 +114,8 @@ function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: 
       }}
     >
         <CarouselContent>
-            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
-                <CarouselItem key={image.id}>
+            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
+                <CarouselItem key={image.id || index}>
                     <div className="relative h-48 w-full">
                         <Image
                             src={image.imageUrl}
@@ -162,9 +162,16 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   
 
   const images = useMemo(() => 
-    room.imageIds.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean) as typeof PlaceHolderImages, 
+    room.imageIds.map(idOrUri => {
+        // Check if it's a data URI
+        if (idOrUri.startsWith('data:image')) {
+            return { id: idOrUri, imageUrl: idOrUri, description: 'Uploaded image', imageHint: '' };
+        }
+        // Otherwise, assume it's an ID and find it in placeholders
+        return PlaceHolderImages.find(img => img.id === idOrUri);
+    }).filter(Boolean) as { id: string, imageUrl: string, description: string, imageHint: string }[],
     [room.imageIds]
-  );
+);
   
   const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;
 
@@ -249,8 +256,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         <div className="relative">
          <Carousel className="relative w-full group/carousel rounded-t-2xl overflow-hidden">
           <CarouselContent>
-            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
-              <CarouselItem key={image.id}>
+            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
+              <CarouselItem key={image.id || index}>
                 <div className="relative h-56 w-full">
                   <Image
                     src={image.imageUrl}

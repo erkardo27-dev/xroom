@@ -40,10 +40,10 @@
           "description": "List of amenities offered by the hotel.",
           "items": { "type": "string" }
         },
-        "galleryImageIds": {
+        "galleryImageUris": {
             "type": "array",
-            "description": "List of image IDs for the hotel's gallery.",
-            "items": { "type": "string" }
+            "description": "List of Base64 encoded data URIs for the hotel's gallery images.",
+            "items": { "type": "string", "format": "data-url" }
         },
         "bankName": { "type": "string" },
         "accountNumber": { "type": "string" },
@@ -65,7 +65,7 @@
         "price": { "type": "number" },
         "originalPrice": { "type": "number" },
         "amenities": { "type": "array", "items": { "type": "string" } },
-        "imageIds": { "type": "array", "items": { "type": "string" } },
+        "imageIds": { "type": "array", "description": "Stores the data URIs of the selected images from the parent hotel's gallery.", "items": { "type": "string", "format": "data-url" } },
         "location": { "type": "string" },
         "ownerId": { "type": "string", "description": "The UID of the user who owns the hotel." },
         "phoneNumber": { "type": "string" },
