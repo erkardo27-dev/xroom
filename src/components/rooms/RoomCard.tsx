@@ -108,6 +108,9 @@ function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: 
       setApi={setApi}
       className="relative w-full rounded-t-lg overflow-hidden"
       plugins={[autoplay.current]}
+      opts={{
+        loop: true,
+      }}
     >
         <CarouselContent>
             {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
@@ -275,23 +278,20 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               Дууссан
             </Badge>
           )}
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="absolute top-2 right-2 h-9 w-9 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-sm"
-            onClick={handleLikeClick}
-          >
-              <Heart className={cn("h-5 w-5", isLiked && "fill-red-500 text-red-500")}/>
-          </Button>
+          <div className="absolute top-2 right-2 flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full p-1 pr-3">
+             <span className="text-sm font-bold text-white">{room.likes || 0}</span>
+            <button 
+                onClick={handleLikeClick}
+                className="h-7 w-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+            >
+                <Heart className={cn("h-5 w-5 text-white", isLiked && "fill-red-500 text-red-500")}/>
+            </button>
+          </div>
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
           <div className='flex justify-between items-start'>
             <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5"><BedDouble className="w-4 h-4" /> {room.hotelName}</p>
-            <div className="flex items-center gap-1 text-sm">
-                <Heart className="w-4 h-4 text-red-500 fill-red-500/50" />
-                <span className="font-semibold text-foreground/90">{room.likes || 0}</span>
-            </div>
           </div>
 
           <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
@@ -344,192 +344,194 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         </CardContent>
       </Card>
       
-      <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
-        <AlertDialogContent>
-        {bookingStep === 'details' && (
-            <>
-              <AlertDialogHeader className='-m-6 mb-0'>
-                  <BookingCarousel room={room} images={images} isBookingOpen={isBookingOpen} />
-                <div className='absolute bottom-4 left-4 text-white p-6'>
-                    <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
-                    <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
-                </div>
-              </AlertDialogHeader>
-              
-              <div className="space-y-4 pt-4">
-                <div className='bg-muted/50 rounded-xl p-4 space-y-3 border'>
-                    <div className='flex justify-between items-center text-sm font-semibold'>
-                        <p className='flex items-center gap-2'><Building2 className='w-4 h-4' />Буудлын хаяг</p>
-                    </div>
-                    <Separator />
-                    <p className='text-sm text-muted-foreground'>{room.detailedAddress || 'Дэлгэрэнгүй хаяг оруулаагүй байна.'}</p>
-                    
-                    <div className="pt-2">
-                        <p className="font-semibold text-sm">Өрөөний үйлчилгээ</p>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm text-muted-foreground">
-                            {amenities.map(amenity => (
-                                <div key={amenity.id} className="flex items-center gap-2">
-                                    {amenityIcons[amenity.id]}
-                                    <span>{amenity.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className='bg-muted/50 rounded-xl p-4 space-y-3 border'>
-                    <div className='flex justify-between text-sm'>
-                        <p>Өрөөний үнэ</p>
-                        <p className='font-medium'>{room.price.toLocaleString()}₮</p>
-                    </div>
-                    <div className='flex justify-between text-sm'>
-                        <p className='flex items-center gap-1.5 text-muted-foreground'>
-                            Үйлчилгээний шимтгэл
-                            <TooltipProvider delayDuration={100}>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Info className="w-3.5 h-3.5" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                    <p>Аппликейшний найдвартай, тасралтгүй <br/> ажиллагааг хангахад зориулагдана.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </p>
-                        <p className='font-medium text-muted-foreground'>{SERVICE_FEE.toLocaleString()}₮</p>
-                    </div>
-                    <Separator />
-                    <div className='flex justify-between text-base'>
-                        <p className='font-semibold'>Нийт дүн</p>
-                        <p className='font-bold text-primary text-lg'>{totalPrice.toLocaleString()}₮</p>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <div className='flex items-center gap-3'>
-                        <KeyRound className="w-6 h-6 text-primary" />
-                        <div>
-                            <Label htmlFor="checkin-code" className="text-base font-bold text-primary">
-                                Таны нууц код
-                            </Label>
-                            <p className='text-xs text-muted-foreground'>Буудалд өрөөгөө хүлээн авахдаа энэ 4 оронтой кодыг ашиглана.</p>
-                        </div>
-                    </div>
-                    <Input
-                        id="checkin-code"
-                        ref={initialFocusRef}
-                        type="password"
-                        placeholder="••••"
-                        maxLength={4}
-                        value={checkinCode}
-                        onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="text-center text-3xl tracking-[0.5em] font-mono h-14 bg-background"
-                    />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-                    <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
-                    </label>
-                </div>
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
-                <Button onClick={handleProceedToPayment} disabled={isDetailsConfirmationDisabled} className="shadow-md shadow-primary/40">
-                  Төлбөр төлөх
-                </Button>
-              </AlertDialogFooter>
-            </>
-        )}
-        {bookingStep === 'payment' && (
-            <>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Төлбөрийн хэрэгсэл сонгох</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Та доорх хэрэгслүүдээс сонгон төлбөрөө төлнө үү.
-                    </AlertDialogDescription>
+      <React.Fragment key={room.id}>
+        <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
+          <AlertDialogContent>
+          {bookingStep === 'details' && (
+              <>
+                <AlertDialogHeader className='-m-6 mb-0'>
+                    <BookingCarousel room={room} images={images} isBookingOpen={isBookingOpen} />
+                  <div className='absolute bottom-4 left-4 text-white p-6'>
+                      <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
+                      <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
+                  </div>
                 </AlertDialogHeader>
-                <div className="space-y-6 pt-2">
-                    <div className='text-center'>
-                        <p className="text-sm text-muted-foreground">Төлөх дүн</p>
-                        <p className="text-4xl font-bold text-primary">{totalPrice.toLocaleString()}₮</p>
-                    </div>
-                     <div className="flex justify-center gap-4">
-                          <button onClick={() => setPaymentMethod('qpay')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'qpay' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
-                              <QPayIcon className="h-8 w-8" />
-                              <span className="mt-2 text-sm font-medium">QPay</span>
-                          </button>
-                           <button onClick={() => setPaymentMethod('socialpay')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'socialpay' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
-                              <SocialPayIcon className="h-8 w-8" />
-                              <span className="mt-2 text-sm font-medium">SocialPay</span>
-                          </button>
-                           <button onClick={() => setPaymentMethod('transfer')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'transfer' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
-                              <Banknote className="h-8 w-8" />
-                              <span className="mt-2 text-sm font-medium">Дансаар</span>
-                          </button>
+                
+                <div className="space-y-4 pt-4">
+                  <div className='bg-muted/50 rounded-xl p-4 space-y-3 border'>
+                      <div className='flex justify-between items-center text-sm font-semibold'>
+                          <p className='flex items-center gap-2'><Building2 className='w-4 h-4' />Буудлын хаяг</p>
                       </div>
-                </div>
+                      <Separator />
+                      <p className='text-sm text-muted-foreground'>{room.detailedAddress || 'Дэлгэрэнгүй хаяг оруулаагүй байна.'}</p>
+                      
+                      <div className="pt-2">
+                          <p className="font-semibold text-sm">Өрөөний үйлчилгээ</p>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm text-muted-foreground">
+                              {amenities.map(amenity => (
+                                  <div key={amenity.id} className="flex items-center gap-2">
+                                      {amenityIcons[amenity.id]}
+                                      <span>{amenity.label}</span>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  </div>
 
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setBookingStep('details')}>Буцах</AlertDialogCancel>
-                    <Button onClick={handleConfirmPayment} disabled={!paymentMethod} className="shadow-md shadow-primary/40">
-                        Төлбөр шалгах
-                    </Button>
-                </AlertDialogFooter>
-            </>
-        )}
-        {bookingStep === 'processing' && (
-            <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <AlertDialogTitle>Төлбөрийг боловсруулж байна...</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Таны захиалгыг баталгаажуулж байна, түр хүлээнэ үү.
-                </AlertDialogDescription>
-            </div>
-        )}
-        {bookingStep === 'success' && (
-            <>
-                <AlertDialogHeader className="text-center items-center">
-                    <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center border-4 border-green-200">
-                        <Check className="h-8 w-8 text-green-600" />
-                    </div>
-                    <AlertDialogTitle className="pt-2">Захиалга баталгаажлаа!</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Та доорх мэдээллийг ашиглан буудалд нэвтэрнэ үү.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="flex flex-col text-center py-4 gap-4">
-                    <div className="text-sm text-muted-foreground text-left bg-secondary/50 p-4 rounded-lg space-y-3">
-                        <div className='flex justify-between items-start'>
-                            <div>
-                                <p className='font-semibold text-foreground'>{room.hotelName}</p>
-                                <p className='flex items-center gap-2'><MapPin className='w-3.5 h-3.5' />{room.location}</p>
-                            </div>
-                              <p className='flex items-center gap-2'><Phone className='w-3.5 h-3.5' /> {room.phoneNumber}</p>
-                        </div>
-                        <Separator/>
-                        <div>
-                            <p className='font-semibold text-foreground uppercase'>Таны нэвтрэх код</p>
-                            <p className="font-bold text-primary tracking-[0.3em] text-4xl bg-background/50 py-2 mt-1 rounded-md">{checkinCode}</p>
-                        </div>
-                    </div>
+                  <div className='bg-muted/50 rounded-xl p-4 space-y-3 border'>
+                      <div className='flex justify-between text-sm'>
+                          <p>Өрөөний үнэ</p>
+                          <p className='font-medium'>{room.price.toLocaleString()}₮</p>
+                      </div>
+                      <div className='flex justify-between text-sm'>
+                          <p className='flex items-center gap-1.5 text-muted-foreground'>
+                              Үйлчилгээний шимтгэл
+                              <TooltipProvider delayDuration={100}>
+                                  <Tooltip>
+                                      <TooltipTrigger>
+                                          <Info className="w-3.5 h-3.5" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                      <p>Аппликейшний найдвартай, тасралтгүй <br/> ажиллагааг хангахад зориулагдана.</p>
+                                      </TooltipContent>
+                                  </Tooltip>
+                              </TooltipProvider>
+                          </p>
+                          <p className='font-medium text-muted-foreground'>{SERVICE_FEE.toLocaleString()}₮</p>
+                      </div>
+                      <Separator />
+                      <div className='flex justify-between text-base'>
+                          <p className='font-semibold'>Нийт дүн</p>
+                          <p className='font-bold text-primary text-lg'>{totalPrice.toLocaleString()}₮</p>
+                      </div>
+                  </div>
 
-                    <Alert variant="destructive" className='mt-4 text-left bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800/30'>
-                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                        <AlertTitle className='text-yellow-700 dark:text-yellow-400 font-bold'>Чухал санамж</AlertTitle>
-                        <AlertDescription className='text-yellow-600 dark:text-yellow-500'>
-                            Энэ цонхыг хаасны дараа нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
-                        </AlertDescription>
-                    </Alert>
+                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
+                      <div className='flex items-center gap-3'>
+                          <KeyRound className="w-6 h-6 text-primary" />
+                          <div>
+                              <Label htmlFor="checkin-code" className="text-base font-bold text-primary">
+                                  Таны нууц код
+                              </Label>
+                              <p className='text-xs text-muted-foreground'>Буудалд өрөөгөө хүлээн авахдаа энэ 4 оронтой кодыг ашиглана.</p>
+                          </div>
+                      </div>
+                      <Input
+                          id="checkin-code"
+                          ref={initialFocusRef}
+                          type="password"
+                          placeholder="••••"
+                          maxLength={4}
+                          value={checkinCode}
+                          onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="text-center text-3xl tracking-[0.5em] font-mono h-14 bg-background"
+                      />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                      <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
+                      <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
+                      </label>
+                  </div>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogAction onClick={closeAndResetDialog} className="w-full">Ойлголоо</AlertDialogAction>
+                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
+                  <Button onClick={handleProceedToPayment} disabled={isDetailsConfirmationDisabled} className="shadow-md shadow-primary/40">
+                    Төлбөр төлөх
+                  </Button>
                 </AlertDialogFooter>
-            </>
-        )}
-        </AlertDialogContent>
-      </AlertDialog>
+              </>
+          )}
+          {bookingStep === 'payment' && (
+              <>
+                  <AlertDialogHeader>
+                      <AlertDialogTitle>Төлбөрийн хэрэгсэл сонгох</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Та доорх хэрэгслүүдээс сонгон төлбөрөө төлнө үү.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-6 pt-2">
+                      <div className='text-center'>
+                          <p className="text-sm text-muted-foreground">Төлөх дүн</p>
+                          <p className="text-4xl font-bold text-primary">{totalPrice.toLocaleString()}₮</p>
+                      </div>
+                       <div className="flex justify-center gap-4">
+                            <button onClick={() => setPaymentMethod('qpay')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'qpay' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
+                                <QPayIcon className="h-8 w-8" />
+                                <span className="mt-2 text-sm font-medium">QPay</span>
+                            </button>
+                             <button onClick={() => setPaymentMethod('socialpay')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'socialpay' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
+                                <SocialPayIcon className="h-8 w-8" />
+                                <span className="mt-2 text-sm font-medium">SocialPay</span>
+                            </button>
+                             <button onClick={() => setPaymentMethod('transfer')} className={cn("flex flex-col items-center justify-center rounded-lg border-2 p-4 w-24 h-24 transition-all", paymentMethod === 'transfer' ? 'border-primary shadow-lg scale-105' : 'border-muted hover:border-primary/50')}>
+                                <Banknote className="h-8 w-8" />
+                                <span className="mt-2 text-sm font-medium">Дансаар</span>
+                            </button>
+                        </div>
+                  </div>
+
+                  <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setBookingStep('details')}>Буцах</AlertDialogCancel>
+                      <Button onClick={handleConfirmPayment} disabled={!paymentMethod} className="shadow-md shadow-primary/40">
+                          Төлбөр шалгах
+                      </Button>
+                  </AlertDialogFooter>
+              </>
+          )}
+          {bookingStep === 'processing' && (
+              <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                  <AlertDialogTitle>Төлбөрийг боловсруулж байна...</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      Таны захиалгыг баталгаажуулж байна, түр хүлээнэ үү.
+                  </AlertDialogDescription>
+              </div>
+          )}
+          {bookingStep === 'success' && (
+              <>
+                  <AlertDialogHeader className="text-center items-center">
+                      <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center border-4 border-green-200">
+                          <Check className="h-8 w-8 text-green-600" />
+                      </div>
+                      <AlertDialogTitle className="pt-2">Захиалга баталгаажлаа!</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          Та доорх мэдээллийг ашиглан буудалд нэвтэрнэ үү.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="flex flex-col text-center py-4 gap-4">
+                      <div className="text-sm text-muted-foreground text-left bg-secondary/50 p-4 rounded-lg space-y-3">
+                          <div className='flex justify-between items-start'>
+                              <div>
+                                  <p className='font-semibold text-foreground'>{room.hotelName}</p>
+                                  <p className='flex items-center gap-2'><MapPin className='w-3.5 h-3.5' />{room.location}</p>
+                              </div>
+                                <p className='flex items-center gap-2'><Phone className='w-3.5 h-3.5' /> {room.phoneNumber}</p>
+                          </div>
+                          <Separator/>
+                          <div>
+                              <p className='font-semibold text-foreground uppercase'>Таны нэвтрэх код</p>
+                              <p className="font-bold text-primary tracking-[0.3em] text-4xl bg-background/50 py-2 mt-1 rounded-md">{checkinCode}</p>
+                          </div>
+                      </div>
+
+                      <Alert variant="destructive" className='mt-4 text-left bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800/30'>
+                          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                          <AlertTitle className='text-yellow-700 dark:text-yellow-400 font-bold'>Чухал санамж</AlertTitle>
+                          <AlertDescription className='text-yellow-600 dark:text-yellow-500'>
+                              Энэ цонхыг хаасны дараа нэвтрэх код дахин харагдахгүй. Та мэдээллээ тэмдэглэж авна уу.
+                          </AlertDescription>
+                      </Alert>
+                  </div>
+                  <AlertDialogFooter>
+                      <AlertDialogAction onClick={closeAndResetDialog} className="w-full">Ойлголоо</AlertDialogAction>
+                  </AlertDialogFooter>
+              </>
+          )}
+          </AlertDialogContent>
+        </AlertDialog>
+      </React.Fragment>
     </>
   );
 }
