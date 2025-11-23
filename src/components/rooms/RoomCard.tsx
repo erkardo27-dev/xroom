@@ -300,14 +300,25 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         <AlertDialogContent>
         {bookingStep === 'details' && (
             <>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Захиалгын мэдээлэл</AlertDialogTitle>
-                <AlertDialogDescription>
-                   Та <span className="font-semibold text-foreground">{room.hotelName}</span>-д <span className="font-semibold text-foreground">{room.roomName}</span> өрөөг захиалах гэж байна.
-                </AlertDialogDescription>
+              <AlertDialogHeader className='-m-6 mb-0'>
+                <div className='relative h-40 w-full rounded-t-lg overflow-hidden'>
+                    {images.length > 0 && (
+                        <Image 
+                            src={images[0].imageUrl}
+                            alt={room.roomName}
+                            fill
+                            className='object-cover'
+                        />
+                    )}
+                     <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
+                    <div className='absolute bottom-4 left-4 text-white'>
+                        <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
+                        <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
+                    </div>
+                </div>
               </AlertDialogHeader>
               
-              <div className="space-y-6 pt-2">
+              <div className="space-y-4 pt-4">
                  <div className='bg-muted/50 rounded-xl p-4 space-y-2 border'>
                      <div className='flex justify-between items-center text-sm font-semibold'>
                         <p className='flex items-center gap-2'><Building2 className='w-4 h-4' />Буудлын хаяг</p>
