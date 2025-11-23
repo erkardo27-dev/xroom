@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -131,7 +130,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
     }, [hotelInfo, form])
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const payload: Parameters<typeof updateHotelInfo>[0] = {
+        const payload: Partial<Omit<HotelInfo, 'id'>> = {
              hotelName: values.hotelName,
              location: values.location,
              detailedAddress: values.detailedAddress,
@@ -185,7 +184,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
              toast({
                 title: 'Амжилттай устгалаа',
                 description: 'Зураг амжилттай устгагдлаа.',
-                variant: 'destructive'
+                variant: 'default'
             });
         } catch (error) {
              toast({
@@ -408,10 +407,10 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     name="galleryImageUrls"
                                     render={({ field }) => (
                                         <FormItem>
-                                            {(field.value && field.value.length > 0) ? (
+                                            {(field.value && field.value.length > 0) || isUploading ? (
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                        {field.value.map((url, index) => (
+                                                        {field.value?.map((url, index) => (
                                                             <div key={index} className="relative group aspect-video">
                                                                 <Image
                                                                     src={url}
@@ -424,7 +423,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                                     type="button"
                                                                     variant="destructive"
                                                                     size="icon"
-                                                                    className="absolute top-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
+                                                                    className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                     onClick={() => handleRemoveImage(url)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
