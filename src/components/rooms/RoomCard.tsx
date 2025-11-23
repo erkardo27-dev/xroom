@@ -35,7 +35,6 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  useCarousel,
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
@@ -43,6 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { amenityOptions, Room, RoomInstance } from '@/lib/data';
+import { type CarouselApi } from "@/components/ui/carousel"
 
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -94,13 +94,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [checkinCode, setCheckinCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>('qpay');
+  const [api, setApi] = useState<CarouselApi>()
   
   const { setRoomStatusForDate, toggleLike, likedRooms } = useRoom();
   const { toast } = useToast();
   const initialFocusRef = useRef<HTMLInputElement>(null);
   
-  const [api, setApi] = React.useState<ReturnType<typeof useCarousel>[1]>()
-
   const availableCount = availableInstances.length;
   const isSoldOut = availableCount === 0;
   const totalPrice = room.price + SERVICE_FEE;
@@ -113,12 +112,15 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
       }, 100);
     }
   }, [isBookingOpen, bookingStep]);
-
+  
   useEffect(() => {
-    if (api && isBookingOpen) {
-      api.reInit();
+    if (!api) {
+      return
     }
-  }, [api, isBookingOpen]);
+    if(isBookingOpen) {
+        api.reInit()
+    }
+  }, [api, isBookingOpen])
 
 
   const images = useMemo(() => 
