@@ -43,7 +43,7 @@ type DialogType = 'addRoom' | 'login' | 'settings' | null;
 
 export default function Header({ isDashboard = false }: { isDashboard?: boolean; }) {
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
-  const { isLoggedIn, userEmail, hotelInfo, logout, isAdmin } = useAuth();
+  const { isLoggedIn, userEmail, hotelInfo, logout, isAdmin, isLoading } = useAuth();
   const router = useRouter();
 
   const handleOpenChange = (open: boolean) => {
@@ -64,13 +64,18 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
   const handleLogout = async () => {
     await logout();
   }
+  
+  const getDashboardTitle = () => {
+      if (isLoading) return '...';
+      return hotelInfo?.hotelName || "Миний самбар";
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
         <Link href="/" className="flex items-center gap-3">
           <Logo className="h-8 w-auto text-primary" />
-           {isDashboard && !isAdmin && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ {hotelInfo?.hotelName || "Миний самбар"}</span>}
+           {isDashboard && !isAdmin && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ {getDashboardTitle()}</span>}
            {isAdmin && <span className="font-semibold text-muted-foreground hidden sm:inline-block">/ Админ</span>}
         </Link>
 
