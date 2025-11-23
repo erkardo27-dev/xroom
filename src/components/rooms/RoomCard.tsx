@@ -35,7 +35,6 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  useCarousel,
   type CarouselApi
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -97,6 +96,7 @@ function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: 
 
   useEffect(() => {
     if (isBookingOpen && api) {
+        // A short delay is needed to allow the dialog to finish its animation
         setTimeout(() => {
             api.reInit();
         }, 100);
@@ -533,3 +533,5 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
+
+    
