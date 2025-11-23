@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Amenity } from "@/lib/data";
@@ -15,6 +16,8 @@ type HotelInfo = {
     bankName?: string;
     accountNumber?: string;
     accountHolderName?: string;
+    contractSignedOn?: string;
+    signatureName?: string;
 };
 
 type AuthContextType = {
@@ -22,9 +25,9 @@ type AuthContextType = {
   userEmail: string | null;
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
-  login: (email: string, hotelInfo: HotelInfo) => Promise<void>;
+  login: (email: string, hotelInfo: Omit<HotelInfo, 'amenities' | 'galleryImageIds'>) => Promise<void>;
   logout: () => Promise<void>;
-  updateHotelInfo: (hotelInfo: HotelInfo) => void;
+  updateHotelInfo: (hotelInfo: Partial<HotelInfo>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,11 +55,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, hotel: HotelInfo) => {
+  const login = async (email: string, hotel: Omit<HotelInfo, 'amenities' | 'galleryImageIds'>) => {
+    const fullHotelInfo: HotelInfo = {
+        ...hotel,
+        amenities: [],
+        galleryImageIds: [],
+    };
     setIsLoggedIn(true);
     setUserEmail(email);
-    setHotelInfo(hotel);
-    localStorage.setItem('authUser', JSON.stringify({ email, hotel }));
+    setHotelInfo(fullHotelInfo);
+    localStorage.setItem('authUser', JSON.stringify({ email, hotel: fullHotelInfo }));
     toast({
         title: "Амжилттай нэвтэрлээ",
         description: `${hotel.hotelName}-д тавтай морилно уу.`,
@@ -65,10 +73,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.refresh();
   };
   
-  const updateHotelInfo = (newHotelInfo: HotelInfo) => {
-      if (isLoggedIn && userEmail) {
-          setHotelInfo(newHotelInfo);
-          localStorage.setItem('authUser', JSON.stringify({ email: userEmail, hotel: newHotelInfo }));
+  const updateHotelInfo = (newHotelInfo: Partial<HotelInfo>) => {
+      if (isLoggedIn && userEmail && hotelInfo) {
+          const updatedHotelInfo = { ...hotelInfo, ...newHotelInfo };
+          setHotelInfo(updatedHotelInfo);
+          localStorage.setItem('authUser', JSON.stringify({ email: userEmail, hotel: updatedHotelInfo }));
            toast({
                 title: "Амжилттай",
                 description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
@@ -95,10 +104,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+// This allows accessing the state outside of React components if needed
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
+
+const getAuthState = () => {
+    const context = useContext(AuthContext);
+    return context || { hotelInfo: null }; // Provide a default for non-React contexts
+}
+
+useAuth.getState = getAuthState;
+
+export { useAuth };

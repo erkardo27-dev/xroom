@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,14 @@ import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Amenity, amenityOptions, locations } from "@/lib/data";
 import { useEffect } from "react";
+import { Check, CheckCircle } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу." }),
@@ -35,6 +38,18 @@ const formSchema = z.object({
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
+  signatureName: z.string().optional(),
+  termsAccepted: z.boolean().optional(),
+}).refine(data => {
+    // If there is no existing signature, the new signature fields are required.
+    const { hotelInfo } = useAuth.getState();
+    if (!hotelInfo?.contractSignedOn) {
+        return !!data.signatureName && data.signatureName.length > 2 && !!data.termsAccepted;
+    }
+    return true;
+}, {
+    message: "Гэрээг баталгаажуулахын тулд нэрээ бичиж, нөхцөлийг зөвшөөрнө үү.",
+    path: ["signatureName"],
 });
 
 type HotelSettingsFormProps = {
@@ -70,6 +85,7 @@ const contractText = `XROOM TONIGHT - ҮЙЛЧИЛГЭЭНИЙ ГЭРЭЭ
 
 export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
     const { hotelInfo, updateHotelInfo } = useAuth();
+    const isContractSigned = !!hotelInfo?.contractSignedOn;
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -82,6 +98,8 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             bankName: hotelInfo?.bankName || "",
             accountNumber: hotelInfo?.accountNumber || "",
             accountHolderName: hotelInfo?.accountHolderName || "",
+            signatureName: hotelInfo?.signatureName || "",
+            termsAccepted: isContractSigned,
         },
     });
     
@@ -91,12 +109,33 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                 ...hotelInfo,
                 amenities: hotelInfo.amenities || [],
                 galleryImageIds: hotelInfo.galleryImageIds || [],
+                signatureName: hotelInfo.signatureName || "",
+                termsAccepted: !!hotelInfo.contractSignedOn,
             });
         }
     }, [hotelInfo, form])
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        updateHotelInfo(values as any);
+        const payload: Parameters<typeof updateHotelInfo>[0] = {
+             hotelName: values.hotelName,
+             location: values.location,
+             phoneNumber: values.phoneNumber,
+             amenities: values.amenities,
+             galleryImageIds: values.galleryImageIds,
+             bankName: values.bankName,
+             accountNumber: values.accountNumber,
+             accountHolderName: values.accountHolderName,
+        };
+
+        if (!isContractSigned && values.signatureName && values.termsAccepted) {
+            payload.contractSignedOn = new Date().toISOString();
+            payload.signatureName = values.signatureName;
+        } else {
+            payload.contractSignedOn = hotelInfo?.contractSignedOn;
+            payload.signatureName = hotelInfo?.signatureName;
+        }
+
+        updateHotelInfo(payload);
         onFormSubmit();
     }
 
@@ -310,8 +349,8 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                 )}
                                 />
                         </TabsContent>
-                        <TabsContent value="contract">
-                            <Card>
+                        <TabsContent value="contract" className="space-y-6">
+                             <Card>
                                 <CardHeader>
                                     <CardTitle>Үйлчилгээний гэрээ</CardTitle>
                                 </CardHeader>
@@ -319,15 +358,66 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     <Textarea
                                         readOnly
                                         value={contractText}
-                                        className="min-h-[300px] text-xs bg-muted/30"
+                                        className="min-h-[250px] text-xs bg-muted/30"
                                     />
                                 </CardContent>
                             </Card>
+                            
+                             {isContractSigned ? (
+                                <div className="rounded-lg border bg-secondary/50 p-4 text-center">
+                                    <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                                    <p className="font-semibold text-green-700 dark:text-green-400">Гэрээ баталгаажсан</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Та {format(new Date(hotelInfo.contractSignedOn!), 'yyyy оны M сарын d-нд')} <strong className="text-foreground">{hotelInfo.signatureName}</strong> нэрээр гэрээг баталгаажуулсан байна.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 p-4 border rounded-lg">
+                                    <FormField
+                                        control={form.control}
+                                        name="termsAccepted"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <Checkbox
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                        disabled={isContractSigned}
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="text-sm font-medium">
+                                                    Би гэрээний нөхцөлийг уншиж, танилцан, зөвшөөрч байна.
+                                                </FormLabel>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="signatureName"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Цахим гарын үсэг</FormLabel>
+                                                <FormControl>
+                                                    <Input 
+                                                        placeholder="Та энд өөрийн нэрээ бүтэн бичнэ үү" 
+                                                        {...field} 
+                                                        disabled={isContractSigned}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                   Энэ нь таныг гэрээг зөвшөөрснийг баталгаажуулна.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            )}
                         </TabsContent>
                     </div>
                 </Tabs>
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={!isContractSigned && (!form.watch('termsAccepted') || !form.watch('signatureName'))}>
                     Хадгалах
                 </Button>
             </form>
