@@ -46,10 +46,14 @@ export default function DashboardClient() {
   }, [isLoggedIn, isAuthLoading, router]);
 
   const ownerRoomTypes = useMemo(() => {
+      if (!rooms) return [];
       return rooms.filter(r => r.ownerId === userEmail);
   }, [rooms, userEmail]);
 
-  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userEmail), [roomInstances, userEmail]);
+  const ownerRoomInstances = useMemo(() => {
+    if (!roomInstances) return [];
+    return roomInstances.filter(inst => inst.ownerId === userEmail)
+  }, [roomInstances, userEmail]);
 
   const filteredAndSortedInstances = useMemo(() => {
     const instancesWithStatus = ownerRoomInstances
@@ -287,3 +291,5 @@ export default function DashboardClient() {
     </>
   );
 }
+
+    
