@@ -43,6 +43,7 @@ import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { amenityOptions, Room, RoomInstance } from '@/lib/data';
 import { type CarouselApi } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -104,6 +105,10 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const isSoldOut = availableCount === 0;
   const totalPrice = room.price + SERVICE_FEE;
   const isLiked = likedRooms.includes(room.id);
+
+  const autoplay = React.useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: true })
+  )
 
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'details') {
@@ -316,7 +321,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           {bookingStep === 'details' && (
               <>
                 <AlertDialogHeader className='-m-6 mb-0'>
-                  <Carousel setApi={setApi} className="relative w-full rounded-t-lg overflow-hidden">
+                  <Carousel 
+                    setApi={setApi} 
+                    className="relative w-full rounded-t-lg overflow-hidden"
+                    plugins={[autoplay.current]}
+                    onMouseEnter={autoplay.current.stop}
+                    onMouseLeave={autoplay.current.reset}
+                  >
                       <CarouselContent>
                           {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
                           <CarouselItem key={image.id}>
