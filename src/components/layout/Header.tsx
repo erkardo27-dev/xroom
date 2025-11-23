@@ -101,8 +101,9 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
                         </Button>
                     </DialogTrigger>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => handleDialogTrigger('settings')}>
-                            <Settings className="h-4 w-4" />
+                        <Button variant="outline" onClick={() => handleDialogTrigger('settings')}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Буудлын тохиргоо
                         </Button>
                     </DialogTrigger>
                     <DropdownMenu>
@@ -178,7 +179,7 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
                                      <DialogTrigger asChild>
                                         <Button variant="outline" className="justify-start" onClick={() => handleDialogTrigger('settings')}>
                                             <Settings className="mr-2 h-4 w-4" />
-                                            Тохиргоо
+                                            Буудлын тохиргоо
                                         </Button>
                                     </DialogTrigger>
                                 </SheetClose>
