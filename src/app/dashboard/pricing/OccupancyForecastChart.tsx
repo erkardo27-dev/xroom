@@ -65,6 +65,7 @@ export default function OccupancyForecastChart() {
   const [chartData, setChartData] = useState<{date: string, occupancy: number}[]>([]);
 
   useEffect(() => {
+    // Generate data on the client side to avoid hydration mismatch
     setChartData(generateForecastData());
   }, [])
   
@@ -83,6 +84,25 @@ export default function OccupancyForecastChart() {
         return "Ирэх сард ачаалал ердийн түвшинд байх төлөвтэй. Онцгой үйл явдлуудыг ашиглан маркетингаа идэвхжүүлээрэй.";
     }
   }, [averageOccupancy]);
+
+
+  if (chartData.length === 0) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Ирэх 4 долоо хоногийн ачааллын таамаг</CardTitle>
+                <CardDescription>
+                Түүхэн мэдээлэл болон зах зээлийн нөхцөл байдалд үндэслэсэн таамаглал.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="h-64 w-full flex items-center justify-center">
+                    <p className="text-muted-foreground">Мэдээлэл ачааллаж байна...</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+  }
 
 
   return (

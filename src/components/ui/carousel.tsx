@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -124,7 +125,7 @@ const Carousel = React.forwardRef<
       <CarouselContext.Provider
         value={{
           carouselRef,
-          api: api,
+          api,
           opts,
           orientation:
             orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),

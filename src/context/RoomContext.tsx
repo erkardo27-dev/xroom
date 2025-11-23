@@ -37,7 +37,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
-  const [toastInfo, setToastInfo] = useState<{ title: string, description: string } | null>(null);
   const [likedRooms, setLikedRooms] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -82,12 +81,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [rooms, roomInstances, likedRooms, status]);
 
-  useEffect(() => {
-    if (toastInfo) {
-      toast(toastInfo);
-      setToastInfo(null);
-    }
-  }, [toastInfo, toast]);
 
     const toggleLike = (roomId: string) => {
         const isLiked = likedRooms.includes(roomId);
@@ -231,6 +224,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const setRoomPriceForDate = useCallback((instanceId: string, date: Date, price: number) => {
      const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
+      const room = rooms.find(r => r.id === roomInstances.find(i => i.instanceId === instanceId)?.roomTypeId);
+      const instance = roomInstances.find(i => i.instanceId === instanceId);
+
       setRoomInstances(prev =>
         prev.map(instance => {
             if (instance.instanceId === instanceId) {
@@ -251,16 +247,19 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 } else {
                     newInstance.overrides[dateKey].price = price;
                 }
-                 setToastInfo({
-                  title: "Үнэ шинэчлэгдлээ",
-                  description: `${format(date, 'M/d')}-ний ${roomType.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
-                });
+
                 return newInstance;
             }
             return instance;
         })
       );
-  }, [getRoomById, setToastInfo]);
+      if (room && instance) {
+         toast({
+            title: "Үнэ шинэчлэгдлээ",
+            description: `${format(date, 'M/d')}-ний ${room.roomName} (${instance.roomNumber}) өрөөний үнэ ${price.toLocaleString()}₮ боллоо.`
+        });
+      }
+  }, [getRoomById, roomInstances, rooms, toast]);
 
   const getPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date): number => {
     const roomType = rooms.find(r => r.id === roomTypeId);
@@ -309,12 +308,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         return newInstances;
     });
 
-    setToastInfo({
+    toast({
         title: "Үнэ шинэчлэгдлээ",
         description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
     });
 
-  }, [getRoomById, roomInstances, setToastInfo]);
+  }, [getRoomById, roomInstances, toast]);
 
   const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());

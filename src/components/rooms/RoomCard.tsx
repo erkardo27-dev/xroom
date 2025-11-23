@@ -35,7 +35,8 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi
+  type CarouselApi,
+  useCarousel,
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
@@ -96,10 +97,10 @@ function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: 
 
   useEffect(() => {
     if (isBookingOpen && api) {
-        // A short delay is needed to allow the dialog to finish its animation
-        setTimeout(() => {
-            api.reInit();
-        }, 100);
+      // A short delay is needed to allow the dialog to finish its animation
+      setTimeout(() => {
+          api.reInit();
+      }, 100);
     }
   }, [isBookingOpen, api]);
  
@@ -191,12 +192,14 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     
     setTimeout(() => {
         const instanceToBook = availableInstances[0];
+        const newCode = Math.floor(1000 + Math.random() * 9000).toString();
         setRoomStatusForDate(
             instanceToBook.instanceId,
             startOfDay(new Date()),
             'booked',
-            checkinCode
+            newCode
         );
+        setCheckinCode(newCode);
         setBookingStep('success');
     }, 1500);
   };
@@ -207,7 +210,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         setBookingStep('details');
         setCheckinCode('');
         setTermsAccepted(false);
-        setPaymentMethod(null);
+        setPaymentMethod('qpay');
     }, 300);
   }
 
@@ -260,8 +263,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-            <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
-            <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+            <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none opacity-0 group-hover/carousel:opacity-100 transition-opacity" />
+            <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none opacity-0 group-hover/carousel:opacity-100 transition-opacity" />
           
         </Carousel>
           {discount > 0 && (
@@ -274,12 +277,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
             </Badge>
           )}
            {isSoldOut && (
-            <Badge className="absolute top-3 right-3 text-sm font-bold bg-black/60 text-white">
+            <Badge className="absolute top-3 right-3 text-sm font-bold bg-black/80 text-white backdrop-blur-sm">
               Дууссан
             </Badge>
           )}
-          <div className="absolute top-2 right-2 flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full p-1 pr-3">
-             <span className="text-sm font-bold text-white">{room.likes || 0}</span>
+          <div className="absolute top-2 right-2 flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full p-1">
+             <span className="text-sm font-bold text-white pl-2">{room.likes || 0}</span>
             <button 
                 onClick={handleLikeClick}
                 className="h-7 w-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
@@ -419,7 +422,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                       <Input
                           id="checkin-code"
                           ref={initialFocusRef}
-                          type="password"
                           placeholder="••••"
                           maxLength={4}
                           value={checkinCode}
@@ -535,5 +537,3 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
-
-    

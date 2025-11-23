@@ -36,8 +36,7 @@ const Slider = React.forwardRef<
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
       <SliderPrimitive.Range className="absolute h-full bg-primary" />
     </SliderPrimitive.Track>
-    {props.children}
-    {!props.children && value?.map((_, i) => <SliderThumb key={i} />)}
+    {React.Children.count(props.children) > 0 ? props.children : value?.map((_, i) => <SliderThumb key={i} />)}
   </SliderPrimitive.Root>
 ))
 Slider.displayName = SliderPrimitive.Root.displayName
