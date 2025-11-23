@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRoom } from "@/context/RoomContext";
-import { Amenity, Room } from "@/lib/data";
+import { Amenity, Room, amenityOptions } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
