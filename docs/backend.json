@@ -1,0 +1,184 @@
+{
+  "entities": {
+    "Hotel": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Hotel",
+      "type": "object",
+      "description": "Represents a hotel offering rooms for booking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the hotel."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the hotel."
+        },
+        "location": {
+          "type": "string",
+          "description": "Textual location of the hotel (e.g., city, neighborhood)."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate of the hotel."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate of the hotel."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL of a representative photo of the hotel.",
+          "format": "uri"
+        },
+        "amenities": {
+          "type": "array",
+          "description": "List of amenities offered by the hotel.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "location",
+        "latitude",
+        "longitude",
+        "photoUrl"
+      ]
+    },
+    "Room": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Room",
+      "type": "object",
+      "description": "Represents a room available for booking within a hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the room."
+        },
+        "hotelId": {
+          "type": "string",
+          "description": "Reference to Hotel. (Relationship: Hotel 1:N Room)"
+        },
+        "roomType": {
+          "type": "string",
+          "description": "Type of room (e.g., Single, Double, Suite)."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the room for tonight."
+        },
+        "availability": {
+          "type": "boolean",
+          "description": "Indicates whether the room is currently available."
+        }
+      },
+      "required": [
+        "id",
+        "hotelId",
+        "roomType",
+        "price",
+        "availability"
+      ]
+    },
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a booking made for a room.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the booking."
+        },
+        "roomId": {
+          "type": "string",
+          "description": "Reference to Room. (Relationship: Room 1:N Booking)"
+        },
+        "bookingTime": {
+          "type": "string",
+          "description": "Time the booking was made.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "roomId",
+        "bookingTime"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/hotels/{hotelId}",
+        "definition": {
+          "entityName": "Hotel",
+          "schema": {
+            "$ref": "#/backend/entities/Hotel"
+          },
+          "description": "Stores hotel information. Includes amenities and location details for easy search. No authorization-related fields are denormalized since the app focuses on listing and booking, not ownership or collaboration.",
+          "params": [
+            {
+              "name": "hotelId",
+              "description": "Unique identifier for the hotel."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/hotels/{hotelId}/rooms/{roomId}",
+        "definition": {
+          "entityName": "Room",
+          "schema": {
+            "$ref": "#/backend/entities/Room"
+          },
+          "description": "Stores room information for a specific hotel. Includes room type, price, and availability.  Includes denormalized hotelId from the parent document to maintain Authorization Independence.",
+          "params": [
+            {
+              "name": "hotelId",
+              "description": "Unique identifier for the hotel."
+            },
+            {
+              "name": "roomId",
+              "description": "Unique identifier for the room."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/hotels/{hotelId}/rooms/{roomId}/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Stores booking information for a specific room. Includes booking time. Includes denormalized hotelId and roomId from the parent documents to maintain Authorization Independence.",
+          "params": [
+            {
+              "name": "hotelId",
+              "description": "Unique identifier for the hotel."
+            },
+            {
+              "name": "roomId",
+              "description": "Unique identifier for the room."
+            },
+            {
+              "name": "bookingId",
+              "description": "Unique identifier for the booking."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Based on the requirements for anonymous booking and the provided entities, the structure is designed to facilitate quick and easy bookings without requiring user authentication. Hotels and Rooms are stored in top-level collections to optimize listing and searching. Bookings are stored as subcollections under Rooms, enabling efficient retrieval of bookings for a specific room. This approach avoids the need for complex queries or joins. Since authentication is not required, security rules will focus on limiting access to booking information and preventing abuse. The data structure uses structural segregation to separate hotel and room data, ensuring simplified rules and access patterns. The use of room subcollections is optimal for QAPs for efficiently retrieving bookings for specific rooms.\n\nAuthorization Independence is ensured as the design avoids hierarchical dependencies. Each document has all the information needed without relying on `get()` calls to parent documents."
+  }
+}
