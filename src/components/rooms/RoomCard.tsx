@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Banknote, Building2, KeyRound } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Banknote, Building2, KeyRound, Check } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +44,6 @@ import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { amenityOptions } from '@/lib/data';
-import { Check } from 'lucide-react';
 
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -309,8 +308,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               <AlertDialogHeader className='-m-6 mb-0'>
                 <Carousel className="relative w-full rounded-t-lg overflow-hidden">
                     <CarouselContent>
-                        {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
-                        <CarouselItem key={index}>
+                        {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
+                        <CarouselItem key={image.id}>
                             <div className="relative h-48 w-full">
                             <Image
                                 src={image.imageUrl}
@@ -521,4 +520,5 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 }
 
     
+
 
