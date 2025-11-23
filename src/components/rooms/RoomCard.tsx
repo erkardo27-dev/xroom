@@ -35,6 +35,8 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  useCarousel,
+  type CarouselApi
 } from "@/components/ui/carousel"
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRoom } from '@/context/RoomContext';
@@ -87,6 +89,48 @@ type RoomCardProps = {
   availableInstances: RoomInstance[];
 };
 
+function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: any[], isBookingOpen: boolean }) {
+  const [api, setApi] = useState<CarouselApi>()
+  const autoplay = React.useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: false, stopOnMouseEnter: true })
+  )
+
+  useEffect(() => {
+    if (isBookingOpen && api) {
+        setTimeout(() => {
+            api.reInit();
+        }, 100);
+    }
+  }, [isBookingOpen, api]);
+ 
+  return (
+    <Carousel 
+      setApi={setApi}
+      className="relative w-full rounded-t-lg overflow-hidden"
+      plugins={[autoplay.current]}
+    >
+        <CarouselContent>
+            {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
+                <CarouselItem key={image.id}>
+                    <div className="relative h-48 w-full">
+                        <Image
+                            src={image.imageUrl}
+                            alt={image.description}
+                            data-ai-hint={image.imageHint}
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                </CarouselItem>
+            ))}
+        </CarouselContent>
+        <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+        <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
+        <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
+    </Carousel>
+  );
+}
+
 
 export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -104,10 +148,6 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   const totalPrice = room.price + SERVICE_FEE;
   const isLiked = likedRooms.includes(room.id);
   
-  const autoplay = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: false })
-  )
-
   useEffect(() => {
     if (isBookingOpen && bookingStep === 'details') {
       setTimeout(() => {
@@ -304,42 +344,12 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
         </CardContent>
       </Card>
       
-      <AlertDialog key={room.id} open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
+      <AlertDialog open={isBookingOpen} onOpenChange={(open) => !open && closeAndResetDialog()}>
         <AlertDialogContent>
         {bookingStep === 'details' && (
             <>
               <AlertDialogHeader className='-m-6 mb-0'>
-                <Carousel 
-                  key={room.id}
-                  className="relative w-full rounded-t-lg overflow-hidden"
-                  plugins={[
-                    Autoplay({
-                      delay: 2500,
-                      stopOnInteraction: true,
-                    }),
-                  ]}
-                  onMouseEnter={() => autoplay.current.stop()}
-                  onMouseLeave={() => autoplay.current.reset()}
-                >
-                    <CarouselContent>
-                        {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image) => (
-                            <CarouselItem key={image.id}>
-                                <div className="relative h-48 w-full">
-                                    <Image
-                                        src={image.imageUrl}
-                                        alt={image.description}
-                                        data-ai-hint={image.imageHint}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
-                    <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/50 hover:bg-background/80 border-none" />
-                    <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent' />
-                </Carousel>
+                  <BookingCarousel room={room} images={images} isBookingOpen={isBookingOpen} />
                 <div className='absolute bottom-4 left-4 text-white p-6'>
                     <AlertDialogTitle className='text-xl'>{room.hotelName}</AlertDialogTitle>
                     <AlertDialogDescription className='text-white/90'>{room.roomName}</AlertDialogDescription>
@@ -523,5 +533,3 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
     </>
   );
 }
-
-    
