@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -65,17 +66,23 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
 
     async function onLoginSubmit(values: LoginFormValues) {
         setIsLoading(true);
-        await login(values.email, values.password);
-        setIsLoading(false);
-        onFormSubmit();
+        try {
+            await login(values.email, values.password);
+            onFormSubmit();
+        } finally {
+            setIsLoading(false);
+        }
     }
     
     async function onRegisterSubmit(values: RegisterFormValues) {
         setIsLoading(true);
         const { email, password, ...hotelData } = values;
-        await register(email, password, hotelData);
-        setIsLoading(false);
-        onFormSubmit();
+        try {
+            await register(email, password, hotelData);
+            onFormSubmit();
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -102,7 +109,7 @@ export function OwnerLoginForm({ onFormSubmit }: OwnerLoginFormProps) {
                                         <FormItem>
                                             <FormLabel>И-мэйл</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="tanii@email.com" {...field} />
+                                                <Input placeholder="admin@xroom.com" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

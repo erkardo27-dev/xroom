@@ -4,12 +4,17 @@
 
 import { Amenity } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth as useFirebaseAuth } from "@/firebase";
+
+
+// This is a temporary solution for the prototype.
+// In a real production app, this should be managed via custom claims or a roles collection.
+const ADMIN_EMAIL = "admin@xroom.com";
 
 export type HotelInfo = {
     id: string; // user.uid
@@ -33,6 +38,7 @@ type AuthContextType = {
   userEmail: string | null;
   hotelInfo: HotelInfo | null;
   isLoading: boolean;
+  isAdmin: boolean;
   login: (email: string, password?: string) => Promise<void>;
   register: (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
   logout: () => Promise<void>;
@@ -58,6 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isLoading = isUserLoading || isHotelInfoLoading;
   const isLoggedIn = !!user;
   const userEmail = user?.email || null;
+  const isAdmin = userEmail === ADMIN_EMAIL;
+
 
   const login = async (email: string, password?: string) => {
     try {
@@ -67,7 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast({
             title: "Амжилттай нэвтэрлээ",
         });
-        router.push('/dashboard');
+
+        if (email === ADMIN_EMAIL) {
+            router.push('/admin');
+        } else {
+            router.push('/dashboard');
+        }
         router.refresh();
     } catch (error: any) {
          toast({
@@ -141,7 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, register, logout, isLoading, updateHotelInfo }}>
+    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, register, logout, isLoading, updateHotelInfo, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
