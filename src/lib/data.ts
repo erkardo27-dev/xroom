@@ -68,13 +68,12 @@ export type RoomInstance = {
 };
 
 
-const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber'>[] = [
+const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' | 'ownerId' | 'likes' | 'phoneNumber' | 'originalPrice'>[] = [
     {
       id: 'room-type-1',
       roomName: 'Стандарт Кинг Өрөө',
       hotelName: 'Их Оазис',
       price: 400000,
-      originalPrice: 610000,
       amenities: ['wifi', 'parking', 'restaurant', 'breakfast', 'fitness'],
       imageIds: ['hotel-1', 'hotel-7', 'hotel-8'],
       location: 'Хотын төв',
@@ -93,22 +92,26 @@ const initialRoomTypesData: Omit<Room, 'distance' | 'rating' | 'totalQuantity' |
       roomName: 'Голын Харагдацтай Давхар Ор',
       hotelName: 'Голын Эрэг Амралт',
       price: 510000,
-      originalPrice: 680000,
       amenities: ['wifi', 'parking', 'breakfast', 'massage'],
       imageIds: ['hotel-3', 'hotel-10', 'hotel-2'],
       location: 'Зайсан',
     },
 ];
 
-export const initialRooms: Room[] = initialRoomTypesData.map(rt => ({
-    ...rt,
-    ownerId: "owner@example.com", // Assign a default owner for initial data
-    phoneNumber: "99118811",
-    distance: +(Math.random() * 10 + 0.5).toFixed(1),
-    rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
-    totalQuantity: Math.floor(Math.random() * 5) + 2, // 2 to 6 rooms
-    likes: Math.floor(Math.random() * 200) + 20, // 20 to 220 likes
-}));
+export const initialRooms: Room[] = initialRoomTypesData.map((rt, index) => {
+    const isDiscounted = index % 2 === 0; // Make some rooms discounted
+    return {
+        ...rt,
+        originalPrice: isDiscounted ? Math.round((rt.price * 1.3) / 10000) * 10000 : undefined,
+        ownerId: "owner@example.com", // Assign a default owner for initial data
+        phoneNumber: "99118811",
+        distance: +(Math.random() * 10 + 0.5).toFixed(1),
+        rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
+        totalQuantity: Math.floor(Math.random() * 5) + 2, // 2 to 6 rooms
+        likes: Math.floor(Math.random() * 200) + 20, // 20 to 220 likes
+    }
+});
+
 
 export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomType => {
     return Array.from({ length: roomType.totalQuantity }).map((_, i) => ({
@@ -123,4 +126,3 @@ export const initialRoomInstances: RoomInstance[] = initialRooms.flatMap(roomTyp
 
 
 export type NewRoom = Omit<Room, 'id' | 'rating' | 'distance' | 'availableQuantity' | 'likes'>
-

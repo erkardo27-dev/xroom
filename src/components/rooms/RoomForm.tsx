@@ -160,22 +160,24 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="originalPrice"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Хямдрахаас өмнөх үнэ (₮)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="ж.нь: 200000" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormDescription>
-                                Хэрэв хямдрал зарлах бол энд хуучин үнийг оруулна.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                {isEditMode && (
+                    <FormField
+                        control={form.control}
+                        name="originalPrice"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Хямдрахаас өмнөх үнэ (₮)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="ж.нь: 200000" {...field} value={field.value ?? ""} />
+                                </FormControl>
+                                <FormDescription>
+                                    Хэрэв хямдрал зарлах бол энд хуучин үнийг оруулна.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
                  <FormField
                     control={form.control}
                     name="totalQuantity"
