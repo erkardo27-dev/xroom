@@ -95,15 +95,15 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
                         Үнийн удирдлага
                     </Button>
                      <DialogTrigger asChild>
-                        <Button onClick={() => handleDialogTrigger('addRoom')}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Өрөө нэмэх
-                        </Button>
-                    </DialogTrigger>
-                    <DialogTrigger asChild>
                         <Button variant="outline" onClick={() => handleDialogTrigger('settings')}>
                             <Settings className="mr-2 h-4 w-4" />
                             Буудлын тохиргоо
+                        </Button>
+                    </DialogTrigger>
+                     <DialogTrigger asChild>
+                        <Button onClick={() => handleDialogTrigger('addRoom')}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Өрөө нэмэх
                         </Button>
                     </DialogTrigger>
                     <DropdownMenu>
@@ -168,18 +168,18 @@ export default function Header({ isDashboard = false }: { isDashboard?: boolean;
 
                                  <DropdownMenuSeparator />
                                 <SheetClose asChild>
-                                    <DialogTrigger asChild>
-                                         <Button className="justify-start" onClick={() => handleDialogTrigger('addRoom')}>
-                                            <PlusCircle className="mr-2 h-4 w-4" />
-                                            Өрөө нэмэх
-                                        </Button>
-                                    </DialogTrigger>
-                                </SheetClose>
-                                <SheetClose asChild>
                                      <DialogTrigger asChild>
                                         <Button variant="outline" className="justify-start" onClick={() => handleDialogTrigger('settings')}>
                                             <Settings className="mr-2 h-4 w-4" />
                                             Буудлын тохиргоо
+                                        </Button>
+                                    </DialogTrigger>
+                                </SheetClose>
+                                 <SheetClose asChild>
+                                    <DialogTrigger asChild>
+                                         <Button className="justify-start" onClick={() => handleDialogTrigger('addRoom')}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            Өрөө нэмэх
                                         </Button>
                                     </DialogTrigger>
                                 </SheetClose>
