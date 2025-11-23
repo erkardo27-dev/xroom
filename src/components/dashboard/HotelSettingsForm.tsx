@@ -18,9 +18,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Amenity, amenityOptions, locations } from "@/lib/data";
+import { amenityOptions, locations } from "@/lib/data";
 import { useEffect, useRef, useState } from "react";
-import { Check, CheckCircle, Image as ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { CheckCircle, Image as ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -28,8 +28,9 @@ import { Textarea } from "../ui/textarea";
 import Image from "next/image";
 import { format } from "date-fns";
 import { MapLocationPicker } from './MapLocationPicker';
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { uploadHotelImage, deleteHotelImage } from "@/firebase/storage";
+import { useStorage } from "@/firebase";
 
 
 const formSchema = z.object({
@@ -40,7 +41,7 @@ const formSchema = z.object({
   longitude: z.number().optional(),
   phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
-  galleryImageUris: z.array(z.string()).optional(),
+  galleryImageUrls: z.array(z.string().url()).optional(),
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
@@ -80,7 +81,8 @@ const contractText = `XROOM TONIGHT - ҮЙЛЧИЛГЭЭНИЙ ГЭРЭЭ
 
 
 export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
-    const { hotelInfo, updateHotelInfo } = useAuth();
+    const { hotelInfo, updateHotelInfo, userEmail } = useAuth();
+    const storage = useStorage();
     const isContractSigned = !!hotelInfo?.contractSignedOn;
     const { toast } = useToast();
 
@@ -98,7 +100,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
             longitude: undefined,
             phoneNumber: "",
             amenities: [],
-            galleryImageUris: [],
+            galleryImageUrls: [],
             bankName: "",
             accountNumber: "",
             accountHolderName: "",
@@ -118,7 +120,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                 longitude: hotelInfo.longitude,
                 phoneNumber: hotelInfo.phoneNumber || "",
                 amenities: hotelInfo.amenities || [],
-                galleryImageUris: hotelInfo.galleryImageUris || [],
+                galleryImageUrls: hotelInfo.galleryImageUrls || [],
                 bankName: hotelInfo.bankName || "",
                 accountNumber: hotelInfo.accountNumber || "",
                 accountHolderName: hotelInfo.accountHolderName || "",
@@ -137,7 +139,7 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
              longitude: values.longitude,
              phoneNumber: values.phoneNumber,
              amenities: values.amenities,
-             galleryImageUris: values.galleryImageUris,
+             galleryImageUrls: values.galleryImageUrls,
              bankName: values.bankName,
              accountNumber: values.accountNumber,
              accountHolderName: values.accountHolderName,
@@ -152,32 +154,46 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
         onFormSubmit();
     }
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file || !userEmail) return;
 
         setIsUploading(true);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const dataUri = e.target?.result as string;
-            const currentUris = form.getValues('galleryImageUris') || [];
-            form.setValue('galleryImageUris', [...currentUris, dataUri], { shouldDirty: true });
-            setIsUploading(false);
-        };
-        reader.onerror = () => {
-            setIsUploading(false);
-            toast({
+        try {
+            const downloadUrl = await uploadHotelImage(storage, file, userEmail);
+            const currentUrls = form.getValues('galleryImageUrls') || [];
+            form.setValue('galleryImageUrls', [...currentUrls, downloadUrl], { shouldDirty: true });
+        } catch (error) {
+             toast({
                 variant: 'destructive',
                 title: 'Алдаа',
-                description: 'Зураг уншихад алдаа гарлаа.',
+                description: 'Зураг хуулахад алдаа гарлаа.',
             });
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ""; // Reset file input
+            }
         }
-        reader.readAsDataURL(file);
     };
 
-    const handleRemoveImage = (uriToRemove: string) => {
-        const currentUris = form.getValues('galleryImageUris') || [];
-        form.setValue('galleryImageUris', currentUris.filter(uri => uri !== uriToRemove), { shouldDirty: true });
+    const handleRemoveImage = async (urlToRemove: string) => {
+        try {
+            await deleteHotelImage(storage, urlToRemove);
+            const currentUrls = form.getValues('galleryImageUrls') || [];
+            form.setValue('galleryImageUrls', currentUrls.filter(url => url !== urlToRemove), { shouldDirty: true });
+             toast({
+                title: 'Амжилттай устгалаа',
+                description: 'Зураг амжилттай устгагдлаа.',
+                variant: 'destructive'
+            });
+        } catch (error) {
+             toast({
+                variant: 'destructive',
+                title: 'Алдаа',
+                description: 'Зураг устгахад алдаа гарлаа.',
+            });
+        }
     };
 
     return (
@@ -384,22 +400,24 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                     onChange={handleImageUpload}
                                     className="hidden"
                                     accept="image/png, image/jpeg, image/webp"
+                                    disabled={isUploading}
                                 />
                                 
                                 <FormField
                                     control={form.control}
-                                    name="galleryImageUris"
+                                    name="galleryImageUrls"
                                     render={({ field }) => (
                                         <FormItem>
                                             {(field.value && field.value.length > 0) ? (
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                        {field.value.map((uri, index) => (
+                                                        {field.value.map((url, index) => (
                                                             <div key={index} className="relative group aspect-video">
                                                                 <Image
-                                                                    src={uri}
+                                                                    src={url}
                                                                     alt={`Uploaded image ${index + 1}`}
                                                                     fill
+                                                                    sizes="(max-width: 768px) 50vw, 33vw"
                                                                     className="object-cover rounded-lg border"
                                                                 />
                                                                 <Button
@@ -407,12 +425,17 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                                     variant="destructive"
                                                                     size="icon"
                                                                     className="absolute top-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
-                                                                    onClick={() => handleRemoveImage(uri)}
+                                                                    onClick={() => handleRemoveImage(url)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
                                                             </div>
                                                         ))}
+                                                         {isUploading && (
+                                                            <div className="relative group aspect-video flex items-center justify-center bg-secondary rounded-lg">
+                                                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                      <Button
                                                         type="button"
@@ -421,27 +444,31 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                                                         onClick={() => fileInputRef.current?.click()}
                                                         disabled={isUploading}
                                                     >
-                                                        {isUploading ? (
-                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            <UploadCloud className="mr-2 h-4 w-4" />
-                                                        )}
+                                                        <UploadCloud className="mr-2 h-4 w-4" />
                                                         Дахин зураг хуулах
                                                     </Button>
                                                 </div>
                                             ) : (
                                                  <div 
                                                     className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 hover:border-primary/50 transition-colors"
-                                                    onClick={() => fileInputRef.current?.click()}
+                                                    onClick={() => !isUploading && fileInputRef.current?.click()}
                                                 >
-                                                    <div className="p-3 bg-secondary rounded-full border mb-4">
-                                                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                                                    </div>
-                                                    <p className="mt-2 text-sm font-semibold text-foreground">Зураг хуулах</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        PNG, JPG, WEBP төрлийн зураг сонгоно уу.
-                                                    </p>
-                                                     {isUploading && <Loader2 className="mt-4 h-5 w-5 animate-spin" />}
+                                                     {isUploading ? (
+                                                        <>
+                                                            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                                                            <p className="text-sm font-semibold text-foreground">Зураг хуулж байна...</p>
+                                                        </>
+                                                     ) : (
+                                                        <>
+                                                            <div className="p-3 bg-secondary rounded-full border mb-4">
+                                                                <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                                            </div>
+                                                            <p className="mt-2 text-sm font-semibold text-foreground">Зураг хуулах</p>
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                PNG, JPG, WEBP төрлийн зураг сонгоно уу.
+                                                            </p>
+                                                        </>
+                                                     )}
                                                 </div>
                                             )}
                                         </FormItem>
@@ -518,12 +545,13 @@ export function HotelSettingsForm({ onFormSubmit }: HotelSettingsFormProps) {
                     </div>
                 </Tabs>
 
-                <Button type="submit" className="w-full" disabled={!form.formState.isDirty}>
-                    Хадгалах
+                <Button type="submit" className="w-full" disabled={!form.formState.isDirty || isUploading}>
+                     {isUploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                     ) : null }
+                    {isUploading ? 'Зураг хуулж байна...' : 'Хадгалах'}
                 </Button>
             </form>
         </Form>
     )
 }
-
-    

@@ -39,7 +39,7 @@ export type Room = {
   price: number;
   originalPrice?: number;
   amenities: Amenity[];
-  imageIds: string[]; // These are now data URIs from the hotel's gallery
+  imageUrls: string[]; // These are now public URLs from Firebase Storage
   location: Location;
   detailedAddress?: string;
   latitude?: number;

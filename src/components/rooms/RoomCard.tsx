@@ -162,15 +162,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
   
 
   const images = useMemo(() => 
-    room.imageIds.map(idOrUri => {
-        // Check if it's a data URI
-        if (idOrUri.startsWith('data:image')) {
-            return { id: idOrUri, imageUrl: idOrUri, description: 'Uploaded image', imageHint: '' };
-        }
-        // Otherwise, assume it's an ID and find it in placeholders
-        return PlaceHolderImages.find(img => img.id === idOrUri);
-    }).filter(Boolean) as { id: string, imageUrl: string, description: string, imageHint: string }[],
-    [room.imageIds]
+    room.imageUrls.map(url => ({
+        id: url,
+        imageUrl: url,
+        description: 'Hotel image',
+        imageHint: ''
+    })),
+    [room.imageUrls]
 );
   
   const discount = room.originalPrice ? Math.round(((room.originalPrice - room.price) / room.originalPrice) * 100) : 0;

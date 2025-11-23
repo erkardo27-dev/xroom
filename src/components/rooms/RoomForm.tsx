@@ -31,7 +31,7 @@ const formSchema = z.object({
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
   originalPrice: z.coerce.number().optional().nullable(),
   totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
-  imageIds: z.array(z.string()).refine(value => value.length > 0, {
+  imageUrls: z.array(z.string().url()).refine(value => value.length > 0, {
     message: "Та дор хаяж нэг зураг сонгох шаардлагатай.",
   }),
   amenities: z.array(z.string()).refine(value => value.some(item => item), {
@@ -55,15 +55,13 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const isEditMode = !!roomToEdit;
 
     const hotelGalleryImages = useMemo(() => {
-        if (!hotelInfo?.galleryImageUris || hotelInfo.galleryImageUris.length === 0) return [];
-        // Since they are URIs, we don't need to find them in placeholder images.
-        // We map them to an object structure that the form component expects.
-        return hotelInfo.galleryImageUris.map((uri, index) => ({
-            id: uri, // Use URI as a unique ID for selection
-            imageUrl: uri,
+        if (!hotelInfo?.galleryImageUrls || hotelInfo.galleryImageUrls.length === 0) return [];
+        return hotelInfo.galleryImageUrls.map((url, index) => ({
+            id: url,
+            imageUrl: url,
             description: `Uploaded image ${index + 1}`
         }));
-    }, [hotelInfo?.galleryImageUris]);
+    }, [hotelInfo?.galleryImageUrls]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -72,7 +70,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             price: 0,
             originalPrice: undefined,
             totalQuantity: 1,
-            imageIds: [],
+            imageUrls: [],
             amenities: hotelInfo?.amenities || [],
         },
     });
@@ -91,7 +89,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 price: 0,
                 originalPrice: undefined,
                 totalQuantity: 1,
-                imageIds: [],
+                imageUrls: [],
                 amenities: hotelInfo?.amenities || [],
             });
         }
@@ -200,7 +198,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 />
                <FormField
                     control={form.control}
-                    name="imageIds"
+                    name="imageUrls"
                     render={() => (
                         <FormItem>
                         <div className="mb-4">
@@ -215,7 +213,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                 <FormField
                                 key={item.id}
                                 control={form.control}
-                                name="imageIds"
+                                name="imageUrls"
                                 render={({ field }) => {
                                     const isChecked = field.value?.includes(item.id);
                                     return (
