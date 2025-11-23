@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Check, Banknote, Building2 } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Banknote, Building2, KeyRound } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +44,7 @@ import { useToast } from '@/hooks/use-toast';
 import { startOfDay } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { amenityOptions } from '@/lib/data';
+import { Check } from 'lucide-react';
 
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -308,12 +309,13 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
               <AlertDialogHeader className='-m-6 mb-0'>
                 <Carousel className="relative w-full rounded-t-lg overflow-hidden">
                     <CarouselContent>
-                        {images.map((image, index) => (
+                        {(images.length > 0 ? images : [PlaceHolderImages[0]]).map((image, index) => (
                         <CarouselItem key={index}>
                             <div className="relative h-48 w-full">
                             <Image
                                 src={image.imageUrl}
                                 alt={image.description}
+                                data-ai-hint={image.imageHint}
                                 fill
                                 className="object-cover"
                             />
@@ -353,7 +355,7 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 
                     <Separator />
 
-                    <div className='flex justify-between text-sm pt-2'>
+                    <div className='flex justify-between text-sm'>
                         <p>Өрөөний үнэ</p>
                         <p className='font-medium'>{room.price.toLocaleString()}₮</p>
                     </div>
@@ -380,29 +382,34 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 items-center">
-                    <div className="space-y-2">
-                        <Label htmlFor="checkin-code" className="font-semibold">
-                            Нэвтрэх код
-                        </Label>
-                        <Input
-                            id="checkin-code"
-                            ref={initialFocusRef}
-                            type="password"
-                            placeholder="••••"
-                            maxLength={4}
-                            value={checkinCode}
-                            onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
-                            className="text-center text-2xl tracking-[0.5em] font-mono h-12"
-                        />
+                <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <div className='flex items-center gap-3'>
+                        <KeyRound className="w-6 h-6 text-primary" />
+                        <div>
+                            <Label htmlFor="checkin-code" className="text-base font-bold text-primary">
+                                Таны нууц код
+                            </Label>
+                             <p className='text-xs text-muted-foreground'>Буудалд өрөөгөө хүлээн авахдаа энэ 4 оронтой кодыг ашиглана.</p>
+                        </div>
                     </div>
-                     <div className="flex items-center space-x-2 pt-8">
-                        <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-                        <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
-                        </label>
-                    </div>
-                 </div>
+                     <Input
+                        id="checkin-code"
+                        ref={initialFocusRef}
+                        type="password"
+                        placeholder="••••"
+                        maxLength={4}
+                        value={checkinCode}
+                        onChange={(e) => setCheckinCode(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="text-center text-3xl tracking-[0.5em] font-mono h-14 bg-background"
+                    />
+                </div>
+
+                 <div className="flex items-center space-x-2">
+                    <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
+                    <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
+                    </label>
+                </div>
               </div>
               <AlertDialogFooter>
                  <AlertDialogCancel onClick={closeAndResetDialog}>Цуцлах</AlertDialogCancel>
@@ -514,3 +521,4 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 }
 
     
+
