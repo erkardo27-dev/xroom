@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { amenityOptions } from "@/lib/data";
+import { amenityOptions, locations } from "@/lib/data";
 import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
@@ -18,18 +18,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CardDescription } from "../ui/card";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-
-// 🔥 Firebase Upload / Delete
 import { uploadHotelImage, deleteHotelImage } from "@/firebase/storage";
 import { useStorage } from "@/firebase";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { MapLocationPicker } from "./MapLocationPicker";
 
 const formSchema = z.object({
-  hotelName: z.string().min(2),
-  location: z.string(),
+  hotelName: z.string().min(2, { message: "Зочид буудлын нэр оруулна уу."}),
+  location: z.string({ required_error: "Байршил сонгоно уу."}),
   detailedAddress: z.string().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  phoneNumber: z.string().min(8),
+  phoneNumber: z.string().min(8, { message: "Утасны дугаар буруу байна." }),
   amenities: z.array(z.string()).optional(),
   galleryImageUrls: z.array(z.string().url()).optional(),
   bankName: z.string().optional(),
@@ -148,15 +149,141 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Tabs defaultValue="gallery" className="w-full">
+        <Tabs defaultValue="info" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="info">Мэдээлэл</TabsTrigger>
-            <TabsTrigger value="payment">Данс</TabsTrigger>
             <TabsTrigger value="gallery">Зураг</TabsTrigger>
+            <TabsTrigger value="payment">Данс</TabsTrigger>
             <TabsTrigger value="contract">Гэрээ</TabsTrigger>
           </TabsList>
 
-          <div className="mt-4 max-h-[60vh] overflow-y-auto pr-3">
+          <div className="mt-4 max-h-[60vh] overflow-y-auto pr-3 space-y-6">
+            <TabsContent value="info" className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="hotelName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Зочид буудлын нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Танай буудлын нэр" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Ерөнхий байршил</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Буудлын байршил сонгоно уу" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="detailedAddress"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Дэлгэрэнгүй хаяг</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="Дүүрэг, хороо, гудамж, байр, тоот..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="latitude"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Газрын зургийн байршил</FormLabel>
+                             <MapLocationPicker
+                                value={{ lat: field.value, lng: form.getValues().longitude }}
+                                onChange={({ lat, lng }) => {
+                                    form.setValue('latitude', lat, { shouldDirty: true, shouldTouch: true });
+                                    form.setValue('longitude', lng, { shouldDirty: true, shouldTouch: true });
+                                }}
+                            />
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Холбоо барих утас</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Захиалгын мэдээлэл хүлээн авах утас" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="amenities"
+                    render={() => (
+                        <FormItem>
+                        <div className="mb-4">
+                            <FormLabel className="text-base">Буудлын үйлчилгээ</FormLabel>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {amenityOptions.map((item) => (
+                                <FormField
+                                key={item.id}
+                                control={form.control}
+                                name="amenities"
+                                render={({ field }) => {
+                                    return (
+                                    <FormItem
+                                        key={item.id}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                        <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(item.id)}
+                                            onCheckedChange={(checked) => {
+                                            return checked
+                                                ? field.onChange([...(field.value || []), item.id])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                    (value) => value !== item.id
+                                                    )
+                                                )
+                                            }}
+                                        />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                        {item.label}
+                                        </FormLabel>
+                                    </FormItem>
+                                    )
+                                }}
+                                />
+                            ))}
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </TabsContent>
+
             <TabsContent value="gallery">
               <CardDescription>
                 Буудлынхаа зургуудыг эндээс удирдана уу.
@@ -235,6 +362,98 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                 )}
               />
             </TabsContent>
+            
+            <TabsContent value="payment" className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="bankName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Банкны нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="ХААН БАНК" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="accountNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Дансны дугаар</FormLabel>
+                            <FormControl>
+                                <Input placeholder="500..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="accountHolderName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Данс эзэмшигчийн нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="ХХК эсвэл хувь хүний нэр" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </TabsContent>
+
+            <TabsContent value="contract" className="space-y-4">
+                 <div className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-lg h-60 overflow-y-auto">
+                    <h4>Үйлчилгээний гэрээ</h4>
+                    <p>Энэхүү гэрээ нь "XRoom Tonight" (цаашид "Үйлчилгээ үзүүлэгч") болон танай зочид буудал (цаашид "Хамтрагч") хооронд байгуулагдав.</p>
+                    <ol>
+                        <li><strong>Зорилго:</strong> Хамтрагч нь өөрийн зочид буудлын сул өрөөг Үйлчилгээ үзүүлэгчийн платформоор дамжуулан сүүлчийн минутын хямдралтай үнээр борлуулах.</li>
+                        <li><strong>Талуудын үүрэг:</strong>
+                            <ul>
+                                <li><strong>Хамтрагч:</strong> Өрөөний бодит мэдээлэл, үнэ, тоо ширхэгийг үнэн зөв оруулах. Захиалга орж ирсэн тохиолдолд хэрэглэгчийг хүлээн авч, үйлчилгээ үзүүлэх.</li>
+                                <li><strong>Үйлчилгээ үзүүлэгч:</strong> Платформын тасралтгүй, найдвартай ажиллагааг хангах. Захиалгын мэдээллийг Хамтрагчид цаг алдалгүй хүргэх.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Төлбөр тооцоо:</strong> Үйлчилгээ үзүүлэгч нь амжилттай болсон захиалга бүрээс 5% шимтгэл авна. Шимтгэлийг сар бүр нэгтгэн тооцоо хийнэ.</li>
+                        <li><strong>Нууцлал:</strong> Талууд энэхүү гэрээний хүрээнд олж авсан аливаа мэдээллийг гуравдагч этгээдэд задруулахгүй байх үүрэгтэй.</li>
+                    </ol>
+                    <p>Гэрээтэй танилцаж, хүлээн зөвшөөрснөө баталгаажуулна уу.</p>
+                </div>
+                 <FormField
+                    control={form.control}
+                    name="signatureName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Баталгаажуулсан хүний нэр</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Эрх бүхий албан тушаалтны нэр" {...field} disabled={!!hotelInfo?.contractSignedOn} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="termsAccepted"
+                    render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                             <FormControl>
+                                <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={!!hotelInfo?.contractSignedOn}
+                                />
+                            </FormControl>
+                            <Label htmlFor="terms" className="text-sm font-medium leading-none">
+                               Дээрх гэрээний нөхцөлийг хүлээн зөвшөөрч байна.
+                            </Label>
+                        </FormItem>
+                    )}
+                />
+            </TabsContent>
           </div>
         </Tabs>
 
@@ -246,3 +465,5 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+
+    
