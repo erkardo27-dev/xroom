@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -95,7 +96,7 @@ export default function DashboardClient() {
            return statusOrder[a.status] - statusOrder[b.status];
         case 'roomNumber':
         default:
-          return a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true });
+          return (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, { numeric: true });
       }
     });
 

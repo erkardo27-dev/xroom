@@ -41,16 +41,26 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
   const roomsQuery = useMemoFirebase(() => collection(firestore, 'room_types'), [firestore]);
-  const { data: rooms = [], isLoading: isRoomsLoading, error: roomsError } = useCollection<Room>(roomsQuery);
+  const { data: serverRooms = [], isLoading: isRoomsLoading, error: roomsError } = useCollection<Room>(roomsQuery);
   
   const instancesQuery = useMemoFirebase(() => collection(firestore, 'room_instances'), [firestore]);
-  const { data: roomInstances = [], isLoading: isInstancesLoading, error: instancesError } = useCollection<RoomInstance>(instancesQuery);
+  const { data: serverRoomInstances = [], isLoading: isInstancesLoading, error: instancesError } = useCollection<RoomInstance>(instancesQuery);
 
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [likedRooms, setLikedRooms] = useState<string[]>([]);
   const { toast } = useToast();
 
   const status = isRoomsLoading || isInstancesLoading ? 'loading' : (roomsError || instancesError) ? 'error' : 'success';
   const error = roomsError?.message || instancesError?.message || null;
+
+  useEffect(() => {
+    setRooms(serverRooms || []);
+  }, [serverRooms]);
+
+  useEffect(() => {
+    setRoomInstances(serverRoomInstances || []);
+  }, [serverRoomInstances]);
 
 
   useEffect(() => {
@@ -93,8 +103,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (!firestore || !user) return;
 
     const roomTypeId = doc(collection(firestore, 'room_types')).id;
-    const newRoomTypeRef = doc(firestore, "room_types", roomTypeId);
-
+    
     const newRoomType: Room = {
       ...roomData,
       id: roomTypeId,
@@ -111,6 +120,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (newRoomType.latitude === undefined) delete newRoomType.latitude;
     if (newRoomType.longitude === undefined) delete newRoomType.longitude;
     if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
+    
+    const newRoomTypeRef = doc(firestore, "room_types", newRoomType.id);
 
     const batch = writeBatch(firestore);
     batch.set(newRoomTypeRef, newRoomType);
@@ -132,6 +143,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     try {
         await batch.commit();
+        // Optimistic UI Update
+        setRooms(prev => [...prev, newRoomType]);
+        setRoomInstances(prev => [...prev, ...newInstances]);
         toast({
             title: "Өрөөний төрөл нэмэгдлээ!",
             description: `${newRoomType.roomName} төрлийн ${newRoomType.totalQuantity} ширхэг өрөө үүслээ. Одоо өрөө тус бүрийн дугаарыг онооно уу.`,
@@ -147,7 +161,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const updateRoom = (updatedRoom: Room) => {
     const roomRef = doc(firestore, "room_types", updatedRoom.id);
-    const dataToUpdate = { ...updatedRoom };
+    const dataToUpdate: Partial<Room> = { ...updatedRoom };
     if (dataToUpdate.originalPrice === undefined || dataToUpdate.originalPrice === null) {
         delete dataToUpdate.originalPrice;
     }
@@ -162,7 +176,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const deleteRoomInstance = (instanceId: string) => {
     const instanceRef = doc(firestore, "room_instances", instanceId);
     deleteDocumentNonBlocking(instanceRef);
-
+    setRoomInstances(prev => prev.filter(inst => inst.instanceId !== instanceId));
     toast({
         title: "Өрөө устгагдлаа",
         description: "Сонгосон өрөө амжилттай устгагдлаа.",
@@ -358,7 +372,3 @@ export const useRoom = () => {
   }
   return context;
 };
-
-    
-
-    
