@@ -114,6 +114,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       ownerId: user.uid,
     };
     
+    // Clean up undefined optional fields before saving
+    if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
+    if (newRoomType.latitude === undefined) delete newRoomType.latitude;
+    if (newRoomType.longitude === undefined) delete newRoomType.longitude;
+    
     const roomRef = doc(firestore, "room_types", newRoomType.id);
 
     const batch = writeBatch(firestore);
