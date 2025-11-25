@@ -102,17 +102,14 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
 
-    const dirtyFields = form.formState.dirtyFields;
-    const dataToUpdate: Partial<z.infer<typeof formSchema>> = {};
+    const dataToUpdate: Partial<z.infer<typeof formSchema>> = { ...values };
 
-    for (const key in dirtyFields) {
-        if (dirtyFields[key as keyof typeof dirtyFields]) {
-            dataToUpdate[key as keyof typeof dataToUpdate] = values[key as keyof typeof values];
-        }
-    }
-    // Always include galleryImageUrls if they have been touched, because deleting is a valid change
-    if (form.formState.touchedFields.galleryImageUrls) {
-        dataToUpdate.galleryImageUrls = values.galleryImageUrls;
+    // termsAccepted is a client-side only field, don't save to Firestore
+    delete (dataToUpdate as any).termsAccepted;
+    
+    // If terms were accepted now and contract wasn't signed before, add sign date
+    if (values.termsAccepted && !hotelInfo?.contractSignedOn) {
+        dataToUpdate.contractSignedOn = new Date().toISOString();
     }
   
     await updateHotelInfo(dataToUpdate);
@@ -488,7 +485,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
+        <Button type="submit" className="w-full" disabled={isUploading}>
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>

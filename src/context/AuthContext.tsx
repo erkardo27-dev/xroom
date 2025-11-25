@@ -161,26 +161,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
       return;
     }
-
-    if (Object.keys(data).length === 0) {
-        toast({
-          title: "Өөрчлөлт алга",
-          description: "Хадгалахад өөрчлөлт илэрсэнгүй.",
-        });
-        return;
-    }
-
+  
     const ref = doc(firestore, "hotels", userUid);
     
-    const dataToSave = { ...data };
-    delete (dataToSave as any).termsAccepted;
-    
-    if (data.termsAccepted && !hotelInfo?.contractSignedOn) {
-        dataToSave.contractSignedOn = new Date().toISOString();
-    }
-
     try {
-        await setDoc(ref, dataToSave, { merge: true });
+        await setDoc(ref, data, { merge: true });
         toast({
             title: "Амжилттай хадгалагдлаа",
             description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
