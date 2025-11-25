@@ -1,8 +1,10 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Зөвхөн нэвтэрсэн хэрэглэгч үүнийгээ upload/delete хийж чадна
     match /hotel-images/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if true; // зураг нь public link-р харагдах ёстой
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
