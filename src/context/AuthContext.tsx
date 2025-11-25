@@ -149,14 +149,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     const ref = doc(firestore, "hotels", user.uid);
     
-    // Create a copy to avoid mutating the original data
-    const dataToSave = { ...data };
-
     try {
-        await setDoc(ref, dataToSave, { merge: true });
+        await setDoc(ref, data, { merge: true });
         setHotelInfo((prev) => {
-            if (!prev) return dataToSave as HotelInfo; // Should not happen if user exists
-            return { ...prev, ...dataToSave };
+            if (!prev) return null;
+            return { ...prev, ...data };
         });
         toast({
             title: "Амжилттай хадгалагдлаа",
