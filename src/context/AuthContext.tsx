@@ -153,12 +153,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // UPDATE HOTEL INFO
-  const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
-    if (!userUid) {
-        toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
-        return;
-    };
-    const ref = doc(firestore, "hotels", userUid);
+  const updateHotelInfo = async (userId: string, data: Partial<Omit<HotelInfo, 'id'>>) => {
+    const ref = doc(firestore, "hotels", userId);
     
     const dataToSave = { ...data };
     delete (dataToSave as any).termsAccepted;
@@ -179,6 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             title: "Хадгалахад алдаа гарлаа",
             description: error.message,
         });
+        throw error;
     }
   };
 
@@ -212,7 +209,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         register,
         logout,
-        updateHotelInfo,
+        updateHotelInfo: async (data) => {
+            if (!userUid) {
+                 toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
+                 throw new Error("User not authenticated for updateHotelInfo");
+            }
+            return updateHotelInfo(userUid, data);
+        },
         userEmail: user?.email ?? null,
         userUid,
       }}
