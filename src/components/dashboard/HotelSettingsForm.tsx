@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -114,9 +115,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   
     await updateHotelInfo(dataToUpdate);
 
-    // Optimistically reset the form with the new values to update the UI immediately
-    form.reset(values);
-    
     onFormSubmit();
   }
 
