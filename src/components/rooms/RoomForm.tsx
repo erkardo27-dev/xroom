@@ -112,6 +112,9 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             ownerId: userEmail,
             hotelName: hotelInfo.hotelName,
             location: hotelInfo.location,
+            detailedAddress: hotelInfo.detailedAddress,
+            latitude: hotelInfo.latitude,
+            longitude: hotelInfo.longitude,
             phoneNumber: hotelInfo.phoneNumber,
         };
 
@@ -249,7 +252,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                 <ImageIcon className="h-4 w-4 text-amber-600" />
                                 <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
                                 <AlertDescription className="text-amber-700">
-                                    Эхлээд Буудлын тохиргоо &gt; Зургийн сан хэсэгт зураг нэмнэ үү.
+                                    Эхлээд Буудлын тохиргоо &gt; Зураг хэсэгт зураг нэмнэ үү.
                                 </AlertDescription>
                             </Alert>
                         )}

@@ -88,7 +88,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
     
-    // Omit the UI-only field 'termsAccepted' before saving
     const { termsAccepted, ...dataToSave } = values;
     
     await updateHotelInfo(dataToSave);
@@ -180,7 +179,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Ерөнхий байршил</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Буудлын байршил сонгоно уу" />
@@ -467,5 +466,3 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
-
-    
