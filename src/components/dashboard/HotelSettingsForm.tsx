@@ -94,17 +94,19 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
 
   // 🖼️ Upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !userUid) return;
+    const files = event.target.files;
+    if (!files || files.length === 0 || !userUid) return;
 
     setIsUploading(true);
     try {
-      const downloadUrl = await uploadHotelImage(storage, file, userUid);
+      const uploadPromises = Array.from(files).map(file => uploadHotelImage(storage, file, userUid));
+      const downloadUrls = await Promise.all(uploadPromises);
+
       const currentUrls = form.getValues("galleryImageUrls") || [];
       
       form.setValue(
         "galleryImageUrls",
-        [...currentUrls, downloadUrl],
+        [...currentUrls, ...downloadUrls],
         { shouldDirty: true }
       );
       await form.trigger("galleryImageUrls");
@@ -121,6 +123,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     }
   };
 
+
   // 🗑️ Delete
   const handleRemoveImage = async (urlToRemove: string) => {
     try {
@@ -132,7 +135,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
         currentUrls.filter(url => url !== urlToRemove),
         { shouldDirty: true }
       );
-      await form.trigger("galleryImageUrls");
+       await form.trigger("galleryImageUrls");
 
       toast({
         title: "Амжилттай устгалаа",
@@ -288,7 +291,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
 
             <TabsContent value="gallery">
               <CardDescription>
-                Буудлынхаа зургуудыг эндээс удирдана уу.
+                Буудлынхаа зургуудыг эндээс удирдана уу. Нэг дор олон зураг сонгож болно.
               </CardDescription>
 
               <input
@@ -298,6 +301,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                 className="hidden"
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploading}
+                multiple
               />
 
               <FormField
@@ -467,5 +471,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+
+    
 
     
