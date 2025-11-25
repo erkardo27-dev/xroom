@@ -121,8 +121,9 @@ function BookingCarousel({ room, images, isBookingOpen }: { room: Room, images: 
                             src={image.imageUrl}
                             alt={image.description}
                             data-ai-hint={image.imageHint}
-                            fill
-                            className="object-cover"
+                            width={800}
+                            height={600}
+                            className="object-cover w-full h-full"
                         />
                     </div>
                 </CarouselItem>

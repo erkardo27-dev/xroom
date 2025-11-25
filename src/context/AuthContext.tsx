@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       cleaned[key] = data[key as keyof typeof data] ?? null;
     });
 
-    await updateDoc(ref, cleaned);
+    await setDoc(ref, cleaned, { merge: true });
     setHotelInfo((prev) => ({ ...(prev ?? {}), ...cleaned } as HotelInfo));
   };
 
