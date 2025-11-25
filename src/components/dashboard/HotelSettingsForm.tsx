@@ -483,7 +483,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
+        <Button type="submit" className="w-full" disabled={isUploading}>
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>
