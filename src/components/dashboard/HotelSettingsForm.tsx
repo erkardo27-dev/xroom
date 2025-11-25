@@ -84,7 +84,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.reset]);
+  }, [hotelInfo, form.reset]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -97,6 +97,15 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
   
+    if (!userUid) {
+      toast({
+        variant: "destructive",
+        title: "Алдаа",
+        description: "Хэрэглэгчийн мэдээлэл олдсонгүй. Дахин нэвтэрнэ үү.",
+      });
+      return;
+    }
+
     // 🧹 values → зөвхөн defined утга үлдээж цэвэрлэх
     const cleaned: any = {};
     for (const key in values) {
@@ -480,7 +489,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
         </Tabs>
 
         <Button type="submit" className="w-full" disabled={isUploading}>
-          {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>

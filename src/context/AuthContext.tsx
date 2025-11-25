@@ -69,31 +69,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // AUTH LISTENER
+  // AUTH & HOTEL INFO LISTENER
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setIsLoading(true);
       setUser(firebaseUser);
-      setIsLoading(false);
+
+      if (firebaseUser) {
+        const ref = doc(firestore, "hotels", firebaseUser.uid);
+        const unsubHotel = onSnapshot(ref, (snap) => {
+          if (snap.exists()) {
+            setHotelInfo(snap.data() as HotelInfo);
+          } else {
+            setHotelInfo(null);
+          }
+          setIsLoading(false);
+        });
+        return () => unsubHotel();
+      } else {
+        setHotelInfo(null);
+        setIsLoading(false);
+      }
     });
     return () => unsubscribe();
-  }, [auth]);
-
-  // HOTEL INFO LISTENER
-  useEffect(() => {
-    if (user) {
-      const ref = doc(firestore, "hotels", user.uid);
-      const unsubscribe = onSnapshot(ref, (snap) => {
-        if (snap.exists()) {
-          setHotelInfo(snap.data() as HotelInfo);
-        } else {
-          setHotelInfo(null);
-        }
-      });
-      return () => unsubscribe();
-    } else {
-      setHotelInfo(null);
-    }
-  }, [user, firestore]);
+  }, [auth, firestore]);
 
 
   // LOGIN + REDIRECT
@@ -136,6 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
+      setHotelInfo(newHotelData);
       router.push("/dashboard");
     } catch (error: any) {
       toast({
@@ -151,8 +151,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // UPDATE HOTEL INFO
   const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
-    if (!user) return;
-    const ref = doc(firestore, "hotels", user.uid);
+    if (!userUid) return;
+    const ref = doc(firestore, "hotels", userUid);
     
     const dataToSave = { ...data };
     delete (dataToSave as any).termsAccepted;
@@ -196,6 +196,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isAdmin = user?.email === "admin@xroom.com";
+  const userUid = user?.uid ?? null;
 
   return (
     <AuthContext.Provider
@@ -210,7 +211,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout,
         updateHotelInfo,
         userEmail: user?.email ?? null,
-        userUid: user?.uid ?? null,
+        userUid,
       }}
     >
       {children}
