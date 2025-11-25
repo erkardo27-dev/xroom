@@ -68,7 +68,10 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     },
   });
 
-  useEffect(() => {
+ useEffect(() => {
+    // This effect should only run once when the component mounts and hotelInfo becomes available.
+    // It sets the initial form values. It should NOT re-run when hotelInfo is updated
+    // by the listener, as that would overwrite the user's current edits.
     if (hotelInfo) {
       form.reset({
         ...hotelInfo,
@@ -80,9 +83,10 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
         termsAccepted: !!hotelInfo.contractSignedOn,
       });
     }
-  }, [hotelInfo, form.reset]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.reset]);
 
-  // 🔽 SUBMIT
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isUploading) {
       toast({
@@ -447,7 +451,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                         <FormItem>
                             <FormLabel>Баталгаажуулсан хүний нэр</FormLabel>
                             <FormControl>
-                                <Input placeholder="Эрх бүхий албан тушаалтны нэр" {...field} disabled={!!hotelInfo?.contractSignedOn} />
+                                <Input placeholder="Эрх бүхий албан тушаалтны нэр" {...field} disabled={!!hotelInfo?.contractSignedOn} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -483,5 +487,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+    
 
     
