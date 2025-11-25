@@ -1,168 +1,179 @@
 
-
 "use client";
 
-import { Amenity } from "@/lib/data";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, User, createUserWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { useFirebaseApp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 
-
-// This is a temporary solution for the prototype.
-// In a real production app, this should be managed via custom claims or a roles collection.
-const ADMIN_EMAIL = "admin@xroom.com";
-
-export type HotelInfo = {
-    id: string; // user.uid
+export interface HotelInfo {
+    id: string;
     hotelName: string;
     location: string;
+    phoneNumber: string;
+    amenities: string[];
+    galleryImageUrls: string[];
     detailedAddress?: string;
     latitude?: number;
     longitude?: number;
-    phoneNumber: string;
-    amenities?: Amenity[];
-    galleryImageUrls?: string[];
     bankName?: string;
     accountNumber?: string;
     accountHolderName?: string;
     contractSignedOn?: string;
     signatureName?: string;
-};
+}
 
-type AuthContextType = {
-  isLoggedIn: boolean;
-  userEmail: string | null;
+interface AuthContextType {
+  user: User | null;
   hotelInfo: HotelInfo | null;
+  isLoggedIn: boolean;
   isLoading: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<void>;
-  register: (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls' | 'detailedAddress' | 'latitude' | 'longitude'>) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls' >) => Promise<void>;
   logout: () => Promise<void>;
-  updateHotelInfo: (hotelInfo: Partial<Omit<HotelInfo, 'id'>>) => void;
-};
+  updateHotelInfo: (data: Partial<HotelInfo>) => Promise<void>;
+  userEmail: string | null;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const app = useFirebaseApp();
+  const auth = getAuth(app);
+  const firestore = getFirestore(app);
   const { toast } = useToast();
   const router = useRouter();
 
-  const hotelInfoRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'hotels', user.uid);
-  }, [firestore, user]);
-  
-  const { data: hotelInfo, isLoading: isHotelInfoLoading } = useDoc<HotelInfo>(hotelInfoRef);
+  const [user, setUser] = useState<User | null>(null);
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const isLoading = isUserLoading || isHotelInfoLoading;
-  const isLoggedIn = !!user;
-  const userEmail = user?.email || null;
-  const isAdmin = userEmail === ADMIN_EMAIL;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        const ref = doc(firestore, "hotels", firebaseUser.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            setHotelInfo(snap.data() as HotelInfo);
+        }
+      } else {
+        setHotelInfo(null);
+      }
+      setIsLoading(false); // Set loading to false once auth state is determined
+    });
+    return () => unsubscribe();
+  }, [auth, firestore]);
 
-
-  const login = async (email: string, password?: string) => {
-    const auth = getAuth();
-    if (!auth) return;
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-        if (password) {
-            await signInWithEmailAndPassword(auth, email, password);
-        }
-        toast({
-            title: "Амжилттай нэвтэрлээ",
-        });
-
-        if (email === ADMIN_EMAIL) {
-            router.push('/admin');
-        } else {
-            router.push('/dashboard');
-        }
-        router.refresh();
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-         toast({
-            variant: "destructive",
-            title: "Нэвтрэхэд алдаа гарлаа",
-            description: "И-мэйл эсвэл нууц үг буруу байна.",
-        });
+      toast({
+        variant: "destructive",
+        title: "Нэвтрэхэд алдаа гарлаа",
+        description: error.message,
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
-    const auth = getAuth();
-    if (!auth || !firestore) return;
+  const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls'>) => {
+    setIsLoading(true);
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const newHotelInfo: HotelInfo = {
-            id: userCredential.user.uid,
+        const user = userCredential.user;
+        const newHotelData = {
             ...hotelData,
+            id: user.uid,
             amenities: [],
             galleryImageUrls: [],
         };
-        const newHotelRef = doc(firestore, "hotels", userCredential.user.uid);
-        await setDoc(newHotelRef, newHotelInfo);
-        
-        toast({
-            title: "Амжилттай бүртгүүллээ",
-            description: `${hotelData.hotelName}-д тавтай морилно уу.`,
-        });
-        router.push('/dashboard');
-        router.refresh();
+        await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
+        setHotelInfo(newHotelData);
     } catch (error: any) {
         toast({
             variant: "destructive",
             title: "Бүртгүүлэхэд алдаа гарлаа",
             description: error.message,
         });
+        throw error;
+    } finally {
+        setIsLoading(false);
     }
-  }
+  };
   
-  const updateHotelInfo = (newHotelInfo: Partial<Omit<HotelInfo, 'id'>>) => {
-      if (hotelInfoRef) {
-        // Sanitize data: Firestore doesn't accept `undefined`. Convert to `null`.
-        const sanitizedData = Object.fromEntries(
-            Object.entries(newHotelInfo).map(([key, value]) => [key, value === undefined ? null : value])
-        );
+  const updateHotelInfo = async (data: Partial<HotelInfo>) => {
+    if (!user) return;
+    const ref = doc(firestore, "hotels", user.uid);
+    
+    // Create a copy of the data and remove any undefined fields
+    const cleanedData: Partial<HotelInfo> = {};
+    for (const key in data) {
+        if (data[key as keyof typeof data] !== undefined) {
+            cleanedData[key as keyof typeof data] = data[key as keyof typeof data];
+        } else {
+            cleanedData[key as keyof typeof data] = null as any;
+        }
+    }
 
-        setDocumentNonBlocking(hotelInfoRef, sanitizedData, { merge: true });
-        toast({
-            title: "Амжилттай",
-            description: "Зочид буудлын мэдээлэл шинэчлэгдлээ.",
-        });
-      } else {
-        toast({
-            variant: "destructive",
-            title: "Алдаа гарлаа",
-            description: "Мэдээллийг хадгалах боломжгүй байна. Та дахин нэвтэрч ороод оролдоно уу.",
-        });
-      }
+    try {
+      await updateDoc(ref, cleanedData);
+      setHotelInfo((prev) => ({ ...prev, ...cleanedData } as HotelInfo));
+       toast({
+        title: "Амжилттай хадгаллаа!",
+        description: "Таны буудлын мэдээлэл амжилттай шинэчлэгдлээ.",
+      });
+    } catch(error: any) {
+      toast({
+          variant: "destructive",
+          title: "Хадгалахад алдаа гарлаа",
+          description: error.message,
+      });
+      throw error;
+    }
   };
 
   const logout = async () => {
-    const auth = getAuth();
-    if (!auth) return;
+    setIsLoading(true);
     try {
-        await signOut(auth);
-        toast({
-            title: "Системээс гарлаа",
-            description: "Та амжилттай системээс гарлаа.",
-        });
-        router.push('/');
+      await signOut(auth);
+      router.push('/');
     } catch (error: any) {
         toast({
             variant: "destructive",
             title: "Гарахад алдаа гарлаа",
             description: error.message,
         });
+        throw error;
+    } finally {
+        setIsLoading(false);
     }
   };
+  
+  const isAdmin = user?.email === 'admin@xroom.com';
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, hotelInfo, login, register, logout, isLoading, updateHotelInfo, isAdmin }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        hotelInfo,
+        isLoggedIn: !!user,
+        isLoading,
+        isAdmin,
+        login,
+        register,
+        logout,
+        updateHotelInfo,
+        userEmail: user?.email ?? null,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
