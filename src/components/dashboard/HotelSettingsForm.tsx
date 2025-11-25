@@ -88,9 +88,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
     
-    const { termsAccepted, ...dataToSave } = values;
-    
-    await updateHotelInfo(dataToSave);
+    await updateHotelInfo(values);
     onFormSubmit();
   }
 
@@ -315,9 +313,9 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                               <Image
                                 src={url}
                                 alt=""
-                                fill
-                                sizes="(max-width: 768px) 50vw, 33vw"
-                                className="object-cover rounded-lg border"
+                                width={200}
+                                height={150}
+                                className="object-cover rounded-lg border aspect-video"
                               />
                               <Button
                                 type="button"

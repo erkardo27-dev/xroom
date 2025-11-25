@@ -15,6 +15,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { useFirebaseApp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -81,23 +82,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (user) {
       const ref = doc(firestore, "hotels", user.uid);
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-          if (firebaseUser) {
-            const snap = await getDoc(ref);
-            if (snap.exists()) {
-              setHotelInfo(snap.data() as HotelInfo);
-            } else {
-              setHotelInfo(null);
-            }
-          } else {
-             setHotelInfo(null);
-          }
+      const unsubscribe = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+          setHotelInfo(snap.data() as HotelInfo);
+        } else {
+          setHotelInfo(null);
+        }
       });
       return () => unsubscribe();
     } else {
       setHotelInfo(null);
     }
-  }, [user, firestore, auth]);
+  }, [user, firestore]);
 
 
   // LOGIN + REDIRECT
@@ -140,7 +136,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
-      // No need to setHotelInfo here, the listener will do it.
       router.push("/dashboard");
     } catch (error: any) {
       toast({
@@ -159,11 +154,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     const ref = doc(firestore, "hotels", user.uid);
     
-    // Create a new object with only the data to be saved, excluding 'termsAccepted'
-    const { termsAccepted, ...dataToSave } = data as any;
+    const dataToSave = { ...data };
+    delete (dataToSave as any).termsAccepted;
     
-    // Add contract signing date if terms are accepted for the first time
-    if (termsAccepted && !hotelInfo?.contractSignedOn) {
+    if (data.termsAccepted && !hotelInfo?.contractSignedOn) {
         dataToSave.contractSignedOn = new Date().toISOString();
     }
 
@@ -230,3 +224,5 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
+
+    
