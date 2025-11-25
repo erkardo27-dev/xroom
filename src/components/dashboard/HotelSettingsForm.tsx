@@ -75,7 +75,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
         termsAccepted: !!hotelInfo.contractSignedOn,
       });
     }
-  }, [hotelInfo, form]);
+  }, [hotelInfo]);
 
   // 🔽 SUBMIT
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -478,3 +478,5 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+
+    
