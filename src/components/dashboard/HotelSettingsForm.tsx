@@ -461,7 +461,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
+        <Button type="submit" className="w-full" disabled={isUploading}>
           {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
