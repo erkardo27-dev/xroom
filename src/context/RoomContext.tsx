@@ -301,7 +301,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     batch.commit().then(() => {
         toast({
             title: "Үнэ шинэчлэгдлээ",
-            description: `${format(date, 'M/d')}-ний ${roomType.name} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
+            description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
         });
     }).catch((e) => {
          toast({
@@ -346,4 +346,3 @@ export const useRoom = () => {
   }
   return context;
 };
-
