@@ -107,8 +107,10 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       form.setValue(
         "galleryImageUrls",
         [...currentUrls, downloadUrl],
-        { shouldDirty: true, shouldTouch: true, shouldValidate: true }
+        { shouldDirty: true }
       );
+      await form.trigger("galleryImageUrls");
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -130,8 +132,9 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       form.setValue(
         "galleryImageUrls",
         currentUrls.filter(url => url !== urlToRemove),
-        { shouldDirty: true, shouldTouch: true, shouldValidate: true }
+        { shouldDirty: true }
       );
+      await form.trigger("galleryImageUrls");
 
       toast({
         title: "Амжилттай устгалаа",
@@ -466,3 +469,5 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+
+    
