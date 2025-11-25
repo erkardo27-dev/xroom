@@ -68,23 +68,19 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     },
   });
 
- useEffect(() => {
-    // This effect should only run once when the component mounts and hotelInfo becomes available.
-    // It sets the initial form values. It should NOT re-run when hotelInfo is updated
-    // by the listener, as that would overwrite the user's current edits.
-    if (hotelInfo) {
-      form.reset({
-        ...hotelInfo,
-        signatureName: hotelInfo.signatureName || "",
-        bankName: hotelInfo.bankName || "",
-        accountNumber: hotelInfo.accountNumber || "",
-        accountHolderName: hotelInfo.accountHolderName || "",
-        detailedAddress: hotelInfo.detailedAddress || "",
-        termsAccepted: !!hotelInfo.contractSignedOn,
-      });
-    }
+  useEffect(() => {
+    if (!hotelInfo) return;
+    form.reset({
+      ...hotelInfo,
+      signatureName: hotelInfo.signatureName || "",
+      bankName: hotelInfo.bankName || "",
+      accountNumber: hotelInfo.accountNumber || "",
+      accountHolderName: hotelInfo.accountHolderName || "",
+      detailedAddress: hotelInfo.detailedAddress || "",
+      termsAccepted: !!hotelInfo.contractSignedOn,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hotelInfo, form.reset]);
+  }, []); // Only run once on initial load
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -488,7 +484,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading}>
+        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>
