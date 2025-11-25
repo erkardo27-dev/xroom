@@ -84,7 +84,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // HOTEL INFO LISTENER (DEPENDS ON USER)
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+        setIsLoading(false);
+        return;
+    };
 
     setIsLoading(true);
     const ref = doc(firestore, "hotels", user.uid);
@@ -156,8 +159,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
     if (!userUid) {
       toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
-      throw new Error("User not authenticated for updateHotelInfo");
+      return;
     }
+
+    if (Object.keys(data).length === 0) {
+        toast({
+          title: "Өөрчлөлт алга",
+          description: "Хадгалахад өөрчлөлт илэрсэнгүй.",
+        });
+        return;
+    }
+
     const ref = doc(firestore, "hotels", userUid);
     
     const dataToSave = { ...data };

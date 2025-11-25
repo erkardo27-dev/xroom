@@ -102,13 +102,20 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
 
-    const cleaned: any = {};
-    for (const key in values) {
-      const val = values[key as keyof typeof values];
-      if (val !== undefined) cleaned[key] = val;
+    const dirtyFields = form.formState.dirtyFields;
+    const dataToUpdate: Partial<z.infer<typeof formSchema>> = {};
+
+    for (const key in dirtyFields) {
+        if (dirtyFields[key as keyof typeof dirtyFields]) {
+            dataToUpdate[key as keyof typeof dataToUpdate] = values[key as keyof typeof values];
+        }
+    }
+    // Always include galleryImageUrls if they have been touched, because deleting is a valid change
+    if (form.formState.touchedFields.galleryImageUrls) {
+        dataToUpdate.galleryImageUrls = values.galleryImageUrls;
     }
   
-    await updateHotelInfo(cleaned);
+    await updateHotelInfo(dataToUpdate);
     onFormSubmit();
   }
 
@@ -127,9 +134,8 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       form.setValue(
         "galleryImageUrls",
         [...currentUrls, ...downloadUrls],
-        { shouldDirty: true }
+        { shouldDirty: true, shouldTouch: true }
       );
-      await form.trigger("galleryImageUrls");
 
     } catch (error) {
       toast({
@@ -153,9 +159,8 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       form.setValue(
         "galleryImageUrls",
         currentUrls.filter(url => url !== urlToRemove),
-        { shouldDirty: true }
+        { shouldDirty: true, shouldTouch: true }
       );
-       await form.trigger("galleryImageUrls");
 
       toast({
         title: "Амжилттай устгалаа",
@@ -483,10 +488,12 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading}>
+        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>
     </Form>
   );
 }
+
+    
