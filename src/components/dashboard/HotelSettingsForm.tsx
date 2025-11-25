@@ -102,7 +102,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
 
-    // 🧹 values → зөвхөн defined утга үлдээж цэвэрлэх
     const cleaned: any = {};
     for (const key in values) {
       const val = values[key as keyof typeof values];
@@ -491,3 +490,5 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
+
+    

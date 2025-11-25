@@ -68,6 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const userUid = user?.uid ?? null;
 
   // AUTH STATE LISTENER
   useEffect(() => {
@@ -83,23 +84,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // HOTEL INFO LISTENER (DEPENDS ON USER)
   useEffect(() => {
-    if (user) {
-      setIsLoading(true);
-      const ref = doc(firestore, "hotels", user.uid);
-      const unsubHotel = onSnapshot(ref, (snap) => {
-        if (snap.exists()) {
-          setHotelInfo(snap.data() as HotelInfo);
-        } else {
-          setHotelInfo(null);
-        }
+    if (!user) return;
+
+    setIsLoading(true);
+    const ref = doc(firestore, "hotels", user.uid);
+    const unsubHotel = onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        setHotelInfo(snap.data() as HotelInfo);
+      } else {
+        setHotelInfo(null);
+      }
+      setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching hotel info:", error);
         setIsLoading(false);
-      }, (error) => {
-          console.error("Error fetching hotel info:", error);
-          setIsLoading(false);
-          setHotelInfo(null);
-      });
-      return () => unsubHotel();
-    }
+        setHotelInfo(null);
+    });
+    return () => unsubHotel();
   }, [user, firestore]);
 
 
@@ -139,7 +140,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
-      // Manually set hotel info for immediate UI update after registration
       setHotelInfo(newHotelData);
       router.push("/dashboard");
     } catch (error: any) {
@@ -153,8 +153,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // UPDATE HOTEL INFO
-  const updateHotelInfo = async (userId: string, data: Partial<Omit<HotelInfo, 'id'>>) => {
-    const ref = doc(firestore, "hotels", userId);
+  const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
+    if (!userUid) {
+      toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
+      throw new Error("User not authenticated for updateHotelInfo");
+    }
+    const ref = doc(firestore, "hotels", userUid);
     
     const dataToSave = { ...data };
     delete (dataToSave as any).termsAccepted;
@@ -196,7 +200,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isAdmin = user?.email === "admin@xroom.com";
-  const userUid = user?.uid ?? null;
 
   return (
     <AuthContext.Provider
@@ -209,13 +212,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         register,
         logout,
-        updateHotelInfo: async (data) => {
-            if (!userUid) {
-                 toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
-                 throw new Error("User not authenticated for updateHotelInfo");
-            }
-            return updateHotelInfo(userUid, data);
-        },
+        updateHotelInfo,
         userEmail: user?.email ?? null,
         userUid,
       }}
@@ -231,3 +228,5 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
+
+    
