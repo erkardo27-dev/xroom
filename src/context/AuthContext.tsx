@@ -14,7 +14,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
 } from "firebase/firestore";
 import { useFirebaseApp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -50,7 +49,7 @@ interface AuthContextType {
     hotelData: Omit<HotelInfo, "id" | "amenities" | "galleryImageUrls">
   ) => Promise<void>;
   logout: () => Promise<void>;
-  updateHotelInfo: (data: Partial<HotelInfo>) => Promise<void>;
+  updateHotelInfo: (data: Partial<Omit<HotelInfo, 'id'>>) => Promise<void>;
   userEmail: string | null;
   userUid: string | null;
 }
@@ -71,17 +70,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // AUTH LISTENER
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setIsLoading(true);
       setUser(firebaseUser);
 
       if (firebaseUser) {
         const ref = doc(firestore, "hotels", firebaseUser.uid);
         const snap = await getDoc(ref);
-        if (snap.exists()) setHotelInfo(snap.data() as HotelInfo);
-        else setHotelInfo(null);
+        if (snap.exists()) {
+          setHotelInfo(snap.data() as HotelInfo);
+        } else {
+          setHotelInfo(null);
+        }
       } else {
         setHotelInfo(null);
       }
-
       setIsLoading(false);
     });
 
@@ -102,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       throw error;
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -138,28 +140,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       throw error;
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
   // UPDATE HOTEL INFO
-  const updateHotelInfo = async (data: Partial<HotelInfo>) => {
+  const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
     if (!user) return;
     const ref = doc(firestore, "hotels", user.uid);
-    const cleaned: any = {};
+    
+    // Create a copy to avoid mutating the original data
+    const dataToSave = { ...data };
 
-    Object.keys(data).forEach((key) => {
-      cleaned[key] = data[key as keyof typeof data] ?? null;
-    });
-
-    await setDoc(ref, cleaned, { merge: true });
-    setHotelInfo((prev) => ({ ...(prev ?? {}), ...cleaned } as HotelInfo));
+    try {
+        await setDoc(ref, dataToSave, { merge: true });
+        setHotelInfo((prev) => {
+            if (!prev) return dataToSave as HotelInfo; // Should not happen if user exists
+            return { ...prev, ...dataToSave };
+        });
+        toast({
+            title: "Амжилттай хадгалагдлаа",
+            description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Хадгалахад алдаа гарлаа",
+            description: error.message,
+        });
+    }
   };
+
 
   // LOGOUT
   const logout = async () => {
-    await signOut(auth);
-    router.push("/");
+    setIsLoading(true);
+    try {
+        await signOut(auth);
+        router.push('/');
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Гарахад алдаа гарлаа",
+            description: error.message,
+        });
+        throw error;
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const isAdmin = user?.email === "admin@xroom.com";

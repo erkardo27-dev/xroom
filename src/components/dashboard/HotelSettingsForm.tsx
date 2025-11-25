@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { amenityOptions, locations } from "@/lib/data";
+import { amenityOptions } from "@/lib/data";
 import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
@@ -36,7 +36,7 @@ const formSchema = z.object({
   accountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
   signatureName: z.string().optional(),
-  termsAccepted: z.boolean().optional(),
+  termsAccepted: z.boolean().default(false),
 });
 
 export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }) {
@@ -84,8 +84,11 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       });
       return;
     }
-
-    updateHotelInfo(values);
+    
+    // Omit the UI-only field 'termsAccepted' before saving
+    const { termsAccepted, ...dataToSave } = values;
+    
+    await updateHotelInfo(dataToSave);
     onFormSubmit();
   }
 
@@ -174,7 +177,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                 render={({ field }) => (
                   <FormItem>
                     {(field.value?.length ?? 0) > 0 || isUploading ? (
-                      <div className="space-y-4">
+                      <div className="space-y-4 pt-4">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           {field.value?.map((url, idx) => (
                             <div key={idx} className="relative group aspect-video">
@@ -182,6 +185,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                                 src={url}
                                 alt=""
                                 fill
+                                sizes="(max-width: 768px) 50vw, 33vw"
                                 className="object-cover rounded-lg border"
                               />
                               <Button
@@ -215,7 +219,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                       </div>
                     ) : (
                       <div
-                        className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg cursor-pointer"
+                        className="flex flex-col items-center justify-center text-center p-6 mt-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <div className="p-3 bg-secondary rounded-full border mb-4">
