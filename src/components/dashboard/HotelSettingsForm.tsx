@@ -102,17 +102,21 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       return;
     }
 
-    const dataToUpdate: Partial<z.infer<typeof formSchema>> = { ...values };
+    const dataToUpdate: any = { ...values };
 
     // termsAccepted is a client-side only field, don't save to Firestore
-    delete (dataToUpdate as any).termsAccepted;
+    delete dataToUpdate.termsAccepted;
     
     // If terms were accepted now and contract wasn't signed before, add sign date
     if (values.termsAccepted && !hotelInfo?.contractSignedOn) {
-        (dataToUpdate as any).contractSignedOn = new Date().toISOString();
+        dataToUpdate.contractSignedOn = new Date().toISOString();
     }
   
     await updateHotelInfo(dataToUpdate);
+
+    // Optimistically reset the form with the new values to update the UI immediately
+    form.reset(values);
+    
     onFormSubmit();
   }
 
@@ -485,7 +489,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
           </div>
         </Tabs>
 
-        <Button type="submit" className="w-full" disabled={isUploading}>
+        <Button type="submit" className="w-full" disabled={isUploading || !form.formState.isDirty}>
           {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
         </Button>
       </form>

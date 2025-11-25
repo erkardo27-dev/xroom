@@ -161,7 +161,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
       return;
     }
-  
+    
+    // Check if there are any actual changes to save
+    if (Object.keys(data).length === 0) {
+      toast({
+        title: "Өөрчлөлт алга",
+        description: "Хадгалахад өөрчлөлт илэрсэнгүй.",
+      });
+      return;
+    }
+
     const ref = doc(firestore, "hotels", userUid);
     
     try {
