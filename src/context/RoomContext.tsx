@@ -17,6 +17,7 @@ type RoomContextType = {
   rooms: Room[];
   roomInstances: RoomInstance[];
   availableRoomsByType: (Room & { availableInstances: RoomInstance[] })[];
+  ownerRooms: Room[];
   addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoomInstance: (instanceId: string) => void;
@@ -113,18 +114,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       ownerId: user.uid,
     };
     
-    // Ensure optional fields are not sent as undefined to Firestore
-    if (newRoomType.originalPrice === undefined || newRoomType.originalPrice === null) {
-        delete newRoomType.originalPrice;
-    }
-    if (newRoomType.latitude === undefined) delete newRoomType.latitude;
-    if (newRoomType.longitude === undefined) delete newRoomType.longitude;
-    if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
-    
-    const newRoomTypeRef = doc(firestore, "room_types", newRoomType.id);
+    const roomRef = doc(firestore, "room_types", newRoomType.id);
 
     const batch = writeBatch(firestore);
-    batch.set(newRoomTypeRef, newRoomType);
+    batch.set(roomRef, newRoomType);
 
     const newInstances: RoomInstance[] = Array.from({ length: newRoomType.totalQuantity }).map((_, i) => {
         const instanceId = doc(collection(firestore, 'room_instances')).id;
@@ -161,11 +154,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const updateRoom = (updatedRoom: Room) => {
     const roomRef = doc(firestore, "room_types", updatedRoom.id);
-    const dataToUpdate: Partial<Room> = { ...updatedRoom };
-    if (dataToUpdate.originalPrice === undefined || dataToUpdate.originalPrice === null) {
-        delete dataToUpdate.originalPrice;
-    }
-    setDocumentNonBlocking(roomRef, dataToUpdate, { merge: true });
+    setDocumentNonBlocking(roomRef, updatedRoom, { merge: true });
   };
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
@@ -357,9 +346,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   }, [rooms, roomInstances, getRoomStatusForDate]);
 
+  const ownerRooms = useMemo(() => {
+      if (!rooms || !user) return [];
+      return rooms.filter(r => r.ownerId === user.uid);
+  }, [rooms, user]);
+
 
   return (
-    <RoomContext.Provider value={{ rooms, roomInstances, availableRoomsByType, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setPriceForRoomTypeOnDate, getPriceForRoomTypeOnDate, setRoomPriceForDate, toggleLike, likedRooms }}>
+    <RoomContext.Provider value={{ rooms, roomInstances, availableRoomsByType, ownerRooms, addRoom, updateRoom, deleteRoomInstance, status, error, getRoomById, updateRoomInstance, getRoomStatusForDate, setRoomStatusForDate, getRoomPriceForDate, setPriceForRoomTypeOnDate, getPriceForRoomTypeOnDate, setRoomPriceForDate, toggleLike, likedRooms }}>
       {children}
     </RoomContext.Provider>
   );
