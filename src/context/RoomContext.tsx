@@ -104,6 +104,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       ownerId: user.uid,
     };
     
+    // Ensure originalPrice is not undefined
+    if (newRoomType.originalPrice === undefined || newRoomType.originalPrice === null) {
+        delete newRoomType.originalPrice;
+    }
+
     const batch = writeBatch(firestore);
     batch.set(newRoomTypeRef, newRoomType);
 
@@ -139,7 +144,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const updateRoom = (updatedRoom: Room) => {
     const roomRef = doc(firestore, "room_types", updatedRoom.id);
-    setDocumentNonBlocking(roomRef, updatedRoom, { merge: true });
+    const dataToUpdate = { ...updatedRoom };
+    if (dataToUpdate.originalPrice === undefined || dataToUpdate.originalPrice === null) {
+        delete dataToUpdate.originalPrice;
+    }
+    setDocumentNonBlocking(roomRef, dataToUpdate, { merge: true });
   };
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
@@ -346,3 +355,5 @@ export const useRoom = () => {
   }
   return context;
 };
+
+    

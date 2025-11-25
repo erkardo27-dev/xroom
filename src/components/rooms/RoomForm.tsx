@@ -29,7 +29,7 @@ import { Check, Image as ImageIcon } from "lucide-react";
 const formSchema = z.object({
   roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
   price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
-  originalPrice: z.coerce.number().optional().nullable(),
+  originalPrice: z.coerce.number().optional(),
   totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
   imageUrls: z.array(z.string().url()).refine(value => value.length > 0, {
     message: "Та дор хаяж нэг зураг сонгох шаардлагатай.",
@@ -165,24 +165,22 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         </FormItem>
                     )}
                 />
-                {isEditMode && (
-                    <FormField
-                        control={form.control}
-                        name="originalPrice"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Хямдрахаас өмнөх үнэ (₮)</FormLabel>
-                                <FormControl>
-                                    <Input type="number" placeholder="ж.нь: 200000" {...field} value={field.value ?? ""} />
-                                </FormControl>
-                                <FormDescription>
-                                    Хэрэв хямдрал зарлах бол энд хуучин үнийг оруулна.
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
+                <FormField
+                    control={form.control}
+                    name="originalPrice"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Хямдрахаас өмнөх үнэ (₮)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="ж.нь: 200000" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormDescription>
+                                Хэрэв хямдрал зарлах бол энд хуучин үнийг оруулна.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                  <FormField
                     control={form.control}
                     name="totalQuantity"
@@ -319,3 +317,5 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
         </Form>
     )
 }
+
+    
