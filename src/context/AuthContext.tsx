@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -69,26 +70,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // AUTH LISTENER
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setIsLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-
-      if (firebaseUser) {
-        const ref = doc(firestore, "hotels", firebaseUser.uid);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          setHotelInfo(snap.data() as HotelInfo);
-        } else {
-          setHotelInfo(null);
-        }
-      } else {
-        setHotelInfo(null);
-      }
       setIsLoading(false);
     });
-
     return () => unsubscribe();
-  }, [auth, firestore]);
+  }, [auth]);
+
+  // HOTEL INFO LISTENER
+  useEffect(() => {
+    if (user) {
+      const ref = doc(firestore, "hotels", user.uid);
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+          if (firebaseUser) {
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+              setHotelInfo(snap.data() as HotelInfo);
+            } else {
+              setHotelInfo(null);
+            }
+          } else {
+             setHotelInfo(null);
+          }
+      });
+      return () => unsubscribe();
+    } else {
+      setHotelInfo(null);
+    }
+  }, [user, firestore, auth]);
+
 
   // LOGIN + REDIRECT
   const login = async (email: string, password: string) => {
@@ -130,7 +140,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
-      setHotelInfo(newHotelData);
+      // No need to setHotelInfo here, the listener will do it.
       router.push("/dashboard");
     } catch (error: any) {
       toast({
@@ -149,12 +159,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     const ref = doc(firestore, "hotels", user.uid);
     
+    // Create a new object with only the data to be saved, excluding 'termsAccepted'
+    const { termsAccepted, ...dataToSave } = data as any;
+    
+    // Add contract signing date if terms are accepted for the first time
+    if (termsAccepted && !hotelInfo?.contractSignedOn) {
+        dataToSave.contractSignedOn = new Date().toISOString();
+    }
+
     try {
-        await setDoc(ref, data, { merge: true });
-        setHotelInfo((prev) => {
-            if (!prev) return null;
-            return { ...prev, ...data };
-        });
+        await setDoc(ref, dataToSave, { merge: true });
         toast({
             title: "Амжилттай хадгалагдлаа",
             description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
