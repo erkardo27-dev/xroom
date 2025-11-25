@@ -44,6 +44,7 @@ export default function PricingClient() {
   }, [isLoggedIn, isAuthLoading, router]);
 
   const ownerRoomTypes = useMemo(() => {
+    if (!rooms) return [];
     return rooms.filter(r => r.ownerId === userEmail);
   }, [rooms, userEmail]);
   
