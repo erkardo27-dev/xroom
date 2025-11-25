@@ -90,19 +90,21 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   }
 
   // 🖼️ Upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file || !userUid) return;
 
     setIsUploading(true);
     try {
       const downloadUrl = await uploadHotelImage(storage, file, userUid);
+      const currentUrls = form.getValues("galleryImageUrls") || [];
+      
       form.setValue(
         "galleryImageUrls",
-        [...(form.getValues("galleryImageUrls") || []), downloadUrl],
-        { shouldDirty: true }
+        [...currentUrls, downloadUrl],
+        { shouldDirty: true, shouldTouch: true, shouldValidate: true }
       );
-    } catch {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Алдаа",
@@ -115,16 +117,22 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   };
 
   // 🗑️ Delete
-  const handleRemoveImage = async (url: string) => {
+  const handleRemoveImage = async (urlToRemove: string) => {
     try {
-      await deleteHotelImage(storage, url);
+      await deleteHotelImage(storage, urlToRemove);
+      const currentUrls = form.getValues("galleryImageUrls") || [];
+      
       form.setValue(
         "galleryImageUrls",
-        form.getValues("galleryImageUrls")?.filter((u) => u !== url),
-        { shouldDirty: true }
+        currentUrls.filter(url => url !== urlToRemove),
+        { shouldDirty: true, shouldTouch: true, shouldValidate: true }
       );
-      toast({ title: "Амжилттай", description: "Зураг устгагдлаа." });
-    } catch {
+
+      toast({
+        title: "Амжилттай устгалаа",
+        description: "Зураг амжилттай устгагдлаа.",
+      });
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Алдаа",
