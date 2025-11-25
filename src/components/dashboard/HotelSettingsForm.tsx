@@ -109,7 +109,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     
     // If terms were accepted now and contract wasn't signed before, add sign date
     if (values.termsAccepted && !hotelInfo?.contractSignedOn) {
-        dataToUpdate.contractSignedOn = new Date().toISOString();
+        (dataToUpdate as any).contractSignedOn = new Date().toISOString();
     }
   
     await updateHotelInfo(dataToUpdate);
@@ -492,5 +492,3 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </Form>
   );
 }
-
-    
