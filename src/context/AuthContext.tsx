@@ -8,9 +8,8 @@ import { createContext, useContext, useState, ReactNode, useEffect, useMemo } fr
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { useAuth as useFirebaseAuth } from "@/firebase";
 
 
 // This is a temporary solution for the prototype.
@@ -50,7 +49,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user, isUserLoading } = useUser();
-  const auth = useFirebaseAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
@@ -69,6 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const login = async (email: string, password?: string) => {
+    const auth = getAuth();
+    if (!auth) return;
     try {
         if (password) {
             await signInWithEmailAndPassword(auth, email, password);
@@ -93,6 +93,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string, hotelData: Omit<HotelInfo, 'id' | 'amenities' | 'galleryImageUrls' | 'detailedAddress' | 'latitude' | 'longitude'>) => {
+    const auth = getAuth();
+    if (!auth || !firestore) return;
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const newHotelInfo: HotelInfo = {
@@ -141,6 +143,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    const auth = getAuth();
+    if (!auth) return;
     try {
         await signOut(auth);
         toast({

@@ -1,8 +1,7 @@
 'use client';
     
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { onAuthStateChanged, type User, getAuth } from 'firebase/auth';
 
 export interface UserAuthHookResult {
   user: User | null;
@@ -15,24 +14,19 @@ export interface UserAuthHookResult {
  * @returns {UserAuthHookResult} An object containing the user and loading state.
  */
 export const useUser = (): UserAuthHookResult => {
-  const auth = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [isUserLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
-        setUserLoading(false);
-      });
-
-      // Cleanup subscription on unmount
-      return () => unsubscribe();
-    } else {
-      // If auth is not available, stop loading and set user to null.
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setUserLoading(false);
-    }
-  }, [auth]);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   return { user, isUserLoading };
 };

@@ -10,7 +10,10 @@ import { v4 as uuidv4 } from 'uuid';
  * @param userId The UID of the user uploading the file.
  * @returns A promise that resolves with the public download URL of the uploaded image.
  */
-export const uploadHotelImage = async (storage: FirebaseStorage, file: File, userId: string): Promise<string> => {
+export const uploadHotelImage = async (storage: FirebaseStorage | null, file: File, userId: string): Promise<string> => {
+    if (!storage) {
+        throw new Error("Firebase Storage is not initialized.");
+    }
     if (!userId) {
         throw new Error("User is not authenticated.");
     }
@@ -31,7 +34,10 @@ export const uploadHotelImage = async (storage: FirebaseStorage, file: File, use
  * @param imageUrl The public URL of the image to delete.
  * @returns A promise that resolves when the image is deleted.
  */
-export const deleteHotelImage = async (storage: FirebaseStorage, imageUrl: string): Promise<void> => {
+export const deleteHotelImage = async (storage: FirebaseStorage | null, imageUrl: string): Promise<void> => {
+    if (!storage) {
+        throw new Error("Firebase Storage is not initialized.");
+    }
     const storageRef = ref(storage, imageUrl);
     await deleteObject(storageRef);
 };
