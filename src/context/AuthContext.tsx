@@ -69,35 +69,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // AUTH & HOTEL INFO LISTENER
+  // AUTH STATE LISTENER
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setIsLoading(true);
       setUser(firebaseUser);
-
-      if (firebaseUser) {
-        const ref = doc(firestore, "hotels", firebaseUser.uid);
-        const unsubHotel = onSnapshot(ref, (snap) => {
-          if (snap.exists()) {
-            setHotelInfo(snap.data() as HotelInfo);
-          } else {
-            setHotelInfo(null);
-          }
+      if (!firebaseUser) {
+          setHotelInfo(null);
           setIsLoading(false);
-        });
-        return () => unsubHotel();
-      } else {
-        setHotelInfo(null);
-        setIsLoading(false);
       }
     });
     return () => unsubscribe();
-  }, [auth, firestore]);
+  }, [auth]);
+
+  // HOTEL INFO LISTENER (DEPENDS ON USER)
+  useEffect(() => {
+    if (user) {
+      setIsLoading(true);
+      const ref = doc(firestore, "hotels", user.uid);
+      const unsubHotel = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+          setHotelInfo(snap.data() as HotelInfo);
+        } else {
+          setHotelInfo(null);
+        }
+        setIsLoading(false);
+      }, (error) => {
+          console.error("Error fetching hotel info:", error);
+          setIsLoading(false);
+          setHotelInfo(null);
+      });
+      return () => unsubHotel();
+    }
+  }, [user, firestore]);
 
 
   // LOGIN + REDIRECT
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
@@ -108,8 +115,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message,
       });
       throw error;
-    } finally {
-        setIsLoading(false);
     }
   };
 
@@ -119,7 +124,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string,
     hotelData: Omit<HotelInfo, "id" | "amenities" | "galleryImageUrls">
   ) => {
-    setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -135,6 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       await setDoc(doc(firestore, "hotels", user.uid), newHotelData);
+      // Manually set hotel info for immediate UI update after registration
       setHotelInfo(newHotelData);
       router.push("/dashboard");
     } catch (error: any) {
@@ -144,14 +149,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message,
       });
       throw error;
-    } finally {
-        setIsLoading(false);
     }
   };
 
   // UPDATE HOTEL INFO
   const updateHotelInfo = async (data: Partial<Omit<HotelInfo, 'id'>>) => {
-    if (!userUid) return;
+    if (!userUid) {
+        toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
+        return;
+    };
     const ref = doc(firestore, "hotels", userUid);
     
     const dataToSave = { ...data };
@@ -179,7 +185,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // LOGOUT
   const logout = async () => {
-    setIsLoading(true);
     try {
         await signOut(auth);
         router.push('/');
@@ -190,8 +195,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             description: error.message,
         });
         throw error;
-    } finally {
-        setIsLoading(false);
     }
   };
 
@@ -225,5 +228,3 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
-
-    
