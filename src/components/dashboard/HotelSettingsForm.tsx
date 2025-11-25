@@ -72,10 +72,15 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     if (hotelInfo) {
       form.reset({
         ...hotelInfo,
+        signatureName: hotelInfo.signatureName || "",
+        bankName: hotelInfo.bankName || "",
+        accountNumber: hotelInfo.accountNumber || "",
+        accountHolderName: hotelInfo.accountHolderName || "",
+        detailedAddress: hotelInfo.detailedAddress || "",
         termsAccepted: !!hotelInfo.contractSignedOn,
       });
     }
-  }, [hotelInfo]);
+  }, [hotelInfo, form.reset]);
 
   // 🔽 SUBMIT
   async function onSubmit(values: z.infer<typeof formSchema>) {
