@@ -157,7 +157,7 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
         toast({ variant: 'destructive', title: "Өрөөний дугаар хоосон байж болохгүй." });
         return;
     }
-    updateRoomInstance({ ...instance, roomNumber: roomNumber.trim() });
+    updateRoomInstance({ instanceId: instance.instanceId, roomNumber: roomNumber.trim() });
     setIsEditingNumber(false);
   }
   
