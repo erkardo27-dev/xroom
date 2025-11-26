@@ -2,6 +2,7 @@
 'use client';
 
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { useMemo } from 'react';
 
 type MapLocationPickerProps = {
   value?: { lat?: number | null; lng?: number | null };
@@ -12,9 +13,12 @@ const ULAANBAATAR_CENTER = { lat: 47.9188, lng: 106.9176 };
 
 export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
   
-  const position = (value && typeof value.lat === 'number' && typeof value.lng === 'number')
-    ? { lat: value.lat, lng: value.lng }
-    : null;
+  const position = useMemo(() => 
+    (value && typeof value.lat === 'number' && typeof value.lng === 'number')
+      ? { lat: value.lat, lng: value.lng }
+      : null,
+    [value]
+  );
 
   const handleMapClick = (event: google.maps.MapMouseEvent) => {
     if (event.latLng) {

@@ -39,7 +39,7 @@ const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
-  const { user, userUid } = useAuth();
+  const { user, userUid, hotelInfo } = useAuth();
 
   const roomsQuery = useMemoFirebase(() => collection(firestore, 'room_types'), [firestore]);
   const { data: serverRooms = [], isLoading: isRoomsLoading, error: roomsError } = useCollection<Room>(roomsQuery);
@@ -101,13 +101,19 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     };
 
   const addRoom = async (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => {
-    if (!firestore || !user) return;
+    if (!firestore || !user || !hotelInfo) return;
 
     const roomTypeId = doc(collection(firestore, 'room_types')).id;
     
     const newRoomType: Room = {
       ...roomData,
       id: roomTypeId,
+      hotelName: hotelInfo.hotelName,
+      location: hotelInfo.location,
+      detailedAddress: hotelInfo.detailedAddress,
+      latitude: hotelInfo.latitude,
+      longitude: hotelInfo.longitude,
+      phoneNumber: hotelInfo.phoneNumber,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
       distance: +(Math.random() * 10 + 0.5).toFixed(1),
       likes: 0,
