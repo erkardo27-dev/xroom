@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useMemo } from 'react';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 type MapLocationPickerProps = {
@@ -12,12 +11,12 @@ type MapLocationPickerProps = {
 const ULAANBAATAR_CENTER = { lat: 47.9188, lng: 106.9176 };
 
 export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
-  const position = useMemo(() => {
-    if (value && typeof value.lat === 'number' && typeof value.lng === 'number') {
-      return { lat: value.lat, lng: value.lng };
-    }
-    return null;
-  }, [value]);
+  // This was the source of the bug. `useMemo` prevented the position from
+  // re-calculating when the parent form state changed via `onChange`.
+  // By making it a simple variable, it gets re-evaluated on every render.
+  const position = (value && typeof value.lat === 'number' && typeof value.lng === 'number')
+    ? { lat: value.lat, lng: value.lng }
+    : null;
 
   const handleMapClick = (event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
