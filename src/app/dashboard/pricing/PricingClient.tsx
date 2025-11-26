@@ -26,7 +26,7 @@ import OccupancyForecastChart from "./OccupancyForecastChart";
 
 export default function PricingClient() {
   const { userUid, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, status: roomStatus, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate } = useRoom();
+  const { rooms, status: roomStatus, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, setRoomPriceForDate } = useRoom();
   const router = useRouter();
 
   const [editingCell, setEditingCell] = useState<string | null>(null); // "roomTypeId-date"
@@ -73,10 +73,19 @@ export default function PricingClient() {
   const handleInputBlur = () => {
     if (!editingCell) return;
     const [roomTypeId, dateStr] = editingCell.split('-');
-    const newPrice = editingValue.trim() === '' ? getPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr)) : Number(editingValue);
+    
+    // Find a specific instance to update. The price is actually stored per-instance.
+    const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
+    if (!roomType) return;
+    
+    const originalPrice = roomType.price;
+    const newPrice = editingValue.trim() === '' ? originalPrice : Number(editingValue);
+
     if (!isNaN(newPrice)) {
-        setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), newPrice);
+        // Correctly call the function to set price for ALL instances of a type on a specific date.
+        setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), newPrice === originalPrice ? undefined : newPrice);
     }
+    
     setEditingCell(null);
     setEditingValue("");
   }

@@ -98,7 +98,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             return;
         }
 
-        const roomDataPayload = {
+        const roomDataPayload: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'> = {
             ...values,
             amenities: values.amenities as Amenity[],
             ownerId: userEmail,
@@ -121,7 +121,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 description: `${values.roomName} өрөөний төрлийн мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
-            addRoom(roomDataPayload as Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>);
+            addRoom(roomDataPayload);
         }
        
         form.reset();

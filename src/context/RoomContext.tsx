@@ -117,6 +117,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
     if (newRoomType.latitude === undefined) delete newRoomType.latitude;
     if (newRoomType.longitude === undefined) delete newRoomType.longitude;
+    if (newRoomType.originalPrice === undefined) delete newRoomType.originalPrice;
     
     const roomRef = doc(firestore, "room_types", newRoomType.id);
 
@@ -157,16 +158,17 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const updateRoom = (updatedRoom: Room) => {
     const roomRef = doc(firestore, "room_types", updatedRoom.id);
-    const dataToSave = { ...updatedRoom };
+    const dataToSave: any = { ...updatedRoom };
     if (dataToSave.detailedAddress === undefined) delete dataToSave.detailedAddress;
     if (dataToSave.latitude === undefined) delete dataToSave.latitude;
     if (dataToSave.longitude === undefined) delete dataToSave.longitude;
+    if (dataToSave.originalPrice === undefined) delete dataToSave.originalPrice;
     setDocumentNonBlocking(roomRef, dataToSave, { merge: true });
   };
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
     const instanceRef = doc(firestore, "room_instances", updatedInstance.instanceId);
-    const dataToSave = { ...updatedInstance };
+    const dataToSave: any = { ...updatedInstance };
     if (dataToSave.bookingCode === undefined) {
         delete dataToSave.bookingCode;
     }
@@ -309,14 +311,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const newLocalInstances = roomInstances.map(inst => {
       if (inst.roomTypeId === roomTypeId) {
-        // Deep copy the instance to avoid mutation issues
+        // Create a true deep copy to avoid state mutation issues
         const newInst = JSON.parse(JSON.stringify(inst));
         
         if (!newInst.overrides[dateKey]) {
           newInst.overrides[dateKey] = {};
         }
 
-        if (price === undefined || price === roomType.price) {
+        if (price === undefined) {
           // Resetting to base price
           delete newInst.overrides[dateKey].price;
           if (Object.keys(newInst.overrides[dateKey]).length === 0) {
