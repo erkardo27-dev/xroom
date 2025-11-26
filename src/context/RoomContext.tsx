@@ -385,29 +385,30 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (!rooms) return [];
     const today = startOfDay(new Date());
 
-    return rooms.map(roomType => {
-      const availableInstances = roomInstances.filter(instance => 
-        instance.roomTypeId === roomType.id && 
-        getRoomStatusForDate(instance.instanceId, today) === 'available'
-      );
-      
-      let distance = 999; // Default large distance
-      if (userLocation && roomType.latitude && roomType.longitude) {
+    return rooms
+      .map(roomType => {
+        const availableInstances = roomInstances.filter(instance =>
+          instance.roomTypeId === roomType.id &&
+          getRoomStatusForDate(instance.instanceId, today) === 'available'
+        );
+
+        let distance = 999; // Default large distance
+        if (userLocation && roomType.latitude && roomType.longitude) {
           distance = getDistanceFromLatLonInKm(
-              userLocation.lat,
-              userLocation.lon,
-              roomType.latitude,
-              roomType.longitude
+            userLocation.lat,
+            userLocation.lon,
+            roomType.latitude,
+            roomType.longitude
           );
-      }
+        }
 
-      return {
-        ...roomType,
-        distance, // Add the calculated distance
-        availableInstances,
-      };
-    });
-
+        return {
+          ...roomType,
+          distance,
+          availableInstances,
+        };
+      })
+      .filter(room => room.availableInstances.length > 0); 
   }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
   const ownerRooms = useMemo(() => {
@@ -430,5 +431,7 @@ export const useRoom = () => {
   }
   return context;
 };
+
+    
 
     
