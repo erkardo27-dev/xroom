@@ -25,7 +25,7 @@ import OccupancyForecastChart from "./OccupancyForecastChart";
 
 
 export default function PricingClient() {
-  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { userUid, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { rooms, status: roomStatus, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate } = useRoom();
   const router = useRouter();
 
@@ -45,8 +45,8 @@ export default function PricingClient() {
 
   const ownerRoomTypes = useMemo(() => {
     if (!rooms) return [];
-    return rooms.filter(r => r.ownerId === userEmail);
-  }, [rooms, userEmail]);
+    return rooms.filter(r => r.ownerId === userUid);
+  }, [rooms, userUid]);
   
    useEffect(() => {
     if (!selectedRoomForChart && ownerRoomTypes.length > 0) {
