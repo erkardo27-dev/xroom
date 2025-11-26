@@ -26,7 +26,7 @@ import { RecommendationCard } from "./RecommendationCard";
 type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
-  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { userUid, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
@@ -48,13 +48,13 @@ export default function DashboardClient() {
 
   const ownerRoomTypes = useMemo(() => {
     if (!rooms) return [];
-    return rooms.filter(r => r.ownerId === userEmail);
-  }, [rooms, userEmail]);
+    return rooms.filter(r => r.ownerId === userUid);
+  }, [rooms, userUid]);
 
   const ownerRoomInstances = useMemo(() => {
     if (!roomInstances) return [];
-    return roomInstances.filter(inst => inst.ownerId === userEmail)
-  }, [roomInstances, userEmail]);
+    return roomInstances.filter(inst => inst.ownerId === userUid)
+  }, [roomInstances, userUid]);
 
   const filteredAndSortedInstances = useMemo(() => {
     const instancesWithStatus = ownerRoomInstances
