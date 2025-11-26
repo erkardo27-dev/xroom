@@ -26,7 +26,7 @@ import OccupancyForecastChart from "./OccupancyForecastChart";
 
 export default function PricingClient() {
   const { userUid, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { rooms, status: roomStatus, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, setRoomPriceForDate } = useRoom();
+  const { rooms, roomInstances, status: roomStatus, getPriceForRoomTypeOnDate, setPriceForRoomTypeOnDate, setRoomPriceForDate } = useRoom();
   const router = useRouter();
 
   const [editingCell, setEditingCell] = useState<string | null>(null); // "roomTypeId-date"
@@ -74,16 +74,17 @@ export default function PricingClient() {
     if (!editingCell) return;
     const [roomTypeId, dateStr] = editingCell.split('-');
     
-    // Find a specific instance to update. The price is actually stored per-instance.
     const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
     if (!roomType) return;
     
+    const instance = roomInstances.find(inst => inst.roomTypeId === roomTypeId);
+    if (!instance) return;
+
     const originalPrice = roomType.price;
     const newPrice = editingValue.trim() === '' ? originalPrice : Number(editingValue);
 
     if (!isNaN(newPrice)) {
-        // Correctly call the function to set price for ALL instances of a type on a specific date.
-        setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), newPrice === originalPrice ? undefined : newPrice);
+        setRoomPriceForDate(instance.instanceId, new Date(dateStr), newPrice);
     }
     
     setEditingCell(null);
@@ -333,3 +334,5 @@ export default function PricingClient() {
     </div>
   );
 }
+
+    
