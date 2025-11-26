@@ -10,6 +10,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useAuth } from "./AuthContext";
+import { getDistanceFromLatLonInKm } from "@/lib/utils";
 
 const LIKED_ROOMS_STORAGE_KEY = 'likedRooms';
 
@@ -50,10 +51,31 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomInstances, setRoomInstances] = useState<RoomInstance[]>([]);
   const [likedRooms, setLikedRooms] = useState<string[]>([]);
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
+
   const { toast } = useToast();
 
   const status = isRoomsLoading || isInstancesLoading ? 'loading' : (roomsError || instancesError) ? 'error' : 'success';
   const error = roomsError?.message || instancesError?.message || null;
+
+  useEffect(() => {
+    // Get user's current location to calculate distances
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+        },
+        () => {
+          // Handle error or user denial - maybe set a default location?
+          console.warn("Could not get user location.");
+          setUserLocation(null);
+        }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     setRooms(serverRooms || []);
@@ -115,7 +137,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       longitude: hotelInfo.longitude,
       phoneNumber: hotelInfo.phoneNumber,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
-      distance: +(Math.random() * 10 + 0.5).toFixed(1),
+      distance: 0, // Will be calculated dynamically
       likes: 0,
       ownerId: user.uid,
     };
@@ -368,13 +390,25 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         instance.roomTypeId === roomType.id && 
         getRoomStatusForDate(instance.instanceId, today) === 'available'
       );
+      
+      let distance = 999; // Default large distance
+      if (userLocation && roomType.latitude && roomType.longitude) {
+          distance = getDistanceFromLatLonInKm(
+              userLocation.lat,
+              userLocation.lon,
+              roomType.latitude,
+              roomType.longitude
+          );
+      }
+
       return {
         ...roomType,
+        distance, // Add the calculated distance
         availableInstances,
       };
     }).filter(room => room.availableInstances.length > 0);
 
-  }, [rooms, roomInstances, getRoomStatusForDate]);
+  }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
   const ownerRooms = useMemo(() => {
       if (!rooms || !userUid) return [];
