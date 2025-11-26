@@ -83,9 +83,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   useEffect(() => {
     if (hotelInfo) {
       reset(hotelInfo);
-      if (hotelInfo.latitude && hotelInfo.longitude) {
-        setShowMap(true);
-      }
     }
   }, [hotelInfo, reset]);
   
@@ -547,3 +544,5 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </APIProvider>
   );
 }
+
+    
