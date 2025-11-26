@@ -388,7 +388,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             getRoomStatusForDate(instance.instanceId, today) === 'available'
         );
 
-        let distance = 999;
+        let distance = 19; // Default to 19km if no location
         if (userLocation && roomType.latitude != null && roomType.longitude != null) {
             distance = getDistanceFromLatLonInKm(
                 userLocation.lat,
