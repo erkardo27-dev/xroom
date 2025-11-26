@@ -114,7 +114,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       ownerId: user.uid,
     };
     
-    // Clean up undefined optional fields before saving
     if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
     if (newRoomType.latitude === undefined) delete newRoomType.latitude;
     if (newRoomType.longitude === undefined) delete newRoomType.longitude;
@@ -141,7 +140,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     try {
         await batch.commit();
-        // Optimistic UI Update
         setRooms(prev => [...prev, newRoomType]);
         setRoomInstances(prev => [...prev, ...newInstances]);
         toast({
@@ -159,7 +157,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
   const updateRoom = (updatedRoom: Room) => {
     const roomRef = doc(firestore, "room_types", updatedRoom.id);
-    setDocumentNonBlocking(roomRef, updatedRoom, { merge: true });
+    const dataToSave = { ...updatedRoom };
+    if (dataToSave.detailedAddress === undefined) delete dataToSave.detailedAddress;
+    if (dataToSave.latitude === undefined) delete dataToSave.latitude;
+    if (dataToSave.longitude === undefined) delete dataToSave.longitude;
+    setDocumentNonBlocking(roomRef, dataToSave, { merge: true });
   };
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
@@ -296,47 +298,53 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const setPriceForRoomTypeOnDate = useCallback((roomTypeId: string, date: Date, price: number | undefined) => {
     const roomType = getRoomById(roomTypeId);
     if (!roomType || !firestore) return;
-    
+
     const finalPrice = price === undefined ? roomType.price : price;
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
 
     const instancesToUpdate = roomInstances.filter(i => i.roomTypeId === roomTypeId);
+    if (instancesToUpdate.length === 0) return;
+    
     const batch = writeBatch(firestore);
 
-    instancesToUpdate.forEach(inst => {
-        const instanceRef = doc(firestore, "room_instances", inst.instanceId);
+    const newLocalInstances = roomInstances.map(inst => {
+      if (inst.roomTypeId === roomTypeId) {
         const newOverrides = { ...inst.overrides };
-        
         if (!newOverrides[dateKey]) {
-            newOverrides[dateKey] = {};
+          newOverrides[dateKey] = {};
         }
 
         if (price === undefined || price === roomType.price) {
-            delete newOverrides[dateKey].price;
-            if(Object.keys(newOverrides[dateKey]).length === 0) {
-                 delete newOverrides[dateKey];
-            }
+          delete newOverrides[dateKey].price;
+          if (Object.keys(newOverrides[dateKey]).length === 0) {
+            delete newOverrides[dateKey];
+          }
         } else {
-            newOverrides[dateKey].price = price;
+          newOverrides[dateKey].price = price;
         }
+
+        const instanceRef = doc(firestore, "room_instances", inst.instanceId);
         batch.update(instanceRef, { overrides: newOverrides });
+        
+        return { ...inst, overrides: newOverrides };
+      }
+      return inst;
     });
-    
+
     batch.commit().then(() => {
-        toast({
-            title: "Үнэ шинэчлэгдлээ",
-            description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
-        });
+      setRoomInstances(newLocalInstances); // Optimistic UI Update
+      toast({
+        title: "Үнэ шинэчлэгдлээ",
+        description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
+      });
     }).catch((e) => {
-         toast({
-            variant: "destructive",
-            title: "Алдаа",
-            description: "Үнийг шинэчлэхэд алдаа гарлаа: " + e.message,
-        });
+      toast({
+        variant: "destructive",
+        title: "Алдаа",
+        description: "Үнийг шинэчлэхэд алдаа гарлаа: " + e.message,
+      });
     });
-
-
-  }, [getRoomById, roomInstances, toast, firestore]);
+  }, [getRoomById, roomInstances, firestore, toast]);
 
   const availableRoomsByType = useMemo(() => {
     if (!rooms) return [];
@@ -375,5 +383,3 @@ export const useRoom = () => {
   }
   return context;
 };
-
-    
