@@ -22,7 +22,7 @@ type RoomContextType = {
   addRoom: (roomData: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>) => void;
   updateRoom: (updatedRoom: Room) => void;
   deleteRoomInstance: (instanceId: string) => void;
-  updateRoomInstance: (updatedInstance: RoomInstance) => void;
+  updateRoomInstance: (updatedInstance: Partial<RoomInstance> & { instanceId: string }) => void;
   getRoomById: (roomId: string) => Room | undefined;
   status: 'loading' | 'success' | 'error';
   error: string | null;
@@ -192,7 +192,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     setDocumentNonBlocking(roomRef, dataToSave, { merge: true });
   };
   
-  const updateRoomInstance = (updatedInstance: RoomInstance) => {
+  const updateRoomInstance = (updatedInstance: Partial<RoomInstance> & { instanceId: string }) => {
     const instanceRef = doc(firestore, "room_instances", updatedInstance.instanceId);
     const dataToSave: any = { ...updatedInstance };
     if (dataToSave.bookingCode === undefined) {
@@ -431,3 +431,4 @@ export const useRoom = () => {
 };
 
     
+
