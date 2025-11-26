@@ -406,7 +406,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         distance, // Add the calculated distance
         availableInstances,
       };
-    }).filter(room => room.availableInstances.length > 0);
+    });
 
   }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
@@ -430,3 +430,5 @@ export const useRoom = () => {
   }
   return context;
 };
+
+    
