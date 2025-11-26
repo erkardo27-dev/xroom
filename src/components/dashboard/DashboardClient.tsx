@@ -48,7 +48,14 @@ export default function DashboardClient() {
 
   const ownerRoomTypes = useMemo(() => {
     if (!rooms) return [];
-    return rooms.filter(r => r.ownerId === userUid);
+    // Ensure uniqueness to prevent "duplicate key" error
+    const uniqueRoomTypes = new Map<string, Room>();
+    rooms.forEach(room => {
+        if (room.ownerId === userUid) {
+            uniqueRoomTypes.set(room.id, room);
+        }
+    });
+    return Array.from(uniqueRoomTypes.values());
   }, [rooms, userUid]);
 
   const ownerRoomInstances = useMemo(() => {
@@ -292,7 +299,3 @@ export default function DashboardClient() {
     </>
   );
 }
-
-    
-
-    
