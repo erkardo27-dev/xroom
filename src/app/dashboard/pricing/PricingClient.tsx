@@ -77,8 +77,6 @@ export default function PricingClient() {
     const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
     if (!roomType) return;
     
-    // We need *any* instance of this room type to make a price override.
-    // The context logic will apply it to all instances of this type.
     const instance = roomInstances.find(inst => inst.roomTypeId === roomTypeId);
     if (!instance) return;
 
@@ -86,7 +84,6 @@ export default function PricingClient() {
     const newPrice = editingValue.trim() === '' ? originalPrice : Number(editingValue);
 
     if (!isNaN(newPrice)) {
-        // Use the function that sets the price for a specific instance on a specific date
         setRoomPriceForDate(instance.instanceId, new Date(dateStr), newPrice);
     }
     
@@ -106,6 +103,9 @@ export default function PricingClient() {
   const handleResetPrice = () => {
       if (!editingCell) return;
       const [roomTypeId, dateStr] = editingCell.split('-');
+      const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
+      if (!roomType) return;
+
       setPriceForRoomTypeOnDate(roomTypeId, new Date(dateStr), undefined);
       setEditingCell(null);
       setEditingValue("");
@@ -278,11 +278,11 @@ export default function PricingClient() {
                                         const cellId = `${room.id}-${format(date, 'yyyy-MM-dd')}`;
                                         const isEditing = editingCell === cellId;
                                         
-                                        const price = getPriceForRoomTypeOnDate(room.id, date);
-                                        const isOverridden = price !== room.price;
+                                        const currentPrice = getPriceForRoomTypeOnDate(room.id, date);
+                                        const isOverridden = currentPrice !== room.price;
                                         
                                         const previewPrice = getPreviewPrice(room.id, date);
-                                        const isPreviewing = previewPrice !== null && previewPrice !== price;
+                                        const isPreviewing = previewPrice !== null && previewPrice !== currentPrice;
 
                                         return (
                                             <TableCell 
@@ -318,7 +318,7 @@ export default function PricingClient() {
                                                         isPreviewing && "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 ring-2 ring-blue-400/50"
                                                     )}>
                                                         {isOverridden && !isPreviewing && <span className="text-xs text-muted-foreground line-through mr-1.5">{room.price.toLocaleString()}₮</span>}
-                                                        <span>{isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮</span>
+                                                        <span>{isPreviewing ? previewPrice?.toLocaleString() : currentPrice.toLocaleString()}₮</span>
                                                     </div>
                                                 )}
                                             </TableCell>
