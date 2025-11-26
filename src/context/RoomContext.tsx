@@ -309,24 +309,28 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const newLocalInstances = roomInstances.map(inst => {
       if (inst.roomTypeId === roomTypeId) {
-        const newOverrides = { ...inst.overrides };
-        if (!newOverrides[dateKey]) {
-          newOverrides[dateKey] = {};
+        // Deep copy the instance to avoid mutation issues
+        const newInst = JSON.parse(JSON.stringify(inst));
+        
+        if (!newInst.overrides[dateKey]) {
+          newInst.overrides[dateKey] = {};
         }
 
         if (price === undefined || price === roomType.price) {
-          delete newOverrides[dateKey].price;
-          if (Object.keys(newOverrides[dateKey]).length === 0) {
-            delete newOverrides[dateKey];
+          // Resetting to base price
+          delete newInst.overrides[dateKey].price;
+          if (Object.keys(newInst.overrides[dateKey]).length === 0) {
+            delete newInst.overrides[dateKey];
           }
         } else {
-          newOverrides[dateKey].price = price;
+          // Setting a new override price
+          newInst.overrides[dateKey].price = price;
         }
 
-        const instanceRef = doc(firestore, "room_instances", inst.instanceId);
-        batch.update(instanceRef, { overrides: newOverrides });
+        const instanceRef = doc(firestore, "room_instances", newInst.instanceId);
+        batch.update(instanceRef, { overrides: newInst.overrides });
         
-        return { ...inst, overrides: newOverrides };
+        return newInst;
       }
       return inst;
     });
@@ -338,6 +342,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         description: `${format(date, 'M/d')}-ний ${roomType.roomName} өрөөнүүдийн үнэ ${finalPrice.toLocaleString()}₮ боллоо.`
       });
     }).catch((e) => {
+      console.error("Batch update failed: ", e);
       toast({
         variant: "destructive",
         title: "Алдаа",
