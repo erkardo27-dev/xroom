@@ -306,8 +306,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
           
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-1.5">
-              <MapPin className="w-4 h-4" />
-              <span>{room.location}</span>
+            <MapPin className="w-4 h-4" />
+            <span>{room.location}</span>
           </div>
 
           <UrgencyMessage />
