@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Room, RoomInstance, RoomStatus } from '@/lib/data';
 import { useRoom } from '@/context/RoomContext';
 import {
@@ -119,8 +119,13 @@ export function RoomInstanceCard({ instance, onEditType, onDeleteInstance, selec
 
   const roomType = useMemo(() => getRoomById(instance.roomTypeId), [instance.roomTypeId, getRoomById]);
   
-  const priceForDate = useMemo(() => getRoomPriceForDate(instance.instanceId, selectedDate), [getRoomPriceForDate, instance.instanceId, selectedDate]);
+  const priceForDate = getRoomPriceForDate(instance.instanceId, selectedDate);
   const [localPrice, setLocalPrice] = useState(priceForDate);
+
+  useEffect(() => {
+    setLocalPrice(priceForDate);
+  }, [priceForDate]);
+
 
   if (!roomType) {
     return (
