@@ -43,6 +43,7 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
         gestureHandling={'cooperative'}
         disableDefaultUI={true}
         onClick={handleMapClick}
+        forceIframe={true}
       >
         {position && (
           <AdvancedMarker 
