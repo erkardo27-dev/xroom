@@ -13,7 +13,7 @@ const ULAANBAATAR_CENTER = { lat: 47.9188, lng: 106.9176 };
 
 export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
   const position = useMemo(() => {
-    if (value && value.lat && value.lng) {
+    if (value && typeof value.lat === 'number' && typeof value.lng === 'number') {
       return { lat: value.lat, lng: value.lng };
     }
     return null;
