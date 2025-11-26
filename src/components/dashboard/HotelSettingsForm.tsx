@@ -84,8 +84,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     if (hotelInfo.latitude && hotelInfo.longitude) {
         setShowMap(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on initial load
+  }, [hotelInfo, form.reset]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
