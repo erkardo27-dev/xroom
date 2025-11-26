@@ -88,6 +88,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   
   // Get user's current location on initial mount if no location is set
   useEffect(() => {
+    // Only run if the map is shown AND there's no pre-existing location
     if (showMap && !watchedValues.latitude && !watchedValues.longitude) {
       if (navigator.geolocation) {
         setIsGettingLocation(true);
@@ -115,7 +116,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showMap, setValue]);
+  }, [showMap]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -293,7 +294,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
                               ) : (
                                 <Button variant="outline" className="w-full" onClick={() => setShowMap(true)}>
                                     <Map className="mr-2 h-4 w-4" />
-                                    Газрын зураг дээр байршил сонгох
+                                    {hotelInfo?.latitude ? "Байршил өөрчлөх" : "Газрын зураг дээр байршил сонгох"}
                                 </Button>
                               )}
                               <FormMessage />
@@ -544,5 +545,6 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     </APIProvider>
   );
 }
+    
 
     
