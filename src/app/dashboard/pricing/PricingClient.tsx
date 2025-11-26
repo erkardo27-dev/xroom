@@ -77,6 +77,8 @@ export default function PricingClient() {
     const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
     if (!roomType) return;
     
+    // We need *any* instance of this room type to make a price override.
+    // The context logic will apply it to all instances of this type.
     const instance = roomInstances.find(inst => inst.roomTypeId === roomTypeId);
     if (!instance) return;
 
@@ -84,6 +86,7 @@ export default function PricingClient() {
     const newPrice = editingValue.trim() === '' ? originalPrice : Number(editingValue);
 
     if (!isNaN(newPrice)) {
+        // Use the function that sets the price for a specific instance on a specific date
         setRoomPriceForDate(instance.instanceId, new Date(dateStr), newPrice);
     }
     
@@ -274,8 +277,10 @@ export default function PricingClient() {
                                         const isWeekend = day === 0 || day === 6;
                                         const cellId = `${room.id}-${format(date, 'yyyy-MM-dd')}`;
                                         const isEditing = editingCell === cellId;
+                                        
                                         const price = getPriceForRoomTypeOnDate(room.id, date);
                                         const isOverridden = price !== room.price;
+                                        
                                         const previewPrice = getPreviewPrice(room.id, date);
                                         const isPreviewing = previewPrice !== null && previewPrice !== price;
 
@@ -309,11 +314,11 @@ export default function PricingClient() {
                                                     </div>
                                                 ) : (
                                                     <div className={cn(
-                                                        "font-semibold w-24 mx-auto p-2 rounded-md transition-colors duration-300",
-                                                        isOverridden && !isPreviewing && "bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400",
+                                                        "font-semibold w-full mx-auto p-2 rounded-md transition-colors duration-300",
                                                         isPreviewing && "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 ring-2 ring-blue-400/50"
                                                     )}>
-                                                        {isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮
+                                                        {isOverridden && !isPreviewing && <span className="text-xs text-muted-foreground line-through mr-1.5">{room.price.toLocaleString()}₮</span>}
+                                                        <span>{isPreviewing ? previewPrice?.toLocaleString() : price.toLocaleString()}₮</span>
                                                     </div>
                                                 )}
                                             </TableCell>
@@ -334,5 +339,7 @@ export default function PricingClient() {
     </div>
   );
 }
+
+    
 
     
