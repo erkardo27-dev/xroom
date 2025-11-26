@@ -173,8 +173,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const ref = doc(firestore, "hotels", userUid);
     
+    // Ensure latitude and longitude are saved as null if they are undefined
+    const dataToUpdate = {
+        ...data,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+    };
+
     try {
-        await setDoc(ref, data, { merge: true });
+        await setDoc(ref, dataToUpdate, { merge: true });
         toast({
             title: "Амжилттай хадгалагдлаа",
             description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
