@@ -20,6 +20,7 @@ import {
 import { useFirebaseApp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { Room } from "@/lib/data";
 
 export interface HotelInfo {
   id: string;

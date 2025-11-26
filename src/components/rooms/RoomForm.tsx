@@ -98,7 +98,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             return;
         }
 
-        const roomDataPayload: Omit<Room, 'id' | 'rating' | 'distance' | 'likes'> = {
+        const roomDataPayload = {
             ...values,
             amenities: values.amenities as Amenity[],
             ownerId: userEmail,
@@ -121,7 +121,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                 description: `${values.roomName} өрөөний төрлийн мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
-            addRoom(roomDataPayload);
+            addRoom(roomDataPayload as Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>);
         }
        
         form.reset();
@@ -226,7 +226,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                 <ImageIcon className="h-4 w-4 text-amber-600" />
                                 <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
                                 <AlertDescription className="text-amber-700">
-                                    Эхлээд Буудлын тохиргоо &gt; Зураг хэсэгт зураг нэмнэ үү.
+                                    Эхлээд Буудлын тохиргоо > Зураг хэсэгт зураг нэмнэ үү.
                                 </AlertDescription>
                             </Alert>
                         )}

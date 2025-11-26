@@ -40,10 +40,10 @@ export type Room = {
   originalPrice?: number;
   amenities: Amenity[];
   imageUrls: string[]; // These are now public URLs from Firebase Storage
-  location: Location;
+  location: string;
   detailedAddress?: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   ownerId: string; // user.uid of the hotel owner
   phoneNumber: string;
   totalQuantity: number;
