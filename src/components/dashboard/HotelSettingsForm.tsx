@@ -53,6 +53,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const defaultValues: Partial<FormValues> = {
     hotelName: hotelInfo?.hotelName || "",
@@ -81,27 +82,43 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
 
   useEffect(() => {
     if (hotelInfo) {
-      const newDefaultValues = {
-        hotelName: hotelInfo.hotelName || "",
-        location: hotelInfo.location || undefined,
-        detailedAddress: hotelInfo.detailedAddress || "",
-        latitude: hotelInfo.latitude,
-        longitude: hotelInfo.longitude,
-        phoneNumber: hotelInfo.phoneNumber || "",
-        amenities: hotelInfo.amenities || [],
-        galleryImageUrls: hotelInfo.galleryImageUrls || [],
-        bankName: hotelInfo.bankName || "",
-        accountNumber: hotelInfo.accountNumber || "",
-        accountHolderName: hotelInfo.accountHolderName || "",
-        signatureName: hotelInfo.signatureName || "",
-        termsAccepted: !!hotelInfo.contractSignedOn,
-      };
-      reset(newDefaultValues);
+      reset(hotelInfo);
       if (hotelInfo.latitude && hotelInfo.longitude) {
         setShowMap(true);
       }
     }
   }, [hotelInfo, reset]);
+  
+  // Get user's current location on initial mount if no location is set
+  useEffect(() => {
+    if (showMap && !watchedValues.latitude && !watchedValues.longitude) {
+      if (navigator.geolocation) {
+        setIsGettingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setValue('latitude', latitude, { shouldDirty: true, shouldTouch: true });
+            setValue('longitude', longitude, { shouldDirty: true, shouldTouch: true });
+            setIsGettingLocation(false);
+             toast({
+              title: "Байршил олдлоо",
+              description: "Таны одоогийн байршлыг газрын зураг дээр тэмдэглэлээ.",
+            });
+          },
+          () => {
+            setIsGettingLocation(false);
+            // Handle error or user denial
+             toast({
+              variant: "destructive",
+              title: "Байршил олдсонгүй",
+              description: "Таны байршлыг авах боломжгүй байна. Гараар сонгоно уу.",
+            });
+          }
+        );
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMap, setValue]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -522,8 +539,8 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
             </div>
           </Tabs>
 
-          <Button type="submit" className="w-full" disabled={isUploading}>
-            {isUploading ? "Зураг хуулагдаж байна..." : "Хадгалах"}
+          <Button type="submit" className="w-full" disabled={isUploading || isGettingLocation}>
+            {isUploading ? "Зураг хуулагдаж байна..." : isGettingLocation ? "Байршил тодорхойлж байна..." : "Хадгалах"}
           </Button>
         </form>
       </Form>
