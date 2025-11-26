@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 type MapLocationPickerProps = {
@@ -19,17 +19,17 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     return null;
   }, [value]);
 
-  const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
+  const handleMapClick = (event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
       onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
     }
-  }, [onChange]);
+  };
   
-  const handleMarkerDragEnd = useCallback((event: google.maps.MapMouseEvent) => {
+  const handleMarkerDragEnd = (event: google.maps.MapMouseEvent) => {
      if (event.latLng) {
       onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
     }
-  }, [onChange]);
+  };
 
   return (
     <div className="relative w-full h-80 rounded-lg overflow-hidden border">
