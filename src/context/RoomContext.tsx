@@ -39,7 +39,7 @@ const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
-  const { user } = useAuth();
+  const { user, userUid } = useAuth();
 
   const roomsQuery = useMemoFirebase(() => collection(firestore, 'room_types'), [firestore]);
   const { data: serverRooms = [], isLoading: isRoomsLoading, error: roomsError } = useCollection<Room>(roomsQuery);
@@ -164,7 +164,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   
   const updateRoomInstance = (updatedInstance: RoomInstance) => {
     const instanceRef = doc(firestore, "room_instances", updatedInstance.instanceId);
-    setDocumentNonBlocking(instanceRef, updatedInstance, { merge: true });
+    const dataToSave = { ...updatedInstance };
+    if (dataToSave.bookingCode === undefined) {
+        delete dataToSave.bookingCode;
+    }
+    setDocumentNonBlocking(instanceRef, dataToSave, { merge: true });
   };
 
   const deleteRoomInstance = (instanceId: string) => {
@@ -352,9 +356,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   }, [rooms, roomInstances, getRoomStatusForDate]);
 
   const ownerRooms = useMemo(() => {
-      if (!rooms || !user) return [];
-      return rooms.filter(r => r.ownerId === user.uid);
-  }, [rooms, user]);
+      if (!rooms || !userUid) return [];
+      return rooms.filter(r => r.ownerId === userUid);
+  }, [rooms, userUid]);
 
 
   return (
@@ -371,3 +375,5 @@ export const useRoom = () => {
   }
   return context;
 };
+
+    
