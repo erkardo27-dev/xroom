@@ -133,8 +133,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       hotelName: hotelInfo.hotelName,
       location: hotelInfo.location,
       detailedAddress: hotelInfo.detailedAddress,
-      latitude: hotelInfo.latitude,
-      longitude: hotelInfo.longitude,
+      latitude: hotelInfo.latitude ?? null,
+      longitude: hotelInfo.longitude ?? null,
       phoneNumber: hotelInfo.phoneNumber,
       rating: +(Math.random() * 1.5 + 3.5).toFixed(1),
       distance: 0, // Will be calculated dynamically
@@ -143,8 +143,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     };
     
     if (newRoomType.detailedAddress === undefined) delete newRoomType.detailedAddress;
-    if (newRoomType.latitude === undefined) delete newRoomType.latitude;
-    if (newRoomType.longitude === undefined) delete newRoomType.longitude;
     if (newRoomType.originalPrice === undefined) delete newRoomType.originalPrice;
     
     const roomRef = doc(firestore, "room_types", newRoomType.id);
@@ -384,30 +382,30 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const availableRoomsByType = useMemo(() => {
     const today = startOfDay(new Date());
 
-    return rooms
-      .map(roomType => {
+    const mappedRooms = rooms.map(roomType => {
         const availableInstances = roomInstances.filter(instance =>
-          instance.roomTypeId === roomType.id &&
-          getRoomStatusForDate(instance.instanceId, today) === 'available'
+            instance.roomTypeId === roomType.id &&
+            getRoomStatusForDate(instance.instanceId, today) === 'available'
         );
 
         let distance = 999;
-        if (userLocation && typeof roomType.latitude === 'number' && typeof roomType.longitude === 'number') {
-          distance = getDistanceFromLatLonInKm(
-            userLocation.lat,
-            userLocation.lon,
-            roomType.latitude,
-            roomType.longitude
-          );
+        if (userLocation && roomType.latitude != null && roomType.longitude != null) {
+            distance = getDistanceFromLatLonInKm(
+                userLocation.lat,
+                userLocation.lon,
+                roomType.latitude,
+                roomType.longitude
+            );
         }
-        
+
         return {
-          ...roomType,
-          distance,
-          availableInstances,
+            ...roomType,
+            distance,
+            availableInstances,
         };
-      })
-      .filter(room => room.availableInstances.length > 0);
+    });
+
+    return mappedRooms.filter(room => room.availableInstances.length > 0);
 
   }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
@@ -431,3 +429,5 @@ export const useRoom = () => {
   }
   return context;
 };
+
+    
