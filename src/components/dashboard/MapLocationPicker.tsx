@@ -32,7 +32,7 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
   }, [onChange]);
 
   return (
-    <div className="w-full h-80 rounded-lg overflow-hidden border">
+    <div className="relative w-full h-80 rounded-lg overflow-hidden border">
       <Map
         mapId="XROOM_TONIGHT_MAP"
         style={{ width: '100%', height: '100%' }}
@@ -57,7 +57,7 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
         )}
       </Map>
        {!position && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                 <p className="text-white font-semibold bg-black/50 px-4 py-2 rounded-md">
                     Байршлаа сонгохын тулд зураг дээр дарна уу
                 </p>
@@ -66,3 +66,4 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     </div>
   );
 }
+
