@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Banknote, Building2, KeyRound, Check, Star } from 'lucide-react';
+import { Heart, MapPin, Wifi, ParkingSquare, UtensilsCrossed, Loader2, BedDouble, HelpCircle, Zap, Info, Tv2, Coffee, Bath, Dumbbell, WashingMachine, Mic, Hand, Phone, AlertTriangle, Flame, Banknote, Building2, KeyRound, Check } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -308,15 +308,8 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
           <div className="flex items-center text-sm text-muted-foreground mt-2 gap-1.5">
             <MapPin className="w-4 h-4" />
             <span>{room.location}</span>
-          </div>
-
-           <div className="flex items-center text-sm text-muted-foreground mt-1.5 gap-2">
-             <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                <span className="font-semibold text-foreground/80">{room.rating.toFixed(1)}</span>
-             </div>
-             <span className='text-lg'>&middot;</span>
-             <span>{room.distance.toFixed(1)} км</span>
+            <span className='text-lg'>&middot;</span>
+            <span>{room.distance.toFixed(1)} км</span>
           </div>
 
           <UrgencyMessage />
