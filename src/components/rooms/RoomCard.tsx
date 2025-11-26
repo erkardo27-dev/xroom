@@ -438,9 +438,9 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 
                   <div className="flex items-center space-x-2">
                       <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-                      <label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      <Label htmlFor="terms" className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                           Би <a href="#" className="underline text-primary">үйлчилгээний нөхцөлийг</a> зөвшөөрч байна.
-                      </label>
+                      </Label>
                   </div>
                 </div>
                 <AlertDialogFooter>
