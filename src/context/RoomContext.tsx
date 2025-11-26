@@ -382,34 +382,32 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   }, [getRoomById, roomInstances, firestore, toast]);
 
   const availableRoomsByType = useMemo(() => {
-    if (!rooms) return [];
     const today = startOfDay(new Date());
 
-    const allRoomTypesProcessed = rooms.map(roomType => {
-      const availableInstances = roomInstances.filter(instance =>
-        instance.roomTypeId === roomType.id &&
-        getRoomStatusForDate(instance.instanceId, today) === 'available'
-      );
-
-      let distance = 999; // Default large distance
-      if (userLocation && typeof roomType.latitude === 'number' && typeof roomType.longitude === 'number') {
-        distance = getDistanceFromLatLonInKm(
-          userLocation.lat,
-          userLocation.lon,
-          roomType.latitude,
-          roomType.longitude
+    return rooms
+      .map(roomType => {
+        const availableInstances = roomInstances.filter(instance =>
+          instance.roomTypeId === roomType.id &&
+          getRoomStatusForDate(instance.instanceId, today) === 'available'
         );
-      }
-      
-      return {
-        ...roomType,
-        distance,
-        availableInstances,
-      };
-    });
 
-    // Filter to only include rooms that have at least one available instance for today
-    return allRoomTypesProcessed.filter(room => room.availableInstances.length > 0);
+        let distance = 999;
+        if (userLocation && typeof roomType.latitude === 'number' && typeof roomType.longitude === 'number') {
+          distance = getDistanceFromLatLonInKm(
+            userLocation.lat,
+            userLocation.lon,
+            roomType.latitude,
+            roomType.longitude
+          );
+        }
+        
+        return {
+          ...roomType,
+          distance,
+          availableInstances,
+        };
+      })
+      .filter(room => room.availableInstances.length > 0);
 
   }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
@@ -433,7 +431,3 @@ export const useRoom = () => {
   }
   return context;
 };
-
-    
-
-    

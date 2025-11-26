@@ -19,7 +19,7 @@ export type ChartDataPoint = {
 };
 
 export default function StatsClient() {
-  const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { userUid, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { roomInstances, status: roomStatus, getRoomStatusForDate, getRoomPriceForDate } = useRoom();
   const router = useRouter();
 
@@ -31,7 +31,7 @@ export default function StatsClient() {
     }
   }, [isLoggedIn, isAuthLoading, router]);
 
-  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userEmail), [roomInstances, userEmail]);
+  const ownerRoomInstances = useMemo(() => roomInstances.filter(inst => inst.ownerId === userUid), [roomInstances, userUid]);
 
   const stats = useMemo(() => {
     const today = startOfDay(new Date());
