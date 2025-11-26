@@ -36,7 +36,7 @@ export default function AdminClient() {
   const firestore = useFirestore();
 
   const hotelsQuery = useMemoFirebase(() => collection(firestore, 'hotels'), [firestore]);
-  const { data: hotels = [], isLoading: isHotelsLoading } = useCollection<HotelInfo>(hotelsQuery);
+  const { data: hotels, isLoading: isHotelsLoading } = useCollection<HotelInfo>(hotelsQuery);
   
   useEffect(() => {
     if (!isAuthLoading && (!isLoggedIn || !isAdmin)) {
@@ -69,7 +69,7 @@ export default function AdminClient() {
     const totalServiceFees = totalBookings * SERVICE_FEE_PER_BOOKING;
 
     return {
-        totalHotels: hotels.length,
+        totalHotels: (hotels || []).length,
         totalRoomTypes: rooms.length,
         totalRoomInstances: roomInstances.length,
         totalRevenue,
