@@ -305,12 +305,11 @@ export function RoomCard({ room, availableInstances }: RoomCardProps) {
 
           <h3 className="font-bold text-lg leading-tight truncate mt-1">{room.roomName}</h3>
           
-          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center text-sm text-muted-foreground mt-2 gap-1.5">
               <MapPin className="w-4 h-4" />
               <span>{room.location}</span>
-            </div>
-            <span>{room.distance}км</span>
+              <span className='text-muted-foreground/50'>·</span>
+              <span>{room.distance}км</span>
           </div>
 
           <UrgencyMessage />
