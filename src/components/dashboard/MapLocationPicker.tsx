@@ -28,7 +28,7 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
 
   const handleMarkerDragEnd = (event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
-      onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+        onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
     }
   };
 
@@ -40,7 +40,7 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
         defaultCenter={ULAANBAATAR_CENTER}
         center={position || ULAANBAATAR_CENTER}
         defaultZoom={12}
-        gestureHandling={'greedy'}
+        gestureHandling={'cooperative'}
         disableDefaultUI={true}
         onClick={handleMapClick}
       >
@@ -58,13 +58,6 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
           </AdvancedMarker>
         )}
       </Map>
-       {!position && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
-            <p className="text-white font-semibold text-center p-4 bg-black/50 rounded-lg">
-                Байршлаа сонгохын тулд<br/>газрын зураг дээр дарна уу
-            </p>
-        </div>
-      )}
     </div>
   );
 }
