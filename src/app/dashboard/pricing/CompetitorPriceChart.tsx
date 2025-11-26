@@ -89,32 +89,21 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
                             }
                              if (props.payload.name === 'Зах зээл') {
                                 return [
-                                    `${competitorAvg.toLocaleString()}₮`,
-                                    'Зах зээлийн дундаж',
+                                  <>
+                                    <div className="flex flex-col gap-1">
+                                        <div>
+                                            <span className="font-semibold">{competitorAvg.toLocaleString()}₮</span>
+                                            <span className="text-muted-foreground ml-2">Зах зээлийн дундаж</span>
+                                        </div>
+                                        <div className="text-xs">
+                                             <span className="font-semibold">{competitorLow.toLocaleString()}₮ - {competitorHigh.toLocaleString()}₮</span>
+                                            <span className="text-muted-foreground ml-2">Зах зээлийн хүрээ</span>
+                                        </div>
+                                    </div>
+                                  </>
                                 ];
                             }
                             return null;
-                          }}
-                           payloadTransformer={(payload) => {
-                             const yourPriceItem = payload.find(p => (p.payload as any)?.name === 'Таны үнэ');
-                             const marketItem = payload.find(p => (p.payload as any)?.name === 'Зах зээл');
-                            
-                            let newPayload = [];
-                            if (yourPriceItem) newPayload.push(yourPriceItem);
-                            if (marketItem) newPayload.push(marketItem);
-                            
-                            // Add market range info regardless
-                             if (payload.length > 0) {
-                                newPayload.push({
-                                    ...payload[0],
-                                    dataKey: 'marketRange',
-                                    name: 'Зах зээлийн хүрээ',
-                                    value: `${competitorLow.toLocaleString()}₮ - ${competitorHigh.toLocaleString()}₮`,
-                                    color: 'hsl(var(--muted-foreground))'
-                                });
-                             }
-                            
-                            return newPayload;
                           }}
                         />
                     }
