@@ -305,7 +305,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const instanceRef = doc(firestore, "room_instances", instanceId);
-      setDocumentNonBlocking(instanceRef, newInstance, { merge: true });
+      setDocumentNonBlocking(newInstance, { merge: true });
       
       toast({
         title: "Үнэ шинэчлэгдлээ",
@@ -385,30 +385,32 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     if (!rooms) return [];
     const today = startOfDay(new Date());
 
-    return rooms
-      .map(roomType => {
-        const availableInstances = roomInstances.filter(instance =>
-          instance.roomTypeId === roomType.id &&
-          getRoomStatusForDate(instance.instanceId, today) === 'available'
+    const allRoomTypesProcessed = rooms.map(roomType => {
+      const availableInstances = roomInstances.filter(instance =>
+        instance.roomTypeId === roomType.id &&
+        getRoomStatusForDate(instance.instanceId, today) === 'available'
+      );
+
+      let distance = 999; // Default large distance
+      if (userLocation && typeof roomType.latitude === 'number' && typeof roomType.longitude === 'number') {
+        distance = getDistanceFromLatLonInKm(
+          userLocation.lat,
+          userLocation.lon,
+          roomType.latitude,
+          roomType.longitude
         );
+      }
+      
+      return {
+        ...roomType,
+        distance,
+        availableInstances,
+      };
+    });
 
-        let distance = 999; // Default large distance
-        if (userLocation && roomType.latitude && roomType.longitude) {
-          distance = getDistanceFromLatLonInKm(
-            userLocation.lat,
-            userLocation.lon,
-            roomType.latitude,
-            roomType.longitude
-          );
-        }
+    // Filter to only include rooms that have at least one available instance for today
+    return allRoomTypesProcessed.filter(room => room.availableInstances.length > 0);
 
-        return {
-          ...roomType,
-          distance,
-          availableInstances,
-        };
-      })
-      .filter(room => room.availableInstances.length > 0); 
   }, [rooms, roomInstances, getRoomStatusForDate, userLocation]);
 
   const ownerRooms = useMemo(() => {
