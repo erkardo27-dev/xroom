@@ -1,6 +1,6 @@
 'use client';
 
-import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, Pin, MapMouseEvent } from '@vis.gl/react-google-maps';
 import { useMemo } from 'react';
 
 type MapLocationPickerProps = {
@@ -19,9 +19,9 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     [value]
   );
 
-  const handleMapClick = (event: google.maps.MapMouseEvent) => {
-    if (event.latLng) {
-      onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+  const handleMapClick = (event: MapMouseEvent) => {
+    if (event.detail.latLng) {
+      onChange({ lat: event.detail.latLng.lat, lng: event.detail.latLng.lng });
     }
   };
 
