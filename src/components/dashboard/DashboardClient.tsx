@@ -27,7 +27,7 @@ type SortOption = 'roomNumber' | 'roomType' | 'status';
 
 export default function DashboardClient() {
   const { userEmail, isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { ownerRooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
+  const { rooms, roomInstances, status: roomStatus, deleteRoomInstance, getRoomStatusForDate, getRoomById } = useRoom();
   const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -45,6 +45,11 @@ export default function DashboardClient() {
       router.push("/");
     }
   }, [isLoggedIn, isAuthLoading, router]);
+
+  const ownerRoomTypes = useMemo(() => {
+    if (!rooms) return [];
+    return rooms.filter(r => r.ownerId === userEmail);
+  }, [rooms, userEmail]);
 
   const ownerRoomInstances = useMemo(() => {
     if (!roomInstances) return [];
@@ -196,7 +201,7 @@ export default function DashboardClient() {
                         <SelectTrigger className="h-10 w-32"><SelectValue placeholder="Төрөл" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Бүх төрөл</SelectItem>
-                            {ownerRooms.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
+                            {ownerRoomTypes.map(rt => <SelectItem key={rt.id} value={rt.id}>{rt.roomName}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -287,5 +292,7 @@ export default function DashboardClient() {
     </>
   );
 }
+
+    
 
     
