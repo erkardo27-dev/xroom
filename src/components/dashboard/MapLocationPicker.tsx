@@ -66,4 +66,3 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     </div>
   );
 }
-
