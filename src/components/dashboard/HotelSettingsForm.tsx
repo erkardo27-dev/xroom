@@ -84,7 +84,7 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
     if (hotelInfo.latitude && hotelInfo.longitude) {
         setShowMap(true);
     }
-  }, [hotelInfo, form.reset]);
+  }, [hotelInfo]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
