@@ -43,6 +43,8 @@ const formSchema = z.object({
   termsAccepted: z.boolean().default(false),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const { hotelInfo, updateHotelInfo, userUid } = useAuth();
   const storage = useStorage();
@@ -52,39 +54,54 @@ export function HotelSettingsForm({ onFormSubmit }: { onFormSubmit: () => void }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const defaultValues: Partial<FormValues> = {
+    hotelName: hotelInfo?.hotelName || "",
+    location: hotelInfo?.location || undefined,
+    detailedAddress: hotelInfo?.detailedAddress || "",
+    latitude: hotelInfo?.latitude,
+    longitude: hotelInfo?.longitude,
+    phoneNumber: hotelInfo?.phoneNumber || "",
+    amenities: hotelInfo?.amenities || [],
+    galleryImageUrls: hotelInfo?.galleryImageUrls || [],
+    bankName: hotelInfo?.bankName || "",
+    accountNumber: hotelInfo?.accountNumber || "",
+    accountHolderName: hotelInfo?.accountHolderName || "",
+    signatureName: hotelInfo?.signatureName || "",
+    termsAccepted: !!hotelInfo?.contractSignedOn,
+  };
+
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
-      hotelName: "",
-      location: undefined,
-      detailedAddress: "",
-      phoneNumber: "",
-      amenities: [],
-      galleryImageUrls: [],
-      bankName: "",
-      accountNumber: "",
-      accountHolderName: "",
-      signatureName: "",
-      termsAccepted: false,
-    },
+    defaultValues,
   });
 
+  const { reset, watch, setValue } = form;
+  const watchedValues = watch();
+
   useEffect(() => {
-    if (!hotelInfo) return;
-    form.reset({
-      ...hotelInfo,
-      signatureName: hotelInfo.signatureName || "",
-      bankName: hotelInfo.bankName || "",
-      accountNumber: hotelInfo.accountNumber || "",
-      accountHolderName: hotelInfo.accountHolderName || "",
-      detailedAddress: hotelInfo.detailedAddress || "",
-      termsAccepted: !!hotelInfo.contractSignedOn,
-    });
-    if (hotelInfo.latitude && hotelInfo.longitude) {
+    if (hotelInfo) {
+      const newDefaultValues = {
+        hotelName: hotelInfo.hotelName || "",
+        location: hotelInfo.location || undefined,
+        detailedAddress: hotelInfo.detailedAddress || "",
+        latitude: hotelInfo.latitude,
+        longitude: hotelInfo.longitude,
+        phoneNumber: hotelInfo.phoneNumber || "",
+        amenities: hotelInfo.amenities || [],
+        galleryImageUrls: hotelInfo.galleryImageUrls || [],
+        bankName: hotelInfo.bankName || "",
+        accountNumber: hotelInfo.accountNumber || "",
+        accountHolderName: hotelInfo.accountHolderName || "",
+        signatureName: hotelInfo.signatureName || "",
+        termsAccepted: !!hotelInfo.contractSignedOn,
+      };
+      reset(newDefaultValues);
+      if (hotelInfo.latitude && hotelInfo.longitude) {
         setShowMap(true);
+      }
     }
-  }, [hotelInfo]);
+  }, [hotelInfo, reset]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
