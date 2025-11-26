@@ -26,6 +26,12 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     }
   };
 
+  const handleMarkerDragEnd = (event: google.maps.MapMouseEvent) => {
+    if (event.latLng) {
+      onChange({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+    }
+  };
+
   return (
     <div className="relative w-full h-80 rounded-lg overflow-hidden border">
       <Map
@@ -41,6 +47,8 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
         {position && (
           <AdvancedMarker 
             position={position}
+            draggable={true}
+            onDragEnd={handleMarkerDragEnd}
           >
             <Pin 
                 background={'hsl(var(--primary))'} 
