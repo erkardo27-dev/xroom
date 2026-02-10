@@ -38,10 +38,13 @@ const Slider = React.forwardRef<
     </SliderPrimitive.Track>
     {React.Children.count(props.children) > 0 ? props.children : value?.map((_, i) => <SliderThumb key={i} />)}
   </SliderPrimitive.Root>
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> & React.RefAttributes<React.ElementRef<typeof SliderPrimitive.Root>>
+> & { Thumb: typeof SliderThumb };
+
 Slider.displayName = SliderPrimitive.Root.displayName
 
 
 Slider.Thumb = SliderThumb;
 
-export { Slider }
+export { Slider, SliderThumb }

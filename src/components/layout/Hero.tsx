@@ -6,47 +6,69 @@ import Image from 'next/image';
 import { HeroSearch } from './HeroSearch';
 
 type HeroProps = {
-    status: 'loading' | 'success' | 'error';
-    filteredCount: number;
-    onSearch: (term: string) => void;
-    onClear: () => void;
-    initialSearchValue: string;
+  status: 'loading' | 'success' | 'error';
+  filteredCount: number;
+  onSearch: (term: string) => void;
+  onClear: () => void;
+  initialSearchValue: string;
 }
 
-export default function Hero({ status, filteredCount, onSearch, onClear, initialSearchValue }: HeroProps) {
+import { ChevronDown } from 'lucide-react';
 
+export default function Hero({ status, filteredCount, onSearch, onClear, initialSearchValue }: HeroProps) {
   return (
-    <div className="relative rounded-xl overflow-hidden mb-6 h-[280px] flex items-center justify-center text-center p-4">
+    <div className="relative w-full overflow-hidden mb-0 h-[600px] md:h-[750px] flex items-center justify-center text-center p-4 shadow-xl bg-black">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
+
       <Image
-        src="https://images.unsplash.com/photo-1590490360182-c33d57733427?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3RlbCUyMHJvb218ZW58MHx8fHwxNzYyOTI3NzMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
-        alt="Night city view from a hotel room"
+        src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop"
+        alt="Luxury hotel room with city view"
         fill
-        sizes="100vw"
-        className="object-cover opacity-30"
+        className="object-cover opacity-90"
         priority
-        data-ai-hint="hotel room"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/30" />
-      <div className="relative z-10 text-white w-full px-4">
-        
-        <h1 className="font-bold tracking-tight !leading-tight [text-shadow:0_1px_2px_rgb(0_0_0_/_0.3)]">
-          <span className="text-xl sm:text-2xl lg:text-3xl">xroom-р захиалах нь </span>
-          <span className="text-3xl sm:text-4xl lg:text-5xl">
-            <span className="text-primary">х</span>ялбар, <span className="text-primary">х</span>урдан, <span className="text-primary">х</span>алдашгүй
+
+      {/* Cinematic Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent z-10" />
+
+      {/* Content */}
+      <div className="relative z-20 w-full max-w-5xl px-4 flex flex-col items-center animate-in fade-in zoom-in duration-1000 ease-out">
+
+        <h1 className="font-extrabold tracking-tight text-white drop-shadow-2xl leading-none mb-8">
+          <span className="block text-4xl sm:text-5xl lg:text-7xl mb-3 tracking-wide">
+            Таны тав тух,
+          </span>
+          <span className="block text-4xl sm:text-6xl lg:text-8xl text-white/90">
+            Бидний <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-400 to-red-500 italic pr-2">шийдэл</span>
           </span>
         </h1>
 
-        <div className={'mt-8'}>
-            <HeroSearch onSearch={onSearch} initialValue={initialSearchValue} onClear={onClear} />
-        </div>
-        
-         <p className="mt-4 max-w-2xl mx-auto text-base text-white/80 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]">
-          {status === 'loading'
-            ? "Шилдэг саналуудыг хайж байна..."
-            : filteredCount > 0
-              ? `${filteredCount} өрөө олдлоо.`
-              : "Таны хайлтад тохирох өрөө олдсонгүй."}
+        <p className="text-lg sm:text-xl text-zinc-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-lg tracking-wide">
+          Хамгийн шилдэг зочид буудлууд, амралтын газруудаас сонголтоо хийн, хормын дотор баталгаажуул.
         </p>
+
+        <div className="w-full max-w-2xl mx-auto drop-shadow-2xl transform hover:scale-[1.01] transition-transform duration-500">
+          <HeroSearch
+            onSearch={onSearch}
+            onClear={onClear}
+            initialValue={initialSearchValue}
+          />
+        </div>
+
+        <div className="mt-10 flex items-center gap-3 text-sm font-medium text-white/90 bg-white/5 px-6 py-3 rounded-full backdrop-blur-md border border-white/10 shadow-lg hover:bg-white/10 transition-colors cursor-default">
+          <div className={`w-2.5 h-2.5 rounded-full shadow-[0_0_15px_currentColor] ${status === 'loading' ? 'bg-yellow-400 animate-pulse text-yellow-400' : filteredCount > 0 ? 'bg-emerald-400 text-emerald-400' : 'bg-red-400 text-red-400'}`} />
+          {status === 'loading'
+            ? "Хайж байна..."
+            : filteredCount > 0
+              ? `${filteredCount} өрөө бэлэн байна`
+              : "Өрөө олдсонгүй"}
+        </div>
+      </div>
+
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce duration-2000">
+        <ChevronDown className="h-8 w-8 text-white/50" />
       </div>
     </div>
   );

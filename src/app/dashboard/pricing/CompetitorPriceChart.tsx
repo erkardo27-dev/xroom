@@ -48,70 +48,73 @@ export default function CompetitorPriceChart({ selectedRoom }: CompetitorPriceCh
       <CardHeader>
         <CardTitle>Зах зээлийн харьцуулалт</CardTitle>
         <CardDescription>
-           <span className="font-bold text-primary">{selectedRoom.roomName}</span> өрөөний үнэ, зах зээлийн дундажтай харьцуулахад.
+          <span className="font-bold text-primary">{selectedRoom.roomName}</span> өрөөний үнэ, зах зээлийн дундажтай харьцуулахад.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">
-            <BarChart
-                data={chartData}
-                layout="vertical"
-                margin={{ top: 10, right: 30, left: -20, bottom: 0 }}
-                barGap={10}
-                barSize={35}
-            >
-                <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                <XAxis 
-                    type="number" 
-                    dataKey="value"
-                    tickFormatter={formatCurrency}
-                    domain={[0, 'dataMax + 100000']}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                />
-                <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fill: "hsl(var(--foreground))", fontSize: 13 }}
-                    width={80}
-                />
-                <ChartTooltip
-                    cursor={{ fill: 'hsl(var(--muted) / 0.2)' }}
-                    content={
-                        <ChartTooltipContent 
-                          hideLabel
-                          formatter={(value, name, props) => {
-                            if (props.payload.name === 'Таны үнэ') {
-                                return [`${Number(value).toLocaleString()}₮`, 'Таны үнэ'];
-                            }
-                             if (props.payload.name === 'Зах зээл') {
-                                return [
-                                  <>
-                                    <div className="flex flex-col gap-1">
-                                        <div>
-                                            <span className="font-semibold">{competitorAvg.toLocaleString()}₮</span>
-                                            <span className="text-muted-foreground ml-2">Зах зээлийн дундаж</span>
-                                        </div>
-                                        <div className="text-xs">
-                                             <span className="font-semibold">{competitorLow.toLocaleString()}₮ - {competitorHigh.toLocaleString()}₮</span>
-                                            <span className="text-muted-foreground ml-2">Зах зээлийн хүрээ</span>
-                                        </div>
-                                    </div>
-                                  </>
-                                ];
-                            }
-                            return null;
-                          }}
-                        />
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 10, right: 30, left: -20, bottom: 0 }}
+            barGap={10}
+            barSize={35}
+          >
+            <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+            <XAxis
+              type="number"
+              dataKey="value"
+              tickFormatter={formatCurrency}
+              domain={[0, 'dataMax + 100000']}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              dataKey="name"
+              type="category"
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 13 }}
+              width={80}
+            />
+            <ChartTooltip
+              cursor={{ fill: 'hsl(var(--muted) / 0.2)' }}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(value, name, props) => {
+                    if (props.payload.name === 'Таны үнэ') {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{Number(value).toLocaleString()}₮</span>
+                          <span className="text-muted-foreground">Таны үнэ</span>
+                        </div>
+                      );
                     }
+                    if (props.payload.name === 'Зах зээл') {
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            <span className="font-semibold">{competitorAvg.toLocaleString()}₮</span>
+                            <span className="text-muted-foreground ml-2">Зах зээлийн дундаж</span>
+                          </div>
+                          <div className="text-xs">
+                            <span className="font-semibold">{competitorLow.toLocaleString()}₮ - {competitorHigh.toLocaleString()}₮</span>
+                            <span className="text-muted-foreground ml-2">Зах зээлийн хүрээ</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
-               
-                <ReferenceArea x1={competitorLow} x2={competitorHigh} stroke="none" fill="hsl(var(--muted) / 0.3)" ifOverflow="visible" />
-                <Bar dataKey="value" radius={5} />
-            </BarChart>
+              }
+            />
+
+            <ReferenceArea x1={competitorLow} x2={competitorHigh} stroke="none" fill="hsl(var(--muted) / 0.3)" ifOverflow="visible" />
+            <Bar dataKey="value" radius={5} />
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>

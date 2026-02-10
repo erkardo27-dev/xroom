@@ -21,15 +21,18 @@ interface FirebaseContextValue {
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
-  const app = getApp();
-  const firestore = getFirestore(app);
-  const auth = getAuth(app);
-  const storage = getStorage(app);
+  // Use null or placeholders on the server to prevent initialization errors during SSR
+  const isServer = typeof window === 'undefined';
+
+  const app = !isServer ? getApp() : null;
+  const firestore = app ? getFirestore(app) : null as unknown as Firestore;
+  const auth = app ? getAuth(app) : null as unknown as Auth;
+  const storage = app ? getStorage(app) : null as unknown as FirebaseStorage;
 
   return (
-    <FirebaseContext.Provider value={{ firebaseApp: app, firestore, auth, storage }}>
+    <FirebaseContext.Provider value={{ firebaseApp: app as FirebaseApp, firestore, auth, storage }}>
       {children}
-      <FirebaseErrorListener />
+      {!isServer && <FirebaseErrorListener />}
     </FirebaseContext.Provider>
   );
 };
@@ -59,15 +62,15 @@ export const useAuth = () => {
 }
 
 export const useStorage = () => {
-    const context = useContext(FirebaseContext);
-    if (!context) throw new Error("useStorage must be used within a FirebaseProvider");
-    return context.storage;
+  const context = useContext(FirebaseContext);
+  if (!context) throw new Error("useStorage must be used within a FirebaseProvider");
+  return context.storage;
 }
 
 export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const result = React.useMemo(factory, deps);
-  if(result) {
+  if (result) {
     (result as any).__memo = true;
   }
   return result;

@@ -10,8 +10,10 @@ import {
   PricingRecommendationInput,
   PricingRecommendationInputSchema,
   PricingRecommendation,
-  PricingRecommendationSchema
+  PricingRecommendationSchema,
+  InternalPricingRecommendationSchema
 } from './pricing-recommendation.schema';
+import { getEventsForPeriod } from '@/lib/events';
 
 export async function getPricingRecommendation(input: PricingRecommendationInput): Promise<PricingRecommendation> {
   return pricingRecommendationFlow(input);
@@ -21,7 +23,7 @@ const prompt = ai.definePrompt(
   {
     name: 'pricingRecommendationPrompt',
     input: { schema: PricingRecommendationInputSchema },
-    output: { schema: PricingRecommendationSchema },
+    output: { schema: InternalPricingRecommendationSchema },
     prompt: `You are an expert hotel revenue manager for Ulaanbaatar, Mongolia. Your goal is to maximize profit by dynamically setting room prices.
 
 Analyze the provided room types and the date range. Consider the following factors for the Mongolian market:
@@ -35,7 +37,7 @@ Based on this analysis, generate a pricing plan for the given date range for eac
 
 Your output must be a JSON object that adheres to the output schema.
 - The 'summary' field should be a short, actionable summary in Mongolian explaining the logic behind your recommendations (e.g., "Амралтын өдрүүдэд эрэлт ихсэх тул үнийг нэмж, ажлын өдрүүдэд хямдруулав.").
-- The 'recommendations' field should be an object where each key is a string "roomTypeId_YYYY-MM-DD" and the value is the recommended integer price in MNT.
+- The 'recommendations' field should be an array of objects with 'key' and 'price'. Key format: "roomTypeId_YYYY-MM-DD".
 - Only include recommendations for prices that are DIFFERENT from the room's base price. Do not include recommendations if the price should remain the same.
 - Round prices to the nearest 1000 MNT.
 
@@ -50,7 +52,16 @@ Room Types:
 - Rating: {{rating}}
 {{/each}}
 
-Date Range: {{dateRange.startDate}} to {{dateRange.endDate}}`,
+Date Range: {{dateRange.startDate}} to {{dateRange.endDate}}
+
+Local Events during this period:
+{{#each events}}
+- Event: {{name}} ({{startDate}} to {{endDate}})
+- Impact: {{impact}}
+- Description: {{description}}
+{{else}}
+No significant local events reported for this period.
+{{/each}}`,
   }
 );
 
@@ -62,10 +73,33 @@ const pricingRecommendationFlow = ai.defineFlow(
     outputSchema: PricingRecommendationSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // SECURITY CHECK: Ensure the requester is the owner of all provided room types
+    const { roomTypes, requesterUid } = input;
+    const unauthorizedRooms = roomTypes.filter(rt => rt.ownerId !== requesterUid);
+
+    if (unauthorizedRooms.length > 0) {
+      console.error(`Authorization failure: User ${requesterUid} attempted to access pricing for rooms:`, unauthorizedRooms.map(r => r.id));
+      throw new Error("Authorization failed: You can only request pricing for rooms you own.");
+    }
+
+    const start = new Date(input.dateRange.startDate);
+    const end = new Date(input.dateRange.endDate);
+    const events = getEventsForPeriod(start, end);
+
+    const { output } = await prompt({ ...input, events });
     if (!output) {
       throw new Error("AI did not return a valid recommendation.");
     }
-    return output;
+
+    // Convert Array to Record for the final output
+    const recommendationsRecord: Record<string, number> = {};
+    output.recommendations.forEach(rec => {
+      recommendationsRecord[rec.key] = rec.price;
+    });
+
+    return {
+      summary: output.summary,
+      recommendations: recommendationsRecord
+    };
   }
 );

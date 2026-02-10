@@ -9,6 +9,13 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == docOwnerId;
     }
 
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             (request.auth.token.email == "erkardo27@gmail.com" || 
+              request.auth.token.email == "bayarkhuu@xroom.mn");
+    }
+
     // Hotels collection: Contains public information about each hotel,
     // but can only be written to by the owner.
     match /hotels/{hotelId} {
@@ -17,7 +24,7 @@ service cloud.firestore {
       
       // Only the authenticated owner can create, update or delete their hotel info.
       // The hotel document ID must match the user's UID.
-      allow write: if isOwner(hotelId);
+      allow write: if isOwner(hotelId) || isAdmin();
     }
     
     // Room Types collection: Contains templates for room types.
@@ -26,28 +33,30 @@ service cloud.firestore {
       allow read: if true;
       
       // Only the owner can write to their own room types.
-      allow write: if isOwner(request.resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId) || isAdmin();
+      allow update, delete: if isOwner(resource.data.ownerId) || isAdmin();
     }
     
     // Room Instances collection: Represents physical rooms.
     match /room_instances/{instanceId} {
-      // Anyone can read room instance data to see availability.
-      allow read: if true;
+      // Anyone can read available rooms.
+      // Owners can read all their own room instances.
+      allow read: if resource.data.status == 'available' || isOwner(resource.data.ownerId) || isAdmin();
       
-      // The owner can update their own room instances (e.g. room number, initial status).
-      allow update: if isOwner(request.resource.data.ownerId);
+      // The owner or admin can update their own room instances.
+      allow update: if isOwner(resource.data.ownerId) || isAdmin();
 
-      // Only the owner can create or delete room instances.
-      allow create, delete: if isOwner(request.resource.data.ownerId);
-      
-      // A special case for booking: Any authenticated user can update a room instance
-      // to book it, but ONLY if they are changing the status to 'booked' and not
-      // overwriting an existing booking. This is a simplified rule for the MVP.
-      // A more robust solution would use a transaction and a separate 'bookings' collection.
-      allow update: if request.auth != null &&
-                      request.resource.data.overrides[request.time.date().toString()].status == 'booked' &&
-                      (!resource.data.overrides.keys().hasAny([request.time.date().toString()])) ||
-                      (resource.data.overrides[request.time.date().toString()].status != 'booked');
+      // A special case for booking: Anyone can update a room instance
+      // to book it if it is currently available.
+      // Note: In a real system, this would be handled via a secure Server Action/Function
+      // to prevent race conditions and ensure payment.
+      allow update: if resource.data.status == 'available' && 
+                      request.resource.data.status == 'booked' &&
+                      request.resource.data.ownerId == resource.data.ownerId;
+
+      // Only the owner or admin can create or delete room instances.
+      allow create: if isOwner(request.resource.data.ownerId) || isAdmin();
+      allow delete: if isOwner(resource.data.ownerId) || isAdmin();
     }
   }
 }

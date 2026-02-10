@@ -4,13 +4,13 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -27,15 +27,15 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Check, Image as ImageIcon } from "lucide-react";
 
 const formSchema = z.object({
-  roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
-  price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
-  totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
-  imageUrls: z.array(z.string().url()).refine(value => value.length > 0, {
-    message: "Та дор хаяж нэг зураг сонгох шаардлагатай.",
-  }),
-  amenities: z.array(z.string()).refine(value => value.some(item => item), {
-    message: "You have to select at least one item.",
-  }),
+    roomName: z.string().min(2, { message: "Өрөөний нэр оруулна уу." }),
+    price: z.coerce.number().positive({ message: "Үнэ эерэг тоо байх ёстой." }),
+    totalQuantity: z.coerce.number().int().min(1, { message: "Хамгийн багадаа 1 өрөө байх ёстой." }),
+    imageUrls: z.array(z.string().url()).refine(value => value.length > 0, {
+        message: "Та дор хаяж нэг зураг сонгох шаардлагатай.",
+    }),
+    amenities: z.array(z.string()).refine(value => value.some(item => item), {
+        message: "You have to select at least one item.",
+    }),
 });
 
 type RoomFormProps = {
@@ -47,7 +47,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
     const { toast } = useToast();
     const { addRoom, updateRoom } = useRoom();
     const { userEmail, hotelInfo } = useAuth();
-    
+
     const isEditMode = !!roomToEdit;
 
     const hotelGalleryImages = useMemo(() => {
@@ -69,7 +69,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
             amenities: hotelInfo?.amenities || [],
         },
     });
-    
+
     useEffect(() => {
         if (isEditMode && roomToEdit) {
             form.reset({
@@ -90,7 +90,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         if (!userEmail || !hotelInfo || !hotelInfo.phoneNumber) {
-             toast({
+            toast({
                 variant: "destructive",
                 title: "Алдаа",
                 description: "Нэвтэрч орж, буудлын тохиргоог бүрэн хийсний дараа өрөө нэмэх/засах боломжтой.",
@@ -111,19 +111,19 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
         };
 
         if (isEditMode && roomToEdit) {
-             const updatedRoom: Room = {
+            const updatedRoom: Room = {
                 ...roomToEdit,
                 ...roomDataPayload,
             };
             updateRoom(updatedRoom);
-             toast({
+            toast({
                 title: "Амжилттай заслаа!",
                 description: `${values.roomName} өрөөний төрлийн мэдээлэл шинэчлэгдлээ.`,
             });
         } else {
             addRoom(roomDataPayload as Omit<Room, 'id' | 'rating' | 'distance' | 'likes'>);
         }
-       
+
         form.reset();
         onFormSubmit();
     }
@@ -144,7 +144,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         </FormItem>
                     )}
                 />
-                 <FormField
+                <FormField
                     control={form.control}
                     name="price"
                     render={({ field }) => (
@@ -157,7 +157,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                         </FormItem>
                     )}
                 />
-                 <FormField
+                <FormField
                     control={form.control}
                     name="totalQuantity"
                     render={({ field }) => (
@@ -166,71 +166,71 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                             <FormControl>
                                 <Input type="number" placeholder="ж.нь: 5" {...field} disabled={isEditMode} />
                             </FormControl>
-                             <FormDescription>
+                            <FormDescription>
                                 Энэ төрлийн нийт хэдэн өрөө байгаа вэ? (Үүсгэсний дараа засах боломжгүй)
                             </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-               <FormField
+                <FormField
                     control={form.control}
                     name="imageUrls"
                     render={() => (
                         <FormItem>
-                        <div className="mb-4">
-                            <FormLabel className="text-base">Өрөөний зураг</FormLabel>
-                            <FormDescription>
-                                Энэ өрөөг илэрхийлэх зургуудыг буудлынхаа зургийн сангаас сонгоно уу.
-                            </FormDescription>
-                        </div>
-                        {hotelGalleryImages.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {hotelGalleryImages.map((item) => (
-                                <FormField
-                                key={item.id}
-                                control={form.control}
-                                name="imageUrls"
-                                render={({ field }) => {
-                                    const isChecked = field.value?.includes(item.id);
-                                    return (
-                                    <FormItem key={item.id}>
-                                        <FormControl>
-                                            <Checkbox
-                                                id={`room-image-${item.id}`}
-                                                checked={isChecked}
-                                                onCheckedChange={(checked) => {
-                                                    return checked
-                                                        ? field.onChange([...(field.value || []), item.id])
-                                                        : field.onChange(
-                                                            field.value?.filter(
-                                                            (value) => value !== item.id
-                                                            )
-                                                        )
-                                                }}
-                                                className="sr-only"
-                                            />
-                                        </FormControl>
-                                        <FormLabel htmlFor={`room-image-${item.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
-                                                <Image src={item.imageUrl} alt={item.description} width={200} height={150} className="aspect-video object-cover" />
-                                                {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
-                                        </FormLabel>
-                                    </FormItem>
-                                    )
-                                }}
-                                />
-                            ))}
+                            <div className="mb-4">
+                                <FormLabel className="text-base">Өрөөний зураг</FormLabel>
+                                <FormDescription>
+                                    Энэ өрөөг илэрхийлэх зургуудыг буудлынхаа зургийн сангаас сонгоно уу.
+                                </FormDescription>
                             </div>
-                        ) : (
-                            <Alert variant="default" className="bg-amber-50 border-amber-200">
-                                <ImageIcon className="h-4 w-4 text-amber-600" />
-                                <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
-                                <AlertDescription className="text-amber-700">
-                                    Эхлээд Буудлын тохиргоо > Зураг хэсэгт зураг нэмнэ үү.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        <FormMessage />
+                            {hotelGalleryImages.length > 0 ? (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {hotelGalleryImages.map((item) => (
+                                        <FormField
+                                            key={item.id}
+                                            control={form.control}
+                                            name="imageUrls"
+                                            render={({ field }) => {
+                                                const isChecked = field.value?.includes(item.id);
+                                                return (
+                                                    <FormItem key={item.id}>
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                id={`room-image-${item.id}`}
+                                                                checked={isChecked}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...(field.value || []), item.id])
+                                                                        : field.onChange(
+                                                                            field.value?.filter(
+                                                                                (value) => value !== item.id
+                                                                            )
+                                                                        )
+                                                                }}
+                                                                className="sr-only"
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel htmlFor={`room-image-${item.id}`} className="block cursor-pointer rounded-lg border-2 data-[state=checked]:border-primary transition-all overflow-hidden relative">
+                                                            <Image src={item.imageUrl} alt={item.description} width={200} height={150} className="aspect-video object-cover" />
+                                                            {isChecked && <div className="absolute inset-0 bg-primary/70 flex items-center justify-center"><Check className="w-8 h-8 text-primary-foreground" /></div>}
+                                                        </FormLabel>
+                                                    </FormItem>
+                                                )
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <Alert variant="default" className="bg-amber-50 border-amber-200">
+                                    <ImageIcon className="h-4 w-4 text-amber-600" />
+                                    <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
+                                    <AlertDescription className="text-amber-700">
+                                        Эхлээд Буудлын тохиргоо {'>'} Зураг хэсэгт зураг нэмнэ үү.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -241,48 +241,48 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                     name="amenities"
                     render={() => (
                         <FormItem>
-                        <div className="mb-4">
-                            <FormLabel className="text-base">Нэмэлт үйлчилгээ</FormLabel>
-                             <FormDescription>
-                                Энэ өрөөнд байх үйлчилгээнүүдийг сонгоно уу.
-                            </FormDescription>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            {amenityOptions.map((item) => (
-                                <FormField
-                                key={item.id}
-                                control={form.control}
-                                name="amenities"
-                                render={({ field }) => {
-                                    return (
-                                    <FormItem
+                            <div className="mb-4">
+                                <FormLabel className="text-base">Нэмэлт үйлчилгээ</FormLabel>
+                                <FormDescription>
+                                    Энэ өрөөнд байх үйлчилгээнүүдийг сонгоно уу.
+                                </FormDescription>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                {amenityOptions.map((item) => (
+                                    <FormField
                                         key={item.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                        <FormControl>
-                                        <Checkbox
-                                            checked={field.value?.includes(item.id)}
-                                            onCheckedChange={(checked) => {
-                                            return checked
-                                                ? field.onChange([...(field.value || []), item.id])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                    (value) => value !== item.id
-                                                    )
-                                                )
-                                            }}
-                                        />
-                                        </FormControl>
-                                        <FormLabel className="font-normal">
-                                        {item.label}
-                                        </FormLabel>
-                                    </FormItem>
-                                    )
-                                }}
-                                />
-                            ))}
-                        </div>
-                        <FormMessage />
+                                        control={form.control}
+                                        name="amenities"
+                                        render={({ field }) => {
+                                            return (
+                                                <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                                >
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value?.includes(item.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                return checked
+                                                                    ? field.onChange([...(field.value || []), item.id])
+                                                                    : field.onChange(
+                                                                        field.value?.filter(
+                                                                            (value) => value !== item.id
+                                                                        )
+                                                                    )
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <FormLabel className="font-normal">
+                                                        {item.label}
+                                                    </FormLabel>
+                                                </FormItem>
+                                            )
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

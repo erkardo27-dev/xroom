@@ -17,7 +17,7 @@ import {
   setDoc,
   onSnapshot,
 } from "firebase/firestore";
-import { useFirebaseApp } from "@/firebase";
+import { useAuth as useFirebaseAuth, useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Room } from "@/lib/data";
@@ -37,6 +37,13 @@ export interface HotelInfo {
   accountHolderName?: string;
   contractSignedOn?: string;
   signatureName?: string;
+  autopilotEnabled?: boolean;
+  depositPercentage?: number; // 0-100, default 100
+  channexConfig?: {
+    apiKey?: string;
+    propertyId?: string;
+    isActive: boolean;
+  };
 }
 
 interface AuthContextType {
@@ -60,9 +67,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const app = useFirebaseApp();
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
+  const auth = useFirebaseAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -76,8 +82,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (!firebaseUser) {
-          setHotelInfo(null);
-          setIsLoading(false);
+        setHotelInfo(null);
+        setIsLoading(false);
       }
     });
     return () => unsubscribe();
@@ -86,8 +92,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // HOTEL INFO LISTENER (DEPENDS ON USER)
   useEffect(() => {
     if (!user) {
-        setIsLoading(false);
-        return;
+      setIsLoading(false);
+      return;
     };
 
     setIsLoading(true);
@@ -100,9 +106,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setIsLoading(false);
     }, (error) => {
-        console.error("Error fetching hotel info:", error);
-        setIsLoading(false);
-        setHotelInfo(null);
+      console.error("Error fetching hotel info:", error);
+      setIsLoading(false);
+      setHotelInfo(null);
     });
     return () => unsubHotel();
   }, [user, firestore]);
@@ -162,7 +168,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast({ variant: "destructive", title: "Хэрэглэгч нэвтрээгүй байна." });
       return;
     }
-    
+
     // Check if there are any actual changes to save
     if (Object.keys(data).length === 0) {
       toast({
@@ -173,27 +179,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const ref = doc(firestore, "hotels", userUid);
-    
+
     // Ensure latitude and longitude are saved as null if they are undefined
     const dataToUpdate = {
-        ...data,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
+      ...data,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
     };
 
     try {
-        await setDoc(ref, dataToUpdate, { merge: true });
-        toast({
-            title: "Амжилттай хадгалагдлаа",
-            description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
-        });
+      await setDoc(ref, dataToUpdate, { merge: true });
+      toast({
+        title: "Амжилттай хадгалагдлаа",
+        description: "Таны буудлын мэдээлэл шинэчлэгдлээ.",
+      });
     } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Хадгалахад алдаа гарлаа",
-            description: error.message,
-        });
-        throw error;
+      toast({
+        variant: "destructive",
+        title: "Хадгалахад алдаа гарлаа",
+        description: error.message,
+      });
+      throw error;
     }
   };
 
@@ -201,19 +207,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // LOGOUT
   const logout = async () => {
     try {
-        await signOut(auth);
-        router.push('/');
+      await signOut(auth);
+      router.push('/');
     } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Гарахад алдаа гарлаа",
-            description: error.message,
-        });
-        throw error;
+      toast({
+        variant: "destructive",
+        title: "Гарахад алдаа гарлаа",
+        description: error.message,
+      });
+      throw error;
     }
   };
 
-  const isAdmin = user?.email === "admin@xroom.com";
+  const isAdmin = user?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@xroom.com");
 
   return (
     <AuthContext.Provider
