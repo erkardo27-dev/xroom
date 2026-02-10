@@ -83,40 +83,7 @@ export default function PricingClient() {
     setEditingDeposit(deposit.toString());
   }
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setEditingValue(e.target.value);
-  }
 
-  const handleInputBlur = () => {
-    if (!editingCell) return;
-    const [roomTypeId, dateStr] = editingCell.split('-');
-
-    const roomType = ownerRoomTypes.find(rt => rt.id === roomTypeId);
-    if (!roomType) return;
-
-    const instance = roomInstances.find(inst => inst.roomTypeId === roomTypeId);
-    if (!instance) return;
-
-    const originalPrice = roomType.price;
-    const newPrice = editingValue.trim() === '' ? originalPrice : Number(editingValue);
-
-    if (!isNaN(newPrice)) {
-      setRoomPriceForDate(instance.instanceId, new Date(dateStr), newPrice);
-      logActivity(userUid!, 'price_change', `${roomType.roomName} өрөөний үнийг ${dateStr} өдөр ${newPrice}₮ болгож өөрчлөв.`);
-    }
-
-    setEditingCell(null);
-    setEditingValue("");
-  }
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleInputBlur();
-    } else if (e.key === 'Escape') {
-      setEditingCell(null);
-      setEditingValue("");
-    }
-  }
 
   const handleSave = () => {
     if (!editingCell) return;

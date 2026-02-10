@@ -22,7 +22,7 @@ export default function Hero({ status, filteredCount, onSearch, onClear, initial
       <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
 
       <Image
-        src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop"
         alt="Luxury hotel room with city view"
         fill
         className="object-cover opacity-90"
