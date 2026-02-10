@@ -226,7 +226,7 @@ export function RoomForm({ onFormSubmit, roomToEdit }: RoomFormProps) {
                                     <ImageIcon className="h-4 w-4 text-amber-600" />
                                     <AlertTitle className="text-amber-800">Зургийн сан хоосон байна</AlertTitle>
                                     <AlertDescription className="text-amber-700">
-                                        Эхлээд Буудлын тохиргоо {'>'} Зураг хэсэгт зураг нэмнэ үү.
+                                        Эхлээд Буудлын тохиргоо &gt; Зураг хэсэгт зураг нэмнэ үү.
                                     </AlertDescription>
                                 </Alert>
                             )}
